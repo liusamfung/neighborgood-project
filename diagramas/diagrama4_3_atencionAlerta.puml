@@ -1,0 +1,29 @@
+@startuml Diagrama4_3_AtencionAlerta
+title Diagrama 4.3 — Atención de la alerta (RF28)
+
+hide footbox
+autonumber
+
+actor "Residente\nemisor" as RES
+actor "Directiva /\nSeguridad" as ADM
+participant "App del emisor" as APPE
+participant "App receptora" as APPR
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+    participant "Realtime" as RT
+end box
+
+ADM -> APPR : marcar "estoy en camino" o "alerta atendida" (RF28)
+activate APPR
+APPR -> DB : actualizar estado de la alerta (RF28)
+activate DB
+DB --> APPR : estado actualizado
+deactivate DB
+APPR -> RT : publicar cambio de estado (RF28)
+activate RT
+RT --> APPE : notificar el estado al emisor (RF28)
+deactivate RT
+APPE --> RES : mostrar que la alerta está siendo atendida (RF28)
+deactivate APPR
+@enduml

@@ -1,0 +1,28 @@
+@startuml Diagrama1_3_ContactosEmergencia
+title Diagrama 1.3 — Contactos de emergencia (RF4)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+participant "App móvil\n(React Native + Expo)" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres\n(RLS por rol)" as DB
+end box
+
+RES -> APP : registrar contacto de emergencia (RF4)
+activate APP
+APP -> DB : validar límite de 3 contactos y guardar (RF4)
+activate DB
+
+alt menos de 3 contactos registrados
+    DB --> APP : contacto almacenado
+    APP --> RES : contacto agregado
+else ya existen 3 contactos
+    DB --> APP : límite alcanzado
+    APP --> RES : debe eliminar un contacto antes de agregar otro
+end
+deactivate DB
+deactivate APP
+@enduml

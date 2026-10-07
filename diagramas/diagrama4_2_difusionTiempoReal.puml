@@ -1,0 +1,59 @@
+@startuml Diagrama4_2_DifusionTiempoReal
+title Diagrama 4.2 — Difusión en tiempo real (RF25, RF26, RF27)
+
+hide footbox
+autonumber
+
+actor "Vecino del\npabellón" as VEC
+actor "Directiva /\nSeguridad" as ADM
+participant "App receptora" as APPR
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+    participant "Realtime" as RT
+    participant "Edge Function" as EF
+end box
+
+participant "Expo Push" as PUSH
+boundary "Servicio de correo\n(simulado)" as MAIL
+
+DB -> RT : propagar el evento de \n alerta creada (RF26)
+activate RT
+DB -> EF : disparar función por webhook de base\n de datos (RF26)
+deactivate DB
+activate EF
+
+par notificación a los receptores
+    RT --> APPR : evento de alerta en el canal del pabellón (RF26)
+    deactivate RT
+    APPR -> APPR : activar vibración \n y sonido de alerta (RF25)
+    APPR --> VEC : mostrar alerta con tipo \n  y unidad de origen (RF26)
+    APPR --> ADM : mostrar alerta en el \n panel de seguridad (RF26)
+else entrega con la app cerrada
+    EF -> DB : obtener tokens de vecinos del \n pabellón y directiva (RF26)
+    activate DB
+    DB --> EF : listado de tokens
+    deactivate DB
+    EF -> PUSH : enviar notificación push a \n  los receptores (RF26)
+    activate PUSH
+    PUSH --> APPR : notificación con vibración y sonido (RF25, RF26)
+    deactivate PUSH
+else aviso a contactos de emergencia
+    EF -> DB : obtener contactos de\n  emergencia del emisor (RF27)
+    activate DB
+    DB --> EF : contactos registrados
+    deactivate DB
+    EF -> MAIL : simular envío de correo con \n  la ubicación (RF27)
+    activate MAIL
+    MAIL --> EF : envío simulado registrado
+    deactivate MAIL
+end
+deactivate EF
+
+note over RT, PUSH
+  Realtime entrega el evento a las apps abiertas y
+  Expo Push cubre a los dispositivos con la app cerrada,
+  para cumplir el tiempo promedio de 3 segundos (RNF1)
+end note
+@enduml
+

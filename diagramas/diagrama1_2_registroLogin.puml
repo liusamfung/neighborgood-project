@@ -1,0 +1,54 @@
+@startuml Diagrama1_2_RegistroLogin
+title Diagrama 1.2 — Registro e inicio de sesión del residente (RF1, RF2, RF3, RF6)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+participant "App móvil\n(React Native + Expo)" as APP
+
+box "Supabase" #F1EFE8
+    participant "Auth" as AUTH
+    database "Postgres\n(RLS por rol)" as DB
+end box
+
+RES -> APP : registrarse con la unidad asignada (RF1)
+activate APP
+APP -> AUTH : crear cuenta (correo o Google) (RF2)
+activate AUTH
+AUTH --> APP : cuenta creada
+deactivate AUTH
+APP -> DB : validar que la unidad exista y esté habilitada (RF1)
+activate DB
+
+alt unidad válida
+    DB --> APP : validación correcta
+    APP --> RES : registro completado
+else unidad no asignada por la directiva
+    DB --> APP : unidad inexistente o no habilitada
+    APP --> RES : registro rechazado
+end
+deactivate DB
+deactivate APP
+
+RES -> APP : iniciar sesión (RF2)
+activate APP
+APP -> AUTH : autenticar credenciales o cuenta de Google (RF2)
+activate AUTH
+AUTH --> APP : token de sesión
+deactivate AUTH
+APP -> DB : obtener rol del usuario (RF3)
+activate DB
+DB --> APP : rol asignado
+deactivate DB
+APP -> DB : registrar hora de inicio de sesión (RF6)
+
+note over APP
+  Según el rol devuelto se habilita la
+  interfaz de Directiva, Residente o
+  Guardia de Seguridad (RF3)
+end note
+
+APP --> RES : sesión iniciada con permisos de su rol (RF3)
+deactivate APP
+@enduml

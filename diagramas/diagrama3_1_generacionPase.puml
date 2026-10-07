@@ -1,0 +1,42 @@
+@startuml Diagrama3_1_GeneracionPase
+title Diagrama 3.1 — Generación del pase de visita (RF15, RF16, RF17)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+actor "Visitante" as VIS
+participant "App del residente" as APPR
+
+box "Supabase" #F1EFE8
+    participant "Edge Function" as EF
+    database "Postgres" as DB
+end box
+
+RES -> APPR : crear invitación con nombre, fecha \n y hora estimada (RF15)
+activate APPR
+APPR -> EF : solicitar generación \ndel pase (RF16)
+activate EF
+EF -> DB : generar código único con \ngen_random_uuid() (RF16)
+activate DB
+DB --> EF : UUID irrepetible del pase
+deactivate DB
+
+note right of EF
+  El código se genera en el servidor
+  con UUID v4, no en el cliente, para 
+  que no sea predecible (RF16)
+end note
+
+EF --> APPR : pase de visita creado
+deactivate EF
+APPR -> APPR : renderizar el código QR del \npase (RF16)
+APPR --> RES : mostrar pase generado
+deactivate APPR
+
+RES -> APPR : compartir pase por WhatsApp, correo \n u otra app (RF17)
+activate APPR
+APPR -> VIS : enviar imagen o QR del pase (RF17)
+deactivate APPR
+@enduml
+

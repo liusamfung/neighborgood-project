@@ -1,0 +1,47 @@
+@startuml Diagrama5_2_AtencionCambioEstado
+title Diagrama 5.2 — Atención y cambio de estado (RF32)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+actor "Directiva /\nMantenimiento" as ADM
+participant "App del residente" as APPR
+participant "App de la directiva" as APPA
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+    participant "Edge Function" as EF
+end box
+
+participant "Expo Push" as PUSH
+
+ADM -> APPA : consultar incidencias reportadas
+activate APPA
+APPA -> DB : obtener listado de incidencias (RF32)
+activate DB
+DB --> APPA : incidencias con su estado actual
+deactivate DB
+APPA --> ADM : mostrar listado
+
+ADM -> APPA : actualizar estado a "En atención" o "Resuelto" (RF32)
+APPA -> DB : registrar el nuevo estado (RF32)
+activate DB
+DB --> APPA : estado actualizado
+DB -> EF : disparar función por webhook \n de base de datos (RF32)
+deactivate DB
+activate EF
+EF -> DB : obtener token del residente \nque reportó (RF32)
+activate DB
+DB --> EF : token del residente
+deactivate DB
+EF -> PUSH : enviar \n notificación de \n cambio de estado (RF32)
+activate PUSH
+PUSH --> APPR : notificación push al residente (RF32)
+deactivate PUSH
+deactivate EF
+APPR --> RES : aviso del nuevo estado de su incidencia (RF32)
+APPA --> ADM : cambio confirmado
+deactivate APPA
+@enduml
+

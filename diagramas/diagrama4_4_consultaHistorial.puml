@@ -1,0 +1,23 @@
+@startuml Diagrama4_4_ConsultaHistorial
+title Diagrama 4.4 — Consulta del historial (RF29)
+
+hide footbox
+autonumber
+
+actor "Directiva /\nSeguridad" as ADM
+participant "App receptora" as APPR
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+ADM -> APPR : consultar historial de alertas (RF29)
+activate APPR
+APPR -> DB : recuperar alertas con fecha, \n tipo, unidad y estado (RF29)
+activate DB
+DB --> APPR : registro histórico
+deactivate DB
+APPR --> ADM : mostrar historial de alertas
+deactivate APPR
+@enduml
+

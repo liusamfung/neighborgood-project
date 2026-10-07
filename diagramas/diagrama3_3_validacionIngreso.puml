@@ -1,0 +1,50 @@
+@startuml Diagrama3_3_ValidacionIngreso
+title Diagrama 3.3 — Validación del ingreso (RF18, RF19, RF20, RF21)
+
+hide footbox
+autonumber
+
+actor "Guardia" as GUA
+actor "Visitante" as VIS
+actor "Residente" as RES
+participant "App del guardia" as APPG
+participant "App del residente" as APPR
+
+box "Supabase" #F1EFE8
+    participant "Edge Function" as EF
+    database "Postgres" as DB
+end box
+
+participant "Expo Push" as PUSH
+
+VIS -> GUA : presentar el pase en la garita
+GUA -> APPG : escanear el código QR con la cámara (RF18)
+activate APPG
+APPG -> EF : validar el código escaneado (RF18)
+activate EF
+EF -> DB : verificar estado y vigencia \n del pase (RF18, RF19)
+activate DB
+
+alt pase válido y no utilizado
+    DB --> EF : pase vigente
+    EF -> DB : marcar el pase como \n usado (RF19)
+    EF -> DB : registrar hora exacta del \n ingreso (RF20)
+    DB --> EF : ingreso registrado
+    EF --> APPG : acceso autorizado
+    APPG --> GUA : mostrar datos del visitante autorizado
+
+    EF -> PUSH : enviar notificación de \n ingreso al residente (RF21)
+    activate PUSH
+    PUSH --> APPR : notificación push \n de ingreso de su \n visita (RF21)
+    deactivate PUSH
+    APPR --> RES : aviso de que su visita ya ingresó (RF21)
+
+else pase ya usado, anulado o vencido
+    DB --> EF : pase no válido
+    EF --> APPG : acceso denegado (RF19)
+    APPG --> GUA : mostrar motivo del rechazo
+end
+deactivate DB
+deactivate EF
+deactivate APPG
+@enduml

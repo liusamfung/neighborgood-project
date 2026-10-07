@@ -1,0 +1,37 @@
+@startuml Diagrama2_4_ResultadosHistorial
+title Diagrama 2.4 — Resultados e historial (RF12, RF13)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+participant "App móvil" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+    participant "Realtime" as RT
+end box
+
+activate APP
+alt resultados configurados en tiempo real
+    APP -> RT : suscribirse al canal de la encuesta (RF13)
+    activate RT
+    RT --> APP : conteo actualizado de votos (RF13)
+    deactivate RT
+    APP --> RES : resultados en vivo
+else resultados visibles al cierre
+    APP -> DB : consultar resultados finales (RF13)
+    activate DB
+    DB --> APP : conteo final
+    deactivate DB
+    APP --> RES : resultados de la encuesta cerrada
+end
+
+RES -> APP : consultar historial de avisos y encuestas (RF12)
+APP -> DB : recuperar registros anteriores (RF12)
+activate DB
+DB --> APP : historial
+deactivate DB
+APP --> RES : mostrar historial
+deactivate APP
+@enduml

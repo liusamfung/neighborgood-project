@@ -1,0 +1,32 @@
+@startuml Diagrama2_1_PublicacionAviso
+title Diagrama 2.1 — Publicación de aviso (RF8, RF11, RF14)
+
+hide footbox
+autonumber
+
+actor "Directiva" as DIR
+participant "App móvil" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+    participant "Storage" as ST
+end box
+
+DIR -> APP : redactar aviso con título, descripción y vigencia (RF8)
+activate APP
+
+opt el aviso incluye imagen adjunta
+    APP -> ST : subir imagen del aviso (RF8)
+    activate ST
+    ST --> APP : URL de la imagen
+    deactivate ST
+end
+
+DIR -> APP : seleccionar categoría y segmento destino (RF11, RF14)
+APP -> DB : guardar aviso segmentado por torre, pabellón o manzana (RF8, RF14)
+activate DB
+DB --> APP : aviso publicado
+deactivate DB
+APP --> DIR : confirmación de publicación
+deactivate APP
+@enduml

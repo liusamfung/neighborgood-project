@@ -1,0 +1,29 @@
+@startuml Diagrama2_2_CreacionEncuesta
+title Diagrama 2.2 — Creación de encuesta (RF9, RF14, RF15)
+
+hide footbox
+autonumber
+
+actor "Directiva" as DIR
+participant "App móvil" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+DIR -> APP : crear encuesta con preguntas de opción única o múltiple (RF9)
+activate APP
+DIR -> APP : definir prioridad y segmento (RF14, RF15)
+APP -> DB : guardar encuesta y sus opciones (RF9)
+activate DB
+DB --> APP : encuesta publicada
+deactivate DB
+
+note over APP, DB
+  Si la encuesta se marca con prioridad alta,
+  se registra como obligatoria para el residente (RF15)
+end note
+
+APP --> DIR : confirmación de publicación
+deactivate APP
+@enduml

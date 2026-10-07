@@ -1,0 +1,30 @@
+@startuml Diagrama4_1_ActivacionAlerta
+title Diagrama 4.1 — Activación de la alerta (RF24, RF25, RF27, RF29)
+
+hide footbox
+autonumber
+
+actor "Residente\nemisor" as RES
+participant "App del emisor" as APPE
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+RES -> APPE : presionar botón de pánico y \n elegir categoría (RF24)
+activate APPE
+
+note right of APPE
+  Categorías disponibles:
+  Médica, Incendio, Seguridad (RF24)
+end note
+
+APPE -> APPE : activar vibración y sonido de alerta \n en el emisor (RF25)
+APPE -> APPE : obtener ubicación del dispositivo (RF27)
+APPE -> DB : registrar alerta con tipo, unidad, ubicación  \n y hora (RF29)
+activate DB
+DB --> APPE : alerta registrada
+APPE --> RES : alerta enviada
+deactivate APPE
+@enduml
+

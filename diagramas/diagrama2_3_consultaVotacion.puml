@@ -1,0 +1,44 @@
+@startuml Diagrama2_3_ConsultaVotacion
+title Diagrama 2.3 — Consulta y votación del residente (RF10, RF11, RF14)
+
+hide footbox
+autonumber
+
+actor "Residente" as RES
+participant "App móvil" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+RES -> APP : abrir módulo de avisos
+activate APP
+APP -> DB : consultar avisos y encuestas de su segmento (RF14)
+activate DB
+DB --> APP : listado vigente
+deactivate DB
+APP --> RES : mostrar avisos y encuestas activas
+
+RES -> APP : filtrar por categoría (RF11)
+APP --> RES : listado filtrado
+
+RES -> APP : emitir voto en encuesta activa (RF10)
+APP -> DB : registrar voto de la unidad (RF10)
+activate DB
+
+alt la unidad aún no ha votado
+    DB --> APP : voto registrado
+    APP --> RES : voto confirmado
+else la unidad ya emitió su voto
+    DB --> APP : restricción de unicidad rechaza el voto
+    APP --> RES : su unidad ya votó en esta encuesta
+end
+deactivate DB
+
+note left of DB
+  La restricción de un voto por unidad
+  se aplica en la base de datos mediante
+  una llave única (RF10)
+end note
+deactivate APP
+@enduml

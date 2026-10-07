@@ -1,0 +1,22 @@
+@startuml Diagrama3_4_RegistroSalida
+title Diagrama 3.4 — Registro de salida (RF20)
+
+hide footbox
+autonumber
+
+actor "Guardia" as GUA
+participant "App del guardia" as APPG
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+GUA -> APPG : registrar salida del \n  visitante (RF20)
+activate APPG
+APPG -> DB : guardar hora exacta de \n salida (RF20)
+activate DB
+DB --> APPG : salida registrada
+deactivate DB
+APPG --> GUA : visita cerrada
+deactivate APPG
+@enduml

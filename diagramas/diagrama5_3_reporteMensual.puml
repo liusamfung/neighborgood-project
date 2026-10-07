@@ -1,0 +1,23 @@
+@startuml Diagrama5_3_ReporteMensual
+title Diagrama 5.3 — Reporte gráfico mensual (RF33)
+
+hide footbox
+autonumber
+
+actor "Directiva /\nMantenimiento" as ADM
+participant "App de la directiva" as APPA
+
+box "Supabase" #F1EFE8
+    database "Postgres" as DB
+end box
+
+ADM -> APPA : abrir gráfica de incidencias \n mensuales (RF33)
+activate APPA
+APPA -> DB : consultar incidencias \n agrupadas\n por mes (RF33)
+activate DB
+DB --> APPA : totales mensuales
+deactivate DB
+APPA -> APPA : renderizar la gráfica (RF33)
+APPA --> ADM : mostrar cantidad de incidencias por mes (RF33)
+deactivate APPA
+@enduml

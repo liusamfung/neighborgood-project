@@ -1,0 +1,22 @@
+@startuml Diagrama1_1_AltaResidente
+title Diagrama 1.1 — Alta de residente por la directiva (RF1, RF5)
+
+hide footbox
+autonumber
+
+actor "Directiva" as DIR
+participant "App móvil\n(React Native + Expo)" as APP
+
+box "Supabase" #F1EFE8
+    database "Postgres\n(RLS por rol)" as DB
+end box
+
+DIR -> APP : registrar residente y asignar unidad (RF5)
+activate APP
+APP -> DB : crear registro de residente y vincular unidad (RF1, RF5)
+activate DB
+DB --> APP : residente habilitado
+deactivate DB
+APP --> DIR : confirmación de alta
+deactivate APP
+@enduml
