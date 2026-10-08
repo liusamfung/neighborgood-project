@@ -1,0 +1,436 @@
+// NeighborGood — Modelo de datos (PostgreSQL en Supabase)
+// 21 tablas propias + auth.users (administrada por Supabase)
+
+// ───────────── Tipos enumerados ─────────────
+
+Enum rol_usuario {
+  directiva
+  residente
+  guardia
+}
+
+Enum tipo_sector {
+  torre
+  pabellon
+  manzana
+}
+
+Enum plataforma_dispositivo {
+  android
+  ios
+}
+
+Enum prioridad_encuesta {
+  normal
+  alta [note: 'Alta = encuesta obligatoria para el residente']
+}
+
+Enum tipo_seleccion {
+  unica
+  multiple
+}
+
+Enum estado_pase {
+  vigente
+  usado
+  anulado
+}
+
+Enum tipo_alerta {
+  medica
+  incendio
+  seguridad
+}
+
+Enum estado_alerta {
+  activa
+  en_camino
+  atendida
+}
+
+Enum estado_incidencia {
+  pendiente
+  en_atencion
+  resuelto
+}
+
+// ───────────── Tabla administrada por Supabase ─────────────
+
+Table auth.users [headercolor: #34495E] {
+  id uuid [pk]
+  email text
+  Note: 'Administrada por Supabase Auth. No se crea ni se modifica a mano.'
+}
+
+// ───────────── A. Estructura del condominio ─────────────
+
+Table sectores [headercolor: #7F8C8D] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  tipo tipo_sector [not null]
+
+  indexes {
+    (tipo, nombre) [unique]
+  }
+}
+
+Table unidades [headercolor: #7F8C8D] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  sector_id uuid [not null]
+  codigo text [not null, note: 'Ej. Dpto 302']
+  habilitada boolean [not null, default: true]
+
+  indexes {
+    (sector_id, codigo) [unique]
+  }
+}
+
+// ───────────── B. Usuarios y accesos ─────────────
+
+Table residentes_habilitados [headercolor: #2980B9] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  unidad_id uuid [not null]
+  nombre text [not null]
+  correo text [not null, unique, note: 'Solo este correo puede registrarse como residente de la unidad']
+  creado_por uuid [not null, note: 'Perfil de la directiva que hizo el alta']
+  registrado boolean [not null, default: false]
+  creado_en timestamptz [not null, default: `now()`]
+
+  Note: 'Pre-registro hecho por la directiva. Un trigger sobre auth.users lo consulta antes de crear el perfil.'
+}
+
+Table perfiles [headercolor: #2980B9] {
+  id uuid [pk, note: 'Mismo id que auth.users']
+  unidad_id uuid [note: 'NULL para directiva y guardia']
+  nombre text [not null]
+  apellido text [not null]
+  telefono text
+  rol rol_usuario [not null]
+  activo boolean [not null, default: true]
+  creado_en timestamptz [not null, default: `now()`]
+
+    Note: 'CHECK: si el rol es residente, unidad_id no puede ser NULL. Un residente siempre tiene unidad.'
+}
+
+Table registros_sesion [headercolor: #2980B9] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid [not null]
+  iniciado_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    (usuario_id, iniciado_en)
+  }
+}
+
+Table contactos_emergencia [headercolor: #2980B9] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid [not null]
+  nombre text [not null]
+  telefono text [not null]
+  parentesco text
+  correo text [note: 'Opcional. Se usará con la próxima feature de correo de alerta']
+  orden smallint [not null, note: 'CHECK (orden BETWEEN 1 AND 3)']
+
+  indexes {
+    (usuario_id, orden) [unique]
+  }
+
+  Note: 'Máximo 3 contactos por usuario: lo impone el rango de orden más el índice único.'
+}
+
+Table dispositivos [headercolor: #2980B9] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid [not null]
+  expo_push_token text [not null, unique]
+  plataforma plataforma_dispositivo [not null]
+  actualizado_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    usuario_id
+  }
+
+  Note: 'Tokens de Expo Push. Un usuario puede tener varios dispositivos.'
+}
+
+// ───────────── C. Avisos y encuestas ─────────────
+
+Table categorias_aviso [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null, unique]
+}
+
+Table avisos [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  autor_id uuid [not null]
+  categoria_id uuid [not null]
+  para_todos boolean [not null, default: true, note: 'true = todo el condominio (aviso_sectores queda vacía)']
+  titulo text [not null]
+  descripcion text [not null]
+  imagen_path text [note: 'Ruta en Supabase Storage']
+  vigente_desde timestamptz [not null]
+  vigente_hasta timestamptz [not null, note: 'CHECK (vigente_hasta > vigente_desde)']
+  creado_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    vigente_hasta
+  }
+}
+
+Table aviso_sectores [headercolor: #27AE60] {
+  aviso_id uuid [not null]
+  sector_id uuid [not null]
+
+  indexes {
+    (aviso_id, sector_id) [pk]
+  }
+
+  Note: 'Segmentación de avisos: un aviso puede apuntar a varias torres, pabellones o manzanas.'
+}
+
+Table encuestas [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  autor_id uuid [not null]
+  categoria_id uuid [not null]
+  para_todos boolean [not null, default: true, note: 'true = todo el condominio (encuesta_sectores queda vacía)']
+  titulo text [not null]
+  descripcion text
+  prioridad prioridad_encuesta [not null, default: 'normal']
+  resultados_en_vivo boolean [not null, default: false, note: 'false = resultados visibles solo al cierre']
+  abre_en timestamptz [not null]
+  cierra_en timestamptz [not null, note: 'CHECK (cierra_en > abre_en)']
+  creado_en timestamptz [not null, default: `now()`]
+}
+
+Table encuesta_sectores [headercolor: #27AE60] {
+  encuesta_id uuid [not null]
+  sector_id uuid [not null]
+
+  indexes {
+    (encuesta_id, sector_id) [pk]
+  }
+
+  Note: 'Segmentación de encuestas, separada de la de avisos.'
+}
+
+Table encuesta_preguntas [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  encuesta_id uuid [not null]
+  texto text [not null]
+  seleccion tipo_seleccion [not null, default: 'unica']
+  orden smallint [not null]
+
+  indexes {
+    (encuesta_id, orden) [unique]
+  }
+}
+
+Table encuesta_opciones [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  pregunta_id uuid [not null]
+  texto text [not null]
+  orden smallint [not null]
+
+  indexes {
+    (pregunta_id, orden) [unique]
+    (id, pregunta_id) [unique, note: 'Permite la llave foránea compuesta de voto_opciones']
+  }
+}
+
+Table votos [headercolor: #27AE60] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  encuesta_id uuid [not null]
+  unidad_id uuid [not null]
+  usuario_id uuid [not null, note: 'Residente que emitió el voto en nombre de la unidad']
+  creado_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    (encuesta_id, unidad_id) [unique, note: 'Un voto por unidad y encuesta']
+  }
+
+  Note: 'Un voto agrupa las respuestas a todas las preguntas, enviadas en un solo envío.'
+}
+
+Table voto_opciones [headercolor: #27AE60] {
+  voto_id uuid [not null]
+  pregunta_id uuid [not null]
+  opcion_id uuid [not null]
+
+  indexes {
+    (voto_id, opcion_id) [pk]
+  }
+
+  Note: 'Opciones elegidas. La llave compuesta garantiza que la opción pertenezca a la pregunta. Un trigger valida selección única y que la pregunta sea de la misma encuesta del voto.'
+}
+
+// ───────────── D. Visitas ─────────────
+
+Table pases_visita [headercolor: #E67E22] {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'UUID v4: es el código que lleva el QR']
+  residente_id uuid [not null]
+  unidad_id uuid [not null]
+  nombre_visitante text [not null]
+  fecha_visita date [not null, note: 'El pase solo vale este día']
+  hora_estimada time
+  estado estado_pase [not null, default: 'vigente']
+  guardia_id uuid [note: 'Guardia que validó el ingreso']
+  ingreso_en timestamptz
+  salida_en timestamptz [note: 'CHECK (salida_en IS NULL OR salida_en >= ingreso_en)']
+  anulado_en timestamptz
+  creado_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    (unidad_id, fecha_visita)
+  }
+
+  Note: 'El estado vencido no se guarda: la Edge Function lo calcula al escanear (estado = vigente y fecha_visita anterior al día actual en America/Lima, es decir, pasadas las 23:59).'
+}
+
+// ───────────── E. Alertas ─────────────
+
+Table alertas [headercolor: #C0392B] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  emisor_id uuid [not null]
+  unidad_id uuid [not null, note: 'La ubicación de la alerta es la de esta unidad']
+  sector_id uuid [not null, note: 'Copia del sector de la unidad (la llena un trigger) para filtrar Realtime por pabellón']
+  tipo tipo_alerta [not null]
+  estado estado_alerta [not null, default: 'activa']
+  creada_en timestamptz [not null, default: `now()`]
+
+  indexes {
+    (sector_id, creada_en)
+  }
+}
+
+Table alerta_atenciones [headercolor: #C0392B] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  alerta_id uuid [not null]
+  usuario_id uuid [not null, note: 'Directiva o guardia que responde']
+  estado estado_alerta [not null, note: 'Solo en_camino o atendida']
+  creado_en timestamptz [not null, default: `now()`]
+
+  Note: 'Bitácora de respuestas del personal a cada alerta.'
+}
+
+// ───────────── F. Incidencias ─────────────
+
+Table incidencias [headercolor: #8E44AD] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  reportado_por uuid [not null]
+  unidad_id uuid [not null]
+  ubicacion text [not null, note: 'Se precarga con la unidad y el residente puede editarla']
+  descripcion text [not null]
+  estado estado_incidencia [not null, default: 'pendiente']
+  atendido_por uuid
+  creada_en timestamptz [not null, default: `now()`]
+  actualizada_en timestamptz [not null, default: `now()`]
+  resuelta_en timestamptz
+
+  indexes {
+    creada_en
+  }
+
+  Note: 'El reporte mensual del administrador sale de una vista con GROUP BY date_trunc(month, creada_en).'
+}
+
+Table incidencia_fotos [headercolor: #8E44AD] {
+  id uuid [pk, default: `gen_random_uuid()`]
+  incidencia_id uuid [not null]
+  foto_path text [not null, note: 'Ruta en Supabase Storage']
+  orden smallint [not null, note: 'CHECK (orden BETWEEN 1 AND 3)']
+
+  indexes {
+    (incidencia_id, orden) [unique]
+  }
+
+  Note: 'Máximo 3 fotos por incidencia, impuesto por la base. El mínimo de 1 lo valida la app.'
+}
+
+// ───────────── Relaciones ─────────────
+
+// A. Estructura
+Ref: unidades.sector_id > sectores.id
+
+// B. Usuarios y accesos
+Ref: perfiles.id - auth.users.id [delete: cascade]
+Ref: perfiles.unidad_id > unidades.id
+Ref: residentes_habilitados.unidad_id > unidades.id
+Ref: residentes_habilitados.creado_por > perfiles.id
+Ref: registros_sesion.usuario_id > perfiles.id [delete: cascade]
+Ref: contactos_emergencia.usuario_id > perfiles.id [delete: cascade]
+Ref: dispositivos.usuario_id > perfiles.id [delete: cascade]
+
+// C. Avisos y encuestas
+Ref: avisos.autor_id > perfiles.id
+Ref: avisos.categoria_id > categorias_aviso.id
+Ref: aviso_sectores.aviso_id > avisos.id [delete: cascade]
+Ref: aviso_sectores.sector_id > sectores.id
+Ref: encuestas.autor_id > perfiles.id
+Ref: encuestas.categoria_id > categorias_aviso.id
+Ref: encuesta_sectores.encuesta_id > encuestas.id [delete: cascade]
+Ref: encuesta_sectores.sector_id > sectores.id
+Ref: encuesta_preguntas.encuesta_id > encuestas.id [delete: cascade]
+Ref: encuesta_opciones.pregunta_id > encuesta_preguntas.id [delete: cascade]
+Ref: votos.encuesta_id > encuestas.id
+Ref: votos.unidad_id > unidades.id
+Ref: votos.usuario_id > perfiles.id
+Ref: voto_opciones.voto_id > votos.id [delete: cascade]
+Ref: voto_opciones.(opcion_id, pregunta_id) > encuesta_opciones.(id, pregunta_id)
+
+// D. Visitas
+Ref: pases_visita.residente_id > perfiles.id
+Ref: pases_visita.unidad_id > unidades.id
+Ref: pases_visita.guardia_id > perfiles.id
+
+// E. Alertas
+Ref: alertas.emisor_id > perfiles.id
+Ref: alertas.unidad_id > unidades.id
+Ref: alertas.sector_id > sectores.id
+Ref: alerta_atenciones.alerta_id > alertas.id [delete: cascade]
+Ref: alerta_atenciones.usuario_id > perfiles.id
+
+// F. Incidencias
+Ref: incidencias.reportado_por > perfiles.id
+Ref: incidencias.unidad_id > unidades.id
+Ref: incidencias.atendido_por > perfiles.id
+Ref: incidencia_fotos.incidencia_id > incidencias.id [delete: cascade]
+
+// ───────────── Grupos por módulo ─────────────
+
+TableGroup A_estructura_condominio {
+  sectores
+  unidades
+}
+
+TableGroup B_usuarios_y_accesos {
+  residentes_habilitados
+  perfiles
+  registros_sesion
+  contactos_emergencia
+  dispositivos
+}
+
+TableGroup C_avisos_y_encuestas {
+  categorias_aviso
+  avisos
+  aviso_sectores
+  encuestas
+  encuesta_sectores
+  encuesta_preguntas
+  encuesta_opciones
+  votos
+  voto_opciones
+}
+
+TableGroup D_visitas {
+  pases_visita
+}
+
+TableGroup E_alertas {
+  alertas
+  alerta_atenciones
+}
+
+TableGroup F_incidencias {
+  incidencias
+  incidencia_fotos
+}
