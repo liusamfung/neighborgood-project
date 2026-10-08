@@ -1,0 +1,23 @@
+@startuml C4_1_Contexto
+!include <C4/C4_Context>
+
+title Diagrama de contexto: NeighborGood
+
+LAYOUT_WITH_LEGEND()
+
+Person(directiva, "Directiva", "Administra el condominio: publica avisos y encuestas, atiende incidencias y responde a alertas")
+Person(residente, "Residente", "Vive en una unidad: vota, invita visitas, reporta incidencias y activa el botón de pánico")
+Person(guardia, "Guardia de seguridad", "Controla el acceso: escanea pases QR y registra el ingreso y la salida de visitas")
+
+System(neighborgood, "NeighborGood", "App móvil de gestión de condominios y alerta comunitaria, con backend en Supabase")
+
+System_Ext(google, "Google OAuth", "Proveedor de identidad para iniciar sesión con cuenta de Google")
+System_Ext(expo, "Expo Push Service", "Entrega notificaciones push a los celulares a través de FCM (Android) y APNs (iOS)")
+
+Rel(directiva, neighborgood, "Publica avisos y encuestas, atiende incidencias y alertas")
+Rel(residente, neighborgood, "Vota, genera pases de visita, reporta incidencias y emite alertas")
+Rel(guardia, neighborgood, "Valida pases QR y registra ingresos y salidas")
+
+Rel(neighborgood, google, "Autentica usuarios", "OAuth 2.0")
+Rel(neighborgood, expo, "Solicita el envío de notificaciones push", "HTTPS")
+@enduml

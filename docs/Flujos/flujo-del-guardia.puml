@@ -1,0 +1,43 @@
+@startuml
+title NeighborGood · Flujo del Guardia
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam ActivityBackgroundColor #E6F4F1
+skinparam ActivityBorderColor #0F766E
+skinparam ArrowColor #0F766E
+skinparam NoteBackgroundColor #FEF3C7
+skinparam NoteBorderColor #F59E0B
+
+start
+:P1 Login\n(correo o Google);
+:La app detecta el rol "Guardia"\ny abre su inicio;
+:P9 Alertas activas;
+
+repeat
+  switch (¿Qué hace el guardia?)
+  case (Llega una alerta)
+    :Notificación del sistema\ncon sonido y vibración;
+    note right: Funciona con la app\nabierta o cerrada
+    :P9 Alertas activas\n(se actualiza en tiempo real);
+    :P10 Detalle de la alerta\n(tipo, residente, departamento);
+    :Tocar "Atender";
+    :La alerta pasa a "En atención"\ny queda registrado quién la atendió;
+  case (Llega una visita)
+    :P11 Escáner QR;
+    :Escanear el QR del pase\ncon la cámara;
+    if (¿Pase vigente y de hoy?) then (sí)
+      :Resultado verde: "Pase válido"\n(visita y departamento al que va);
+      :Marcar el pase como usado;
+    elseif (¿El pase ya fue usado?) then (sí)
+      :Resultado rojo: "Pase ya usado";
+    elseif (¿El pase fue anulado?) then (sí)
+      :Resultado rojo: "Pase anulado";
+    else (no)
+      :Resultado rojo: "Pase no válido o vencido";
+    endif
+  endswitch
+repeat while (¿Sigue de turno?) is (sí) not (no)
+
+:Cerrar sesión;
+stop
+@enduml

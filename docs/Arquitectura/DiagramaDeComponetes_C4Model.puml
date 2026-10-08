@@ -1,0 +1,69 @@
+@startuml C4_3_Componentes
+!include <C4/C4_Component>
+
+title Diagrama de componentes: App móvil de NeighborGood
+
+LAYOUT_WITH_LEGEND()
+
+Container_Boundary(app, "App móvil (React Native + Expo SDK 57)") {
+
+    Boundary(pres, "Capa de presentación") {
+        Component(nav, "Navegación por rol", "Expo Router", "Muestra el menú y las rutas de Directiva, Residente o Guardia según el rol")
+        Component(screens, "Pantallas y componentes", "React Native", "Usuarios, avisos y encuestas, visitas, alertas e incidencias")
+    }
+
+    Boundary(logica, "Capa de lógica de negocio") {
+        Component(sesion, "Contexto de sesión y rol", "React Context", "Guarda el usuario autenticado y su rol para toda la app")
+        Component(casos, "Casos de uso", "Hooks con TanStack Query", "Emitir alerta, validar pase, votar, reportar incidencia. Cachea y sincroniza las consultas")
+    }
+
+    Boundary(datos, "Capa de acceso a datos") {
+        Component(repos, "Repositorios", "TypeScript", "Uno por módulo. Son los únicos que hablan con el cliente de Supabase")
+        Component(cliente, "Cliente Supabase", "supabase-js", "Maneja la sesión, las peticiones y las suscripciones en tiempo real")
+    }
+
+    Boundary(disp, "Servicios del dispositivo") {
+        Component(camara, "Cámara y escaneo QR", "expo-camera", "Lee el código QR del pase de visita")
+        Component(qr, "Generación de QR", "react-native-qrcode-svg", "Dibuja la imagen QR a partir del código UUID")
+        Component(vib, "Vibración y sonido", "Vibration de React Native, expo-audio", "Alerta háptica y sonora al activar o recibir una alerta")
+        Component(notif, "Notificaciones push", "expo-notifications", "Recibe los push y obtiene el token del dispositivo")
+    }
+}
+
+Container_Ext(auth, "Auth", "Supabase Auth", "Registro e inicio de sesión")
+ContainerDb_Ext(db, "Base de datos", "PostgreSQL con RLS", "Datos del condominio")
+Container_Ext(rt, "Realtime", "Supabase Realtime", "Eventos en vivo")
+Container_Ext(storage, "Storage", "Supabase Storage", "Imágenes")
+Container_Ext(edge, "Edge Functions", "TypeScript sobre Deno", "Pases de visita y push")
+System_Ext(expo, "Expo Push Service", "Entrega por FCM y APNs")
+
+Rel(nav, sesion, "Lee el rol")
+Rel(nav, screens, "Muestra según el rol")
+
+Rel_D(screens, casos, "Invoca")
+Rel(screens, camara, "Escanea el pase")
+Rel(screens, qr, "Dibuja el pase")
+Rel(screens, vib, "Alerta háptica y sonora")
+
+Rel(casos, sesion, "Lee usuario y rol")
+Rel_D(casos, repos, "Pide y envía datos")
+
+Rel_D(repos, cliente, "Usa")
+
+Rel(cliente, auth, "Inicia sesión", "HTTPS")
+Rel(cliente, db, "Consulta y modifica", "HTTPS")
+Rel(cliente, storage, "Sube imágenes", "HTTPS")
+Rel(cliente, rt, "Se suscribe", "WebSocket")
+Rel(cliente, edge, "Genera y valida pases", "HTTPS con JWT")
+
+Rel(expo, notif, "Entrega la notificación", "FCM / APNs")
+Rel(notif, casos, "Entrega las alertas recibidas")
+@enduml
+
+Decisiones de este diagrama:
+
+- Cuatro grupos: las tres capas del RNF (presentación, lógica, acceso a datos) y un grupo aparte para los servicios del dispositivo, que son librerías nativas y no pertenecen a ninguna capa.
+- Las flechas bajan por las capas. Las pantallas nunca llegan directo a Supabase, y esa regla se lee en el dibujo. Lo único que cruza hacia los servicios externos es el cliente Supabase.
+- React Context y TanStack Query van en la capa de lógica, como definimos: Context para sesión y rol, y Query para las consultas y su caché.
+- No hay componente de ubicación ni de mapas, porque la alerta solo guarda la ubicación del departamento de la unidad.
+- Los módulos no se dibujan uno por uno. Cinco módulos por tres capas serían quince cajas casi iguales, así que van nombrados en la descripción de las pantallas y los repositorios.

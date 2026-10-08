@@ -1,0 +1,44 @@
+@startuml
+title NeighborGood · Flujo de la Directiva
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam ActivityBackgroundColor #E6F4F1
+skinparam ActivityBorderColor #0F766E
+skinparam ArrowColor #0F766E
+skinparam NoteBackgroundColor #FEF3C7
+skinparam NoteBorderColor #F59E0B
+
+start
+:P1 Login\n(correo o Google);
+:La app detecta el rol "Directiva"\ny abre su panel;
+:P12 Panel de resumen\n(alertas, incidencias, encuestas abiertas);
+
+repeat
+  switch (¿Qué hace la directiva?)
+  case (Publicar un aviso)
+    :P13 Crear aviso;
+    :Escribir título y mensaje\ny elegir la categoría;
+    :Elegir a qué sectores va dirigido;
+    :Publicar;
+    :Los residentes de esos sectores\nreciben una notificación push;
+  case (Crear una encuesta)
+    :P14 Crear encuesta;
+    :Agregar preguntas y opciones\n(una o varias respuestas);
+    :Elegir sectores y si es obligatoria;
+    :Publicar;
+    :Los residentes votan\n(un voto por unidad);
+    :P14 Ver resultados de la encuesta;
+  case (Gestionar incidencias)
+    :P15 Lista de incidencias;
+    :Abrir una incidencia\n(descripción y fotos);
+    :Cambiar el estado\nPendiente → En atención → Resuelto;
+    note right: El residente que la reportó\nve el nuevo estado
+  case (Administración)
+    :Alta de residentes habilitados\ny consulta del historial de alertas;
+    note right: Se describen en el documento,\nsin mockup
+  endswitch
+repeat while (¿Sigue usando la app?) is (sí) not (no)
+
+:Cerrar sesión;
+stop
+@enduml

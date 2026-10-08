@@ -1,0 +1,57 @@
+@startuml
+title NeighborGood · Flujo del Residente
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam ActivityBackgroundColor #E6F4F1
+skinparam ActivityBorderColor #0F766E
+skinparam ArrowColor #0F766E
+skinparam NoteBackgroundColor #FEF3C7
+skinparam NoteBorderColor #F59E0B
+
+start
+:P1 Login / registro\n(correo o Google);
+if (¿Tu correo está habilitado\npor la directiva?) then (sí)
+  :Sesión iniciada;
+else (no)
+  :Mensaje: "Tu correo no está habilitado.\nContacta a la directiva";
+  stop
+endif
+
+:P2 Inicio\n(botón de pánico, aviso, encuesta, visita);
+
+repeat
+  switch (¿Qué quiere hacer el residente?)
+  case (Emergencia)
+    :P3 Elegir tipo de alerta\n(Médica / Incendio / Seguridad);
+    :Confirmar alerta;
+    :Alerta enviada con la ubicación\ndel departamento;
+    note right: El guardia y los vecinos\nla reciben en tiempo real
+  case (Avisos)
+    :P4 Lista de avisos;
+    :Detalle del aviso;
+  case (Encuesta)
+    :P5 Encuesta;
+    if (¿Tu unidad ya votó?) then (sí)
+      :Mostrar "Tu unidad ya votó";
+    else (no)
+      :Elegir opción(es) y votar;
+      :Voto registrado;
+    endif
+  case (Visitas)
+    :P6 Visitas\n(crear pase);
+    :Mostrar QR del pase;
+    note right: Vale solo el día\n(hasta las 23:59)
+    :Compartir el QR con la visita;
+  case (Incidencias)
+    :P7 Reportar incidencia;
+    :Describir y adjuntar una o varias fotos;
+    :Incidencia enviada\nEstado: Pendiente;
+  case (Perfil)
+    :P8 Perfil;
+    :Editar contactos de emergencia;
+  endswitch
+repeat while (¿Sigue usando la app?) is (sí) not (no)
+
+:Cerrar sesión;
+stop
+@enduml

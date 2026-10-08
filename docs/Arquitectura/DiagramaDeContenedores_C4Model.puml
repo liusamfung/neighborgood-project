@@ -1,0 +1,49 @@
+@startuml C4_2_Contenedores
+!include <C4/C4_Container>
+
+title Diagrama de contenedores: NeighborGood
+
+LAYOUT_WITH_LEGEND()
+
+Person(directiva, "Directiva", "Publica avisos y encuestas, atiende incidencias y responde a alertas")
+Person(residente, "Residente", "Vota, genera pases de visita, reporta incidencias y activa el botón de pánico")
+Person(guardia, "Guardia de seguridad", "Escanea pases QR y registra ingresos y salidas")
+
+System_Boundary(ng, "NeighborGood") {
+
+    Container(app, "App móvil", "React Native, Expo SDK 57 (development build)", "Una sola app para los 3 roles. Dibuja el QR del pase y escanea con la cámara")
+
+    Boundary(sb, "Supabase (BaaS en la nube)") {
+        Container(auth, "Auth", "Supabase Auth", "Registro e inicio de sesión con correo o Google. Emite un JWT por sesión")
+        ContainerDb(db, "Base de datos", "PostgreSQL con RLS", "Usuarios, unidades, avisos, encuestas, pases, alertas e incidencias. Las políticas RLS filtran los datos por rol")
+        Container(rt, "Realtime", "Supabase Realtime, WebSocket", "Entrega en vivo alertas y resultados de encuestas a las apps abiertas")
+        Container(storage, "Storage", "Supabase Storage", "Fotos de incidencias e imágenes de avisos")
+        Container(edge, "Edge Functions", "TypeScript sobre Deno", "Crea y valida los pases de visita (código UUID v4) y envía las notificaciones push")
+    }
+}
+
+System_Ext(google, "Google OAuth", "Proveedor de identidad")
+System_Ext(expo, "Expo Push Service", "Reenvía las notificaciones a FCM (Android) y APNs (iOS)")
+
+Rel(directiva, app, "Usa")
+Rel(residente, app, "Usa")
+Rel(guardia, app, "Usa")
+
+Rel(app, auth, "Registra e inicia sesión", "HTTPS, supabase-js")
+Rel(app, db, "Consulta y modifica datos", "HTTPS, supabase-js")
+Rel(app, storage, "Sube y descarga imágenes", "HTTPS, supabase-js")
+Rel(app, rt, "Se suscribe a canales", "WebSocket")
+Rel(app, edge, "Genera y valida pases de visita", "HTTPS con JWT")
+
+Rel(auth, google, "Delega el inicio de sesión", "OAuth 2.0")
+Rel(db, rt, "Publica los cambios de filas")
+Rel(db, edge, "Dispara al insertar o actualizar", "Database Webhook")
+Rel(edge, db, "Lee tokens y actualiza pases", "SQL con service_role")
+Rel(edge, expo, "Solicita el envío de push", "HTTPS")
+Rel(expo, app, "Entrega la notificación", "FCM / APNs")
+@enduml
+
+
+- Edge Functions: ahora dice "Crea y valida los pases de visita (código UUID v4)", sin atribuirle la imagen QR.
+- App móvil: su descripción incluye "Dibuja el QR del pase y escanea con la cámara", que deja claro quién genera la imagen.
+- Flecha de la app hacia Edge Functions: ahora dice "Genera y valida pases de visita", porque cubre RF16 y la validación del ingreso.

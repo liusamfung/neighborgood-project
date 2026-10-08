@@ -1,0 +1,55 @@
+@startuml C4_4_Despliegue
+!include <C4/C4_Deployment>
+
+title Diagrama de despliegue: NeighborGood
+
+LAYOUT_WITH_LEGEND()
+
+Deployment_Node(cel, "Celular del usuario", "Android o iOS") {
+    Container(app, "App móvil", "React Native, Expo SDK 57", "Development build en pruebas y build de producción al entregar")
+}
+
+Deployment_Node(eas, "EAS Build", "Nube de Expo") {
+    Container(build, "Servicio de compilación", "eas build", "Compila el proyecto sin necesitar Android Studio ni Xcode y genera el APK o IPA")
+}
+
+Deployment_Node(sbcloud, "Supabase Cloud", "Proyecto en plan gratuito") {
+    Deployment_Node(servicios, "Servicios gestionados", "Supabase") {
+        Container(auth, "Auth", "Supabase Auth", "Registro e inicio de sesión")
+        Container(rt, "Realtime", "Supabase Realtime", "Eventos en vivo por WebSocket")
+        Container(storage, "Storage", "Supabase Storage", "Fotos de incidencias e imágenes de avisos")
+        Container(edge, "Edge Functions", "TypeScript sobre Deno", "Pases de visita y envío de push")
+    }
+    Deployment_Node(pg, "Base de datos", "PostgreSQL") {
+        ContainerDb(db, "Base de datos", "PostgreSQL con RLS", "Datos del condominio con políticas por rol")
+    }
+}
+
+System_Ext(expo, "Expo Push Service", "Reenvía las notificaciones")
+System_Ext(fcm, "FCM / APNs", "Entrega al dispositivo en Android e iOS")
+System_Ext(google, "Google OAuth", "Proveedor de identidad")
+
+Rel(build, app, "Entrega el build instalable", "APK o IPA, enlace de EAS")
+
+Rel(app, auth, "Registra e inicia sesión", "HTTPS")
+Rel(app, db, "Consulta y modifica datos", "HTTPS")
+Rel(app, storage, "Sube y descarga imágenes", "HTTPS")
+Rel(app, rt, "Se suscribe a canales", "WebSocket")
+Rel(app, edge, "Genera y valida pases", "HTTPS con JWT")
+
+Rel(auth, google, "Delega el inicio de sesión", "OAuth 2.0")
+Rel(db, rt, "Publica los cambios de filas")
+Rel(db, edge, "Dispara al insertar o actualizar", "Database Webhook")
+Rel(edge, expo, "Solicita el envío de push", "HTTPS")
+Rel(expo, fcm, "Reenvía la notificación")
+Rel(fcm, app, "Entrega la notificación", "Push")
+@enduml
+
+
+Decisiones de este diagrama:
+
+- Tres lugares donde vive algo: el celular, la nube de Expo (solo para compilar) y Supabase Cloud. El proyecto no tiene ningún servidor propio, y el dibujo lo deja a la vista.
+- EAS Build solo aparece como productor del build. No participa mientras la app corre, por eso su única flecha va hacia la app.
+- FCM y APNs quedan como una sola caja externa, igual que en el contexto, porque a este nivel no hace falta separarlos.
+- Las relaciones son las mismas del diagrama de contenedores. Lo nuevo es el dónde, no el qué.
+- el plan gratuito de Supabase pausa el proyecto tras 7 días sin actividad. Este es una limitación de la infraestructura.
