@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sistema de diseño</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="--p:#0F766E;--pc:#D5EFEA;--a:#F59E0B;--bg:#F6F8F7;--t:#1F2937;--m:#5B6672;--line:#E2E8E6;width:1500px;height:900px;box-sizing:border-box;padding:42px;display:flex;gap:48px;font-family:'Inter',system-ui,sans-serif;color:var(--t);background:#ffffff">
+
+<div style="width:440px;display:flex;flex-direction:column;gap:24px">
+
+<div style="display:flex;align-items:center;gap:16px">
+<div style="width:56px;height:56px;border-radius:16px;background:var(--p);display:flex;align-items:center;justify-content:center;color:#ffffff">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l8-7 8 7"></path><path d="M6.5 10.5V19h11v-8.5"></path><path d="M9.5 14l2 2 3.5-3.5"></path></svg>
+</div>
+<div>
+<div style="font-size:26px;font-weight:700;color:var(--p)">NeighborGood</div>
+<div style="font-size:14px;color:var(--m)">Sistema de diseño · app móvil</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">COLORES</div>
+<div style="display:flex;gap:10px;margin-bottom:12px">
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#0F766E"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Principal</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#0F766E</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#F59E0B"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Acento</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#F59E0B</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#D5EFEA"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Suave</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#D5EFEA</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#F6F8F7;border:1px solid #D5DAD8;box-sizing:border-box"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Fondo</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#F6F8F7</div></div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#1F2937"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Texto</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#1F2937</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#5B6672"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Secundario</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#5B6672</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#E2E8E6"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Borde</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#E2E8E6</div></div>
+<div style="width:96px"><div style="height:56px;border-radius:12px;background:#DC2626"></div><div style="font-size:12px;font-weight:600;margin-top:6px">Emergencia</div><div style="font-size:12px;color:var(--m);font-family:ui-monospace,Menlo,monospace">#DC2626</div></div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">ALERTAS Y ESTADOS</div>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<div style="font-size:13px;font-weight:700;background:#DC2626;color:#ffffff;padding:6px 14px;border-radius:999px">Médica</div>
+<div style="font-size:13px;font-weight:700;background:#C2410C;color:#ffffff;padding:6px 14px;border-radius:999px">Incendio</div>
+<div style="font-size:13px;font-weight:700;background:#4338CA;color:#ffffff;padding:6px 14px;border-radius:999px">Seguridad</div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<div style="font-size:13px;font-weight:700;background:#FEF3C7;color:#92400E;padding:6px 14px;border-radius:999px">Pendiente</div>
+<div style="font-size:13px;font-weight:700;background:#DBEAFE;color:#1D4ED8;padding:6px 14px;border-radius:999px">En atención</div>
+<div style="font-size:13px;font-weight:700;background:#DCFCE7;color:#15803D;padding:6px 14px;border-radius:999px">Resuelto</div>
+</div>
+<div style="display:flex;gap:8px">
+<div style="font-size:13px;font-weight:700;background:#DCFCE7;color:#15803D;padding:6px 14px;border-radius:999px">Vigente</div>
+<div style="font-size:13px;font-weight:700;background:#E5E7EB;color:#374151;padding:6px 14px;border-radius:999px">Usado</div>
+<div style="font-size:13px;font-weight:700;background:#FEE2E2;color:#991B1B;padding:6px 14px;border-radius:999px">Anulado</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">TIPOGRAFÍA · INTER</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;gap:14px"><div style="width:84px;font-size:12px;color:var(--m)">Título 22/700</div><div style="font-size:22px;font-weight:700">Hola, María</div></div>
+<div style="display:flex;align-items:baseline;gap:14px"><div style="width:84px;font-size:12px;color:var(--m)">Subtítulo 16/600</div><div style="font-size:16px;font-weight:600">Corte de agua programado</div></div>
+<div style="display:flex;align-items:baseline;gap:14px"><div style="width:84px;font-size:12px;color:var(--m)">Cuerpo 14/400</div><div style="font-size:14px;color:var(--m)">Mañana de 9:00 a 13:00 · Torre A</div></div>
+<div style="display:flex;align-items:baseline;gap:14px"><div style="width:84px;font-size:12px;color:var(--m)">Etiqueta 12/600</div><div style="font-size:12px;font-weight:600;color:var(--p)">AVISO · MANTENIMIENTO</div></div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">FORMA Y ESPACIO</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="width:64px;height:48px;border-radius:12px;border:2px solid var(--p);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">12</div>
+<div style="width:64px;height:48px;border-radius:16px;border:2px solid var(--p);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">16</div>
+<div style="width:64px;height:48px;border-radius:999px;border:2px solid var(--p);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">999</div>
+<div style="font-size:13px;color:var(--m);flex:1">Radios: campos y botones 12, tarjetas 16, chips 999. Margen lateral 20, separación entre tarjetas 12.</div>
+</div>
+</div>
+
+</div>
+
+<div style="width:440px;display:flex;flex-direction:column;gap:24px">
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">BOTONES</div>
+<div style="display:flex;gap:10px;margin-bottom:10px">
+<button style="flex:1;height:52px;border:0;border-radius:12px;background:#0F766E;color:#ffffff;font:600 16px 'Inter',system-ui,sans-serif">Primario</button>
+<button style="flex:1;height:52px;border:2px solid #0F766E;border-radius:12px;background:#ffffff;color:#0F766E;font:600 16px 'Inter',system-ui,sans-serif;box-sizing:border-box">Secundario</button>
+</div>
+<div style="display:flex;gap:10px">
+<button style="flex:1;height:52px;border:0;border-radius:12px;background:#DC2626;color:#ffffff;font:600 16px 'Inter',system-ui,sans-serif">Emergencia</button>
+<button disabled style="flex:1;height:52px;border:0;border-radius:12px;background:#E2E8E6;color:#5B6672;font:600 16px 'Inter',system-ui,sans-serif">Deshabilitado</button>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">CAMPO DE TEXTO</div>
+<label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px" for="ds-correo">Correo electrónico</label>
+<input id="ds-correo" value="maria.rojas@correo.com" style="width:100%;height:52px;box-sizing:border-box;border:1px solid #CBD5D1;border-radius:12px;padding:0 14px;font:400 16px 'Inter',system-ui,sans-serif;color:#1F2937;background:#ffffff">
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">SELECCIÓN Y CHIPS DE FILTRO</div>
+<div style="display:flex;gap:20px;align-items:center;margin-bottom:12px">
+<label style="display:flex;align-items:center;gap:8px;font-size:15px"><input type="radio" name="ds-r" checked style="accent-color:#0F766E;width:20px;height:20px;margin:0">Sí</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:15px"><input type="checkbox" checked style="accent-color:#0F766E;width:20px;height:20px;margin:0">Lunes</label>
+<div style="display:flex;align-items:center;gap:8px;font-size:15px"><span style="width:44px;height:26px;border-radius:13px;background:#0F766E;display:flex;align-items:center;justify-content:flex-end;padding:0 3px;box-sizing:border-box"><span style="width:20px;height:20px;border-radius:10px;background:#ffffff"></span></span>Obligatoria</div>
+</div>
+<div style="display:flex;gap:8px">
+<div style="font-size:14px;font-weight:600;background:#0F766E;color:#ffffff;padding:8px 16px;border-radius:999px">Todos</div>
+<div style="font-size:14px;font-weight:500;background:#ffffff;color:#1F2937;padding:7px 16px;border-radius:999px;border:1px solid #CBD5D1">Mantenimiento</div>
+<div style="font-size:14px;font-weight:500;background:#ffffff;color:#1F2937;padding:7px 16px;border-radius:999px;border:1px solid #CBD5D1">Seguridad</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">TARJETA</div>
+<div style="padding:16px;border-radius:16px;background:#ffffff;border:1px solid var(--line);display:flex;gap:12px;align-items:flex-start">
+<div style="width:44px;height:44px;border-radius:12px;background:var(--pc);color:var(--p);display:flex;align-items:center;justify-content:center;flex:none">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 21a2 2 0 004 0"></path></svg>
+</div>
+<div>
+<div style="font-size:12px;font-weight:600;color:var(--p)">AVISO · MANTENIMIENTO</div>
+<div style="font-size:16px;font-weight:600">Corte de agua programado</div>
+<div style="font-size:14px;color:var(--m)">Mañana de 9:00 a 13:00 · Torre A</div>
+</div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">BARRA DE PESTAÑAS</div>
+<div style="height:72px;background:#ffffff;border:1px solid var(--line);border-radius:16px;display:flex;overflow:hidden">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--p);font:600 12px 'Inter',system-ui,sans-serif">
+<span style="width:56px;height:30px;border-radius:15px;background:var(--pc);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></span>Inicio</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--m);font:500 12px 'Inter',system-ui,sans-serif">
+<span style="height:30px;display:flex;align-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 21a2 2 0 004 0"></path></svg></span>Avisos</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--m);font:500 12px 'Inter',system-ui,sans-serif">
+<span style="height:30px;display:flex;align-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg></span>Perfil</div>
+</div>
+</div>
+
+</div>
+
+<div style="width:440px;display:flex;flex-direction:column;gap:24px">
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">ÍCONOS (trazo 2 px, 22 px)</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg><span style="font-size:12px;color:var(--m)">Inicio</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 21a2 2 0 004 0"></path></svg><span style="font-size:12px;color:var(--m)">Avisos</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3z"></path><path d="M20 14v7"></path><path d="M14 20h3"></path></svg><span style="font-size:12px;color:var(--m)">Visitas</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"></path><path d="M12 10v5"></path><path d="M12 18v.01"></path></svg><span style="font-size:12px;color:var(--m)">Incidencias</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg><span style="font-size:12px;color:var(--m)">Perfil</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#DC2626"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M12 8v5"></path><path d="M12 16v.01"></path></svg><span style="font-size:12px;color:var(--m)">Pánico</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span style="font-size:12px;color:var(--m)">Cámara</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg><span style="font-size:12px;color:var(--m)">Agregar</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg><span style="font-size:12px;color:var(--m)">Volver</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 10-10"></path></svg><span style="font-size:12px;color:var(--m)">Confirmar</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8h16v-8"></path><path d="M12 15V3"></path><path d="M8 7l4-4 4 4"></path></svg><span style="font-size:12px;color:var(--m)">Compartir</span></div>
+<div style="height:76px;border-radius:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--p)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"></path></svg><span style="font-size:12px;color:var(--m)">Llamar</span></div>
+</div>
+</div>
+
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--m);margin-bottom:10px">REGLAS PARA QUE SEA VIABLE EN REACT NATIVE</div>
+<div style="display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.45;color:var(--t)">
+<div style="padding:12px 14px;border-radius:12px;background:var(--bg)"><b>Pantalla de 390 × 844</b>, solo celular y modo claro.</div>
+<div style="padding:12px 14px;border-radius:12px;background:var(--bg)"><b>Componentes estándar</b>: botones, campos, chips, tarjetas y barra de pestañas equivalentes a React Native Paper (Material 3).</div>
+<div style="padding:12px 14px;border-radius:12px;background:var(--bg)"><b>Navegación</b>: barra inferior por rol y pantallas apiladas con flecha de volver para los detalles.</div>
+<div style="padding:12px 14px;border-radius:12px;background:var(--bg)"><b>Dispositivo</b>: cámara para el escáner QR, galería para las fotos, vibración y notificaciones push. Sin mapas.</div>
+</div>
+</div>
+
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1500,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

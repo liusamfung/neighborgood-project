@@ -1,0 +1,53 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-08T01:40:00Z" },
+  "title": "NeighborGood: mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1500, "h": 900, "title": "Sistema de diseño" },
+    "P01_Login.dc.html": { "x": 0, "y": 1280, "w": 390, "h": 844, "title": "P1 · Login y registro" },
+    "P02_Inicio.dc.html": { "x": 470, "y": 1280, "w": 390, "h": 844, "title": "P2 · Inicio" },
+    "P03_TipoAlerta.dc.html": { "x": 940, "y": 1280, "w": 390, "h": 844, "title": "P3 · Elegir tipo de alerta" },
+    "P03b_AlertaEnviada.dc.html": { "x": 1410, "y": 1280, "w": 390, "h": 844, "title": "P3b · Alerta enviada" },
+    "P04_Avisos.dc.html": { "x": 1880, "y": 1280, "w": 390, "h": 844, "title": "P4 · Avisos" },
+    "P05_Encuesta.dc.html": { "x": 2350, "y": 1280, "w": 390, "h": 844, "title": "P5 · Encuesta" },
+    "P06_Visitas.dc.html": { "x": 2820, "y": 1280, "w": 390, "h": 844, "title": "P6 · Visitas y pase QR" },
+    "P07_Incidencia.dc.html": { "x": 3290, "y": 1280, "w": 390, "h": 844, "title": "P7 · Reportar incidencia" },
+    "P08_Perfil.dc.html": { "x": 3760, "y": 1280, "w": 390, "h": 844, "title": "P8 · Perfil y contactos" },
+    "P09_AlertasGuardia.dc.html": { "x": 0, "y": 2504, "w": 390, "h": 844, "title": "P9 · Alertas activas" },
+    "P10_DetalleAlerta.dc.html": { "x": 470, "y": 2504, "w": 390, "h": 844, "title": "P10 · Detalle de la alerta" },
+    "P11_EscanerQR.dc.html": { "x": 940, "y": 2504, "w": 390, "h": 844, "title": "P11 · Escáner QR" },
+    "P12_Panel.dc.html": { "x": 0, "y": 3728, "w": 390, "h": 844, "title": "P12 · Panel" },
+    "P13_CrearAviso.dc.html": { "x": 470, "y": 3728, "w": 390, "h": 844, "title": "P13 · Crear aviso" },
+    "P14_CrearEncuesta.dc.html": { "x": 940, "y": 3728, "w": 390, "h": 844, "title": "P14 · Crear encuesta" },
+    "P14b_Resultados.dc.html": { "x": 1410, "y": 3728, "w": 390, "h": 844, "title": "P14b · Resultados de la encuesta" },
+    "P15_Incidencias.dc.html": { "x": 1880, "y": 3728, "w": 390, "h": 844, "title": "P15 · Gestión de incidencias" }
+  },
+  "order": [
+    "Main.dc.html",
+    "P01_Login.dc.html",
+    "P02_Inicio.dc.html",
+    "P03_TipoAlerta.dc.html",
+    "P03b_AlertaEnviada.dc.html",
+    "P04_Avisos.dc.html",
+    "P05_Encuesta.dc.html",
+    "P06_Visitas.dc.html",
+    "P07_Incidencia.dc.html",
+    "P08_Perfil.dc.html",
+    "P09_AlertasGuardia.dc.html",
+    "P10_DetalleAlerta.dc.html",
+    "P11_EscanerQR.dc.html",
+    "P12_Panel.dc.html",
+    "P13_CrearAviso.dc.html",
+    "P14_CrearEncuesta.dc.html",
+    "P14b_Resultados.dc.html",
+    "P15_Incidencias.dc.html"
+  ],
+  "notes": {
+    "residente": { "x": 0, "y": 1020, "text": "Residente · flujo P1 a P8", "kind": "title1", "maxW": 4150 },
+    "guardia": { "x": 0, "y": 2244, "text": "Guardia · flujo P9 a P11", "kind": "title1", "maxW": 1330 },
+    "directiva": { "x": 0, "y": 3468, "text": "Directiva · flujo P12 a P15", "kind": "title1", "maxW": 2270 }
+  },
+  "designSystems": []
+}
