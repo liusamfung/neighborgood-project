@@ -74,22 +74,20 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - **Flujos por rol:** `docs/Flujos/` (3 `.puml`).
 - **C4:** `docs/Arquitectura/` (contexto, contenedores, componentes de la app, despliegue).
 - **Secuencia:** 18 archivos `diagramaN_M_*.puml` (5 grupos: usuarios, avisos/encuestas, visitas, alertas, incidencias).
-- Los diagramas usan la **numeración RF original** (con huecos y un duplicado; ver `REQUISITOS.md`).
+- Los diagramas usan la **numeración RF corregida** (RF1 a RF31, sin huecos). La tabla de equivalencias con el Google Doc original está en `REQUISITOS.md`.
 
 ## 9. Pendientes conocidos (antes de programar)
-1. **Corregir la numeración de los RF** (huecos en 7, 23 y 30; RF15 duplicado) y propagarla a los diagramas de secuencia.
-2. **Corregir dos diagramas:** `diagrama4_2_difusionTiempoReal.puml` aún incluye el correo simulado, y `diagrama4_1_activacionAlerta.puml` dice "obtener ubicación del dispositivo (RF27)"; la ubicación es la de la unidad y el correo está fuera de alcance.
-3. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
-4. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
-5. **Definir el número de toques** del RNF4.
-6. **Decisiones técnicas por cerrar:** navegación (se asume Expo Router), librería de componentes (React Native Paper, por confirmar con SDK 57), librería de gráficos para el reporte mensual (RF33).
-7. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
+1. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
+2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
+3. **Decisiones técnicas por cerrar:** navegación (se asume Expo Router), librería de componentes (React Native Paper, por confirmar con SDK 57), librería de gráficos para el reporte mensual (RF31).
+4. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
 - **Supabase gratuito pausa el proyecto tras 7 días sin actividad.** Antes de cada demo hay que entrar al panel, o programar un ping semanal con GitHub Actions.
 - **Push con la app cerrada** depende de las políticas de cada fabricante; probar en dispositivos reales desde temprano.
+- **Push en iOS** exige una cuenta de Apple Developer (de pago) para APNs. La plataforma objetivo es multiplataforma; en Android las push usan FCM sin costo. Decidir antes del Sprint 5 cómo se demostrará en iOS.
 
 ## 11. Fuera de alcance por ahora
-- Correo simulado de alerta con la ubicación (RF27).
+- Correo simulado de alerta con la ubicación (RF26).
 - Inicio de sesión por celular/SMS.
 - Mapas: la ubicación de la alerta es la unidad.
