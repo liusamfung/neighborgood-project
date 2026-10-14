@@ -1,0 +1,38 @@
+@startuml
+title NeighborGood · Flujo actual (AS-IS) de la gestión del condominio
+skinparam shadowing false
+skinparam defaultFontName Inter
+skinparam ActivityBackgroundColor #F1F5F9
+skinparam ActivityBorderColor #64748B
+skinparam ArrowColor #64748B
+skinparam NoteBackgroundColor #FEE2E2
+skinparam NoteBorderColor #DC2626
+
+start
+:Directiva, residentes y guardia\ncoordinan por WhatsApp, llamadas\ny cuadernos o planillas físicas;
+
+fork
+  :Directiva escribe el aviso\nen el grupo de WhatsApp;
+  :Los residentes lo leen mezclado\ncon otros mensajes del grupo;
+  note right: Avisos importantes\nse pierden entre mensajes
+  :Si se necesita saber la opinión,\nla directiva pregunta en el grupo\ny cuenta las respuestas a mano;
+fork again
+  :Residente avisa por llamada\no WhatsApp que llegará una visita;
+  :La visita llega a la garita;
+  :Guardia pregunta los datos\ny los anota en el cuaderno;
+  :Guardia llama al residente\npara confirmar el ingreso;
+  note right: Sin preautorización\nni registro digital
+fork again
+  :Residente llama por teléfono\no escribe al grupo;
+  :Guardia o directiva ven el mensaje\ncuando lo revisan;
+  note right: Respuesta lenta: no hay un canal\ndirecto y en tiempo real
+fork again
+  :Residente reporta la incidencia\npor WhatsApp o llamada\n(mantenimiento, ruido, áreas comunes);
+  :La directiva la anota\no la recuerda;
+  note right: Sin seguimiento del estado\nde la incidencia
+end fork
+
+:La información queda dispersa entre\nresidentes, directiva y seguridad;
+note right: No existe un historial único\ny confiable de lo ocurrido
+stop
+@enduml
