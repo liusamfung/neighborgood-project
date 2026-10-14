@@ -17,25 +17,28 @@ repeat
   switch (¿Qué hace la directiva?)
   case (Publicar un aviso)
     :P13 Crear aviso;
-    :Escribir título y mensaje\ny elegir la categoría;
-    :Elegir a qué sectores va dirigido;
+    :Escribir título y descripción,\nelegir la categoría y la vigencia;
+    :Adjuntar una imagen (opcional);
+    :Elegir a qué sectores va dirigido\n(o todo el condominio);
     :Publicar;
     :Los residentes de esos sectores\nreciben una notificación push;
   case (Crear una encuesta)
     :P14 Crear encuesta;
     :Agregar preguntas y opciones\n(una o varias respuestas);
-    :Elegir sectores y si es obligatoria;
+    :Elegir categoría, sectores, apertura y cierre,\nsi es obligatoria y si muestra resultados en vivo;
     :Publicar;
     :Los residentes votan\n(un voto por unidad);
-    :P14 Ver resultados de la encuesta;
+    :P14b Ver resultados de la encuesta;
   case (Gestionar incidencias)
     :P15 Lista de incidencias;
-    :Abrir una incidencia\n(descripción y fotos);
+    :Abrir una incidencia\n(descripción, ubicación y fotos);
     :Cambiar el estado\nPendiente → En atención → Resuelto;
-    note right: El residente que la reportó\nve el nuevo estado
+    note right: El residente que la reportó\nrecibe el nuevo estado
+    :Ver la gráfica mensual de incidencias;
   case (Administración)
-    :Alta de residentes habilitados\ny consulta del historial de alertas;
-    note right: Se describen en el documento,\nsin mockup
+    :Dar de alta o de baja a un residente\nhabilitado y asociarlo a su unidad;
+    :Consultar el historial de alertas\n(fecha, tipo, unidad y estado);
+    note right: Pantallas descritas en DISENO.md,\nsin mockup todavía
   endswitch
 repeat while (¿Sigue usando la app?) is (sí) not (no)
 

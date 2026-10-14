@@ -1,5 +1,5 @@
 @startuml Diagrama4_3_AtencionAlerta
-title Diagrama 4.3 — Atención de la alerta (RF28)
+title Diagrama 4.3 — Atención de la alerta (RF27)
 
 hide footbox
 autonumber
@@ -14,16 +14,16 @@ box "Supabase" #F1EFE8
     participant "Realtime" as RT
 end box
 
-ADM -> APPR : marcar "estoy en camino" o "alerta atendida" (RF28)
+ADM -> APPR : marcar "estoy en camino" o "alerta atendida" (RF27)
 activate APPR
-APPR -> DB : actualizar estado de la alerta (RF28)
+APPR -> DB : actualizar estado de la alerta (RF27)
 activate DB
 DB --> APPR : estado actualizado
 deactivate DB
-APPR -> RT : publicar cambio de estado (RF28)
+APPR -> RT : publicar cambio de estado (RF27)
 activate RT
-RT --> APPE : notificar el estado al emisor (RF28)
+RT --> APPE : notificar el estado al emisor (RF27)
 deactivate RT
-APPE --> RES : mostrar que la alerta está siendo atendida (RF28)
+APPE --> RES : mostrar que la alerta está siendo atendida (RF27)
 deactivate APPR
 @enduml

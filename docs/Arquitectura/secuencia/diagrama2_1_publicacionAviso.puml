@@ -1,5 +1,5 @@
 @startuml Diagrama2_1_PublicacionAviso
-title Diagrama 2.1 — Publicación de aviso (RF8, RF11, RF14)
+title Diagrama 2.1 — Publicación de aviso (RF7, RF10, RF13)
 
 hide footbox
 autonumber
@@ -12,18 +12,18 @@ box "Supabase" #F1EFE8
     participant "Storage" as ST
 end box
 
-DIR -> APP : redactar aviso con título, descripción y vigencia (RF8)
+DIR -> APP : redactar aviso con título, descripción y vigencia (RF7)
 activate APP
 
 opt el aviso incluye imagen adjunta
-    APP -> ST : subir imagen del aviso (RF8)
+    APP -> ST : subir imagen del aviso (RF7)
     activate ST
     ST --> APP : URL de la imagen
     deactivate ST
 end
 
-DIR -> APP : seleccionar categoría y segmento destino (RF11, RF14)
-APP -> DB : guardar aviso segmentado por torre, pabellón o manzana (RF8, RF14)
+DIR -> APP : seleccionar categoría y segmento destino (RF10, RF13)
+APP -> DB : guardar aviso segmentado por torre, pabellón o manzana (RF7, RF13)
 activate DB
 DB --> APP : aviso publicado
 deactivate DB

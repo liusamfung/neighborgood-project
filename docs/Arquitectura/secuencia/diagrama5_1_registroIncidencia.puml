@@ -1,5 +1,5 @@
 @startuml Diagrama5_1_RegistroIncidencia
-title Diagrama 5.1 — Registro de la incidencia (RF31)
+title Diagrama 5.1 — Registro de la incidencia (RF29)
 
 hide footbox
 autonumber
@@ -12,19 +12,19 @@ box "Supabase" #F1EFE8
     database "Postgres" as DB
 end box
 
-RES -> APPR : reportar incidencia con descripción y foto (RF31)
+RES -> APPR : reportar incidencia con descripción y foto (RF29)
 activate APPR
-APPR -> APPR : precargar su departamento como \n ubicación por defecto (RF31)
+APPR -> APPR : precargar su departamento como \n ubicación por defecto (RF29)
 
 opt el residente ajusta la ubicación
-    RES -> APPR : indicar otra ubicación dentro del condominio (RF31)
+    RES -> APPR : indicar otra ubicación dentro del condominio (RF29)
 end
 
-APPR -> ST : subir la foto de la incidencia (RF31)
+APPR -> ST : subir la foto de la incidencia (RF29)
 activate ST
 ST --> APPR : URL de la imagen
 deactivate ST
-APPR -> DB : guardar incidencia en estado "Pendiente" (RF31)
+APPR -> DB : guardar incidencia en estado "Pendiente" (RF29)
 activate DB
 DB --> APPR : incidencia registrada
 deactivate DB

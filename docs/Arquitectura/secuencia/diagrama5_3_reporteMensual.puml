@@ -1,5 +1,5 @@
 @startuml Diagrama5_3_ReporteMensual
-title Diagrama 5.3 — Reporte gráfico mensual (RF33)
+title Diagrama 5.3 — Reporte gráfico mensual (RF31)
 
 hide footbox
 autonumber
@@ -11,13 +11,13 @@ box "Supabase" #F1EFE8
     database "Postgres" as DB
 end box
 
-ADM -> APPA : abrir gráfica de incidencias \n mensuales (RF33)
+ADM -> APPA : abrir gráfica de incidencias \n mensuales (RF31)
 activate APPA
-APPA -> DB : consultar incidencias \n agrupadas\n por mes (RF33)
+APPA -> DB : consultar incidencias \n agrupadas\n por mes (RF31)
 activate DB
 DB --> APPA : totales mensuales
 deactivate DB
-APPA -> APPA : renderizar la gráfica (RF33)
-APPA --> ADM : mostrar cantidad de incidencias por mes (RF33)
+APPA -> APPA : renderizar la gráfica (RF31)
+APPA --> ADM : mostrar cantidad de incidencias por mes (RF31)
 deactivate APPA
 @enduml

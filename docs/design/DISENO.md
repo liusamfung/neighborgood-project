@@ -70,35 +70,35 @@ Las rutas son una **propuesta** con Expo Router (la navegación aún no está ce
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
 | P1 | Login y registro | `P01_Login` | `app/(auth)/login.tsx` | `auth.users`, `residentes_habilitados`, `perfiles`, `registros_sesion` | RF1, RF2, RF6 |
-| P2 | Inicio | `P02_Inicio` | `app/(residente)/(tabs)/index.tsx` | `alertas`, `avisos`, `encuestas`, `pases_visita` | RF24 |
-| P3 | Elegir tipo de alerta y confirmar | `P03_TipoAlerta` | `app/(residente)/alerta/tipo.tsx` | `alertas` | RF24–RF26 |
-| P3b | Alerta enviada | `P03b_AlertaEnviada` | `app/(residente)/alerta/enviada.tsx` | `alertas` | RF24 |
-| P4 | Avisos (lista y detalle) | `P04_Avisos` | `app/(residente)/(tabs)/avisos.tsx` | `avisos`, `categorias_aviso` | RF11, RF12 |
-| P5 | Encuesta (votar) | `P05_Encuesta` | `app/(residente)/encuesta/[id].tsx` | `encuestas`, `encuesta_preguntas`, `encuesta_opciones`, `votos`, `voto_opciones` | RF10 |
-| P6 | Visitas y pase QR | `P06_Visitas` | `app/(residente)/(tabs)/visitas.tsx` | `pases_visita` | RF15-visita–RF17, RF22 |
-| P7 | Reportar incidencia | `P07_Incidencia` | `app/(residente)/incidencias/nueva.tsx` | `incidencias`, `incidencia_fotos` | RF31 |
+| P2 | Inicio | `P02_Inicio` | `app/(residente)/(tabs)/index.tsx` | `alertas`, `avisos`, `encuestas`, `pases_visita` | RF23 |
+| P3 | Elegir tipo de alerta y confirmar | `P03_TipoAlerta` | `app/(residente)/alerta/tipo.tsx` | `alertas` | RF23–RF25 |
+| P3b | Alerta enviada | `P03b_AlertaEnviada` | `app/(residente)/alerta/enviada.tsx` | `alertas` | RF23 |
+| P4 | Avisos (lista y detalle) | `P04_Avisos` | `app/(residente)/(tabs)/avisos.tsx` | `avisos`, `categorias_aviso` | RF10, RF11 |
+| P5 | Encuesta (votar) | `P05_Encuesta` | `app/(residente)/encuesta/[id].tsx` | `encuestas`, `encuesta_preguntas`, `encuesta_opciones`, `votos`, `voto_opciones` | RF9 |
+| P6 | Visitas y pase QR | `P06_Visitas` | `app/(residente)/(tabs)/visitas.tsx` | `pases_visita` | RF15–RF17, RF22 |
+| P7 | Reportar incidencia | `P07_Incidencia` | `app/(residente)/incidencias/nueva.tsx` | `incidencias`, `incidencia_fotos` | RF29 |
 | P8 | Perfil y contactos de emergencia | `P08_Perfil` | `app/(residente)/(tabs)/perfil.tsx` | `perfiles`, `contactos_emergencia` | RF4 |
 
 ### Guardia
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
-| P9 | Alertas activas | `P09_AlertasGuardia` | `app/(guardia)/(tabs)/alertas.tsx` | `alertas` | RF26, RF29 |
-| P10 | Detalle de la alerta | `P10_DetalleAlerta` | `app/(guardia)/alerta/[id].tsx` | `alertas`, `alerta_atenciones`, `contactos_emergencia` | RF28 |
+| P9 | Alertas activas | `P09_AlertasGuardia` | `app/(guardia)/(tabs)/alertas.tsx` | `alertas` | RF25, RF28 |
+| P10 | Detalle de la alerta | `P10_DetalleAlerta` | `app/(guardia)/alerta/[id].tsx` | `alertas`, `alerta_atenciones`, `contactos_emergencia` | RF27 |
 | P11 | Escáner QR | `P11_EscanerQR` | `app/(guardia)/(tabs)/escaner.tsx` | `pases_visita` | RF18–RF20 |
 
 ### Directiva
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
-| P12 | Panel | `P12_Panel` | `app/(directiva)/(tabs)/index.tsx` | `alertas`, `incidencias`, `encuestas`, `votos` | RF29, RF33 |
-| P13 | Crear aviso | `P13_CrearAviso` | `app/(directiva)/avisos/nuevo.tsx` | `avisos`, `aviso_sectores` | RF8, RF14 |
-| P14 | Crear encuesta | `P14_CrearEncuesta` | `app/(directiva)/encuestas/nueva.tsx` | `encuestas`, `encuesta_sectores`, `encuesta_preguntas`, `encuesta_opciones` | RF9, RF14, RF15-encuesta |
-| P14b | Resultados de la encuesta | `P14b_Resultados` | `app/(directiva)/encuestas/[id]/resultados.tsx` | `votos`, `voto_opciones` | RF13 |
-| P15 | Gestión de incidencias | `P15_Incidencias` | `app/(directiva)/(tabs)/incidencias.tsx` | `incidencias`, `incidencia_fotos` | RF32 |
+| P12 | Panel | `P12_Panel` | `app/(directiva)/(tabs)/index.tsx` | `alertas`, `incidencias`, `encuestas`, `votos` | RF28, RF31 |
+| P13 | Crear aviso | `P13_CrearAviso` | `app/(directiva)/avisos/nuevo.tsx` | `avisos`, `aviso_sectores` | RF7, RF13 |
+| P14 | Crear encuesta | `P14_CrearEncuesta` | `app/(directiva)/encuestas/nueva.tsx` | `encuestas`, `encuesta_sectores`, `encuesta_preguntas`, `encuesta_opciones` | RF8, RF13, RF14 |
+| P14b | Resultados de la encuesta | `P14b_Resultados` | `app/(directiva)/encuestas/[id]/resultados.tsx` | `votos`, `voto_opciones` | RF12 |
+| P15 | Gestión de incidencias | `P15_Incidencias` | `app/(directiva)/(tabs)/incidencias.tsx` | `incidencias`, `incidencia_fotos` | RF30 |
 
 ### Pantallas sin mockup (necesarias)
 - Crear cuenta (registro con correo habilitado).
-- Residente: lista de mis incidencias (pestaña Incidencias) y su detalle con el estado; formulario para agregar o editar un contacto de emergencia; historial de avisos y encuestas pasadas (RF12).
-- Directiva: lista de avisos (pestaña Avisos) y lista de encuestas (pestaña Encuestas); alta y baja de residentes habilitados (RF5); historial de alertas (RF29); gráfica mensual de incidencias (RF33).
+- Residente: lista de mis incidencias (pestaña Incidencias) y su detalle con el estado; formulario para agregar o editar un contacto de emergencia; historial de avisos y encuestas pasadas (RF11).
+- Directiva: lista de avisos (pestaña Avisos) y lista de encuestas (pestaña Encuestas); alta y baja de residentes habilitados (RF5); historial de alertas (RF28); gráfica mensual de incidencias (RF31).
 - Guardia: registro de salida de una visita (RF20) y su historial.
 
 ## Correcciones pendientes de los mockups
@@ -106,13 +106,13 @@ Los mockups se hicieron antes de cruzarlos con el modelo de datos. Estas diferen
 
 | # | Pantalla | Mockup | Debe ser (modelo / requisitos) |
 |---|---|---|---|
-| 1 | P3b, P9, P10, P12 | Las alertas usan los estados *Pendiente*, *En atención* y *Resuelto*, y el guardia tiene un solo botón "Atender". | Estados de alerta: `activa`, `en_camino`, `atendida` (RF28). Etiquetas sugeridas: **Activa**, **En camino**, **Atendida**. El personal tiene dos acciones: "Estoy en camino" y "Marcar como atendida". "Resueltas hoy" pasa a "Atendidas hoy". |
-| 2 | P6 | "Nuevo pase para hoy", solo con el nombre. | Pedir **nombre, fecha de la visita y hora estimada** (`nombre_visitante`, `fecha_visita`, `hora_estimada`; RF15-visita). |
-| 3 | P7 | Sin campo de ubicación; "Puedes añadir varias" fotos. | Agregar **Ubicación**, precargada con la unidad y editable (`ubicacion`; RF31). Fotos: **mínimo 1 (lo valida la app) y máximo 3** (límite en la base). |
-| 4 | P13 | Sin imagen ni fechas. | Agregar **imagen adjunta opcional** y **vigencia** desde/hasta (`imagen_path`, `vigente_desde`, `vigente_hasta`; RF8). La lista de categorías sale de `categorias_aviso`, no está fija. |
-| 5 | P14 | Sin categoría, fechas ni opción de resultados en vivo. | Agregar **categoría** (`categoria_id`), **apertura y cierre** (`abre_en`, `cierra_en`) y el interruptor **Resultados en vivo** (`resultados_en_vivo`; RF13). "Obligatoria" equivale a `prioridad = alta`. "Todo el condominio" equivale a `para_todos = true`. |
+| 1 | P3b, P9, P10, P12 | Las alertas usan los estados *Pendiente*, *En atención* y *Resuelto*, y el guardia tiene un solo botón "Atender". | Estados de alerta: `activa`, `en_camino`, `atendida` (RF27). Etiquetas sugeridas: **Activa**, **En camino**, **Atendida**. El personal tiene dos acciones: "Estoy en camino" y "Marcar como atendida". "Resueltas hoy" pasa a "Atendidas hoy". |
+| 2 | P6 | "Nuevo pase para hoy", solo con el nombre. | Pedir **nombre, fecha de la visita y hora estimada** (`nombre_visitante`, `fecha_visita`, `hora_estimada`; RF15). |
+| 3 | P7 | Sin campo de ubicación; "Puedes añadir varias" fotos. | Agregar **Ubicación**, precargada con la unidad y editable (`ubicacion`; RF29). Fotos: **mínimo 1 (lo valida la app) y máximo 3** (límite en la base). |
+| 4 | P13 | Sin imagen ni fechas. | Agregar **imagen adjunta opcional** y **vigencia** desde/hasta (`imagen_path`, `vigente_desde`, `vigente_hasta`; RF7). La lista de categorías sale de `categorias_aviso`, no está fija. |
+| 5 | P14 | Sin categoría, fechas ni opción de resultados en vivo. | Agregar **categoría** (`categoria_id`), **apertura y cierre** (`abre_en`, `cierra_en`) y el interruptor **Resultados en vivo** (`resultados_en_vivo`; RF12). "Obligatoria" equivale a `prioridad = alta`. "Todo el condominio" equivale a `para_todos = true`. |
 | 6 | P8 | Botón "Agregar contacto" siempre visible. | Máximo **3 contactos**: mostrar "2 de 3" y ocultar el botón al llegar a 3. El correo es opcional (para la próxima feature). |
-| 7 | P12 | Sin gráfica. | Agregar la **gráfica mensual de incidencias** (RF33), por ejemplo en el panel o en P15. |
+| 7 | P12 | Sin gráfica. | Agregar la **gráfica mensual de incidencias** (RF31), por ejemplo en el panel o en P15. |
 | 8 | P1 | Solo correo. | Correcto por ahora: el inicio por celular/SMS quedó fuera de alcance. El enlace "Crear cuenta" existe, pero falta diseñar la pantalla de registro. |
 
 Los mockups se corregirán en Claude Design y se volverán a exportar; hasta entonces, implementar según la columna "Debe ser".

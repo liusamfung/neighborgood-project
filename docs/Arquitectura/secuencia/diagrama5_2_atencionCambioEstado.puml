@@ -1,5 +1,5 @@
 @startuml Diagrama5_2_AtencionCambioEstado
-title Diagrama 5.2 — Atención y cambio de estado (RF32)
+title Diagrama 5.2 — Atención y cambio de estado (RF30)
 
 hide footbox
 autonumber
@@ -18,29 +18,29 @@ participant "Expo Push" as PUSH
 
 ADM -> APPA : consultar incidencias reportadas
 activate APPA
-APPA -> DB : obtener listado de incidencias (RF32)
+APPA -> DB : obtener listado de incidencias (RF30)
 activate DB
 DB --> APPA : incidencias con su estado actual
 deactivate DB
 APPA --> ADM : mostrar listado
 
-ADM -> APPA : actualizar estado a "En atención" o "Resuelto" (RF32)
-APPA -> DB : registrar el nuevo estado (RF32)
+ADM -> APPA : actualizar estado a "En atención" o "Resuelto" (RF30)
+APPA -> DB : registrar el nuevo estado (RF30)
 activate DB
 DB --> APPA : estado actualizado
-DB -> EF : disparar función por webhook \n de base de datos (RF32)
+DB -> EF : disparar función por webhook \n de base de datos (RF30)
 deactivate DB
 activate EF
-EF -> DB : obtener token del residente \nque reportó (RF32)
+EF -> DB : obtener token del residente \nque reportó (RF30)
 activate DB
 DB --> EF : token del residente
 deactivate DB
-EF -> PUSH : enviar \n notificación de \n cambio de estado (RF32)
+EF -> PUSH : enviar \n notificación de \n cambio de estado (RF30)
 activate PUSH
-PUSH --> APPR : notificación push al residente (RF32)
+PUSH --> APPR : notificación push al residente (RF30)
 deactivate PUSH
 deactivate EF
-APPR --> RES : aviso del nuevo estado de su incidencia (RF32)
+APPR --> RES : aviso del nuevo estado de su incidencia (RF30)
 APPA --> ADM : cambio confirmado
 deactivate APPA
 @enduml
