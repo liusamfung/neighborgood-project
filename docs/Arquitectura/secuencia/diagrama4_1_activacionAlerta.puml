@@ -1,5 +1,5 @@
 @startuml Diagrama4_1_ActivacionAlerta
-title Diagrama 4.1 — Activación de la alerta (RF23, RF24, RF26, RF28)
+title Diagrama 4.1 — Activación de la alerta (RF23, RF24, RF28)
 
 hide footbox
 autonumber
@@ -20,11 +20,17 @@ note right of APPE
 end note
 
 APPE -> APPE : activar vibración y sonido de alerta \n en el emisor (RF24)
-APPE -> APPE : obtener ubicación del dispositivo (RF26)
-APPE -> DB : registrar alerta con tipo, unidad, ubicación  \n y hora (RF28)
+APPE -> DB : registrar alerta con tipo y unidad de origen \n (la ubicación es la de la unidad) (RF28)
 activate DB
 DB --> APPE : alerta registrada
+deactivate DB
 APPE --> RES : alerta enviada
 deactivate APPE
+
+note over APPE, DB
+  La alerta no usa geolocalización del dispositivo ni mapas:
+  su ubicación es la de la unidad del residente. El sector se
+  copia desde la unidad mediante un trigger de la base.
+end note
 @enduml
 
