@@ -79,8 +79,9 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 ## 9. Pendientes conocidos (antes de programar)
 1. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
-3. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).
-4. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
+3. **Notificaciones push de Android:** configurar FCM (`google-services.json`) y las credenciales de EAS en el Sprint 5, y decidir qué hacer con el plugin `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE` cuando haya cuenta de pago.
+4. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).
+5. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
 - **Supabase gratuito pausa el proyecto tras 7 días sin actividad.** Antes de cada demo hay que entrar al panel, o programar un ping semanal con GitHub Actions.

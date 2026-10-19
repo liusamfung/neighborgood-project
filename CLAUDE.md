@@ -44,6 +44,8 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 - Si algo de Expo, EAS o React Native no es seguro, leer la documentación de la versión instalada (`https://docs.expo.dev/versions/v58.0.0/`, índice en `https://docs.expo.dev/llms.txt`) en vez de responder de memoria.
 - Antes de dar una tarea por hecha: `npx tsc --noEmit` y `npx expo lint`.
 - `supabase/functions` es código Deno: queda fuera de `tsconfig.json` y de eslint.
+- Si cambias `app.json` o plugins, regenera `ios/` con `npx expo prebuild --platform ios --clean`; el equipo de firma se redetecta con `npx expo run:ios --device`.
+- **iPhone con cuenta de Apple gratuita:** pon `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE=1` en tu `.env` (ignorado por git). Quita el permiso de push remoto de iOS para poder firmar; ese iPhone no recibe push remotas. Vacío o `0` no hace nada y nunca afecta a Android ni a EAS. La app instalada con cuenta gratuita caduca a los 7 días.
 
 ## Cómo trabajar
 - Para cualquier cambio grande: primero modo Plan, luego aprobación, luego código.
