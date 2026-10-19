@@ -32,7 +32,8 @@ const almacenSeguro = {
 };
 
 // Solo la anon key: la service_role vive únicamente en las Edge Functions.
-export const supabase = createClient(url ?? 'http://localhost', anonKey ?? 'sin-configurar', {
+// Se usa || y no ?? porque un .env copiado de .env.example deja las variables como cadena vacía.
+export const supabase = createClient(url || 'http://localhost', anonKey || 'sin-configurar', {
   auth: {
     storage: almacenSeguro,
     autoRefreshToken: true,
