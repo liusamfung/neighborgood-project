@@ -5,7 +5,7 @@ Resumen para entender el proyecto de una sola lectura. Los detalles viven en los
 ## 1. Qué es
 **NeighborGood** es una app móvil para condominios y urbanizaciones cerradas. Reemplaza los grupos de WhatsApp con un solo lugar para avisos, encuestas, visitas, alertas de emergencia e incidencias. Es el proyecto del curso **Desarrollo Móvil** (UTP, 2026-II, "Caso 4: Gestión de Condominios y Alerta Comunitaria").
 
-Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). **Aún no hay código.**
+Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existe el **proyecto Expo base** (sin lógica de negocio); el SQL de migración y las funcionalidades siguen pendientes.
 
 ## 2. Roles
 | Rol | Qué hace |
@@ -79,7 +79,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 ## 9. Pendientes conocidos (antes de programar)
 1. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
-3. **Decisiones técnicas por cerrar:** navegación (se asume Expo Router), librería de componentes (React Native Paper, por confirmar con SDK 57), librería de gráficos para el reporte mensual (RF31).
+3. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 57), librería de gráficos para el reporte mensual (RF31).
 4. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
