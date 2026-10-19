@@ -26,7 +26,7 @@ Los requisitos completos están en `docs/requisitos/REQUISITOS.md`.
 ## 4. Stack y por qué
 | Decisión | Razón |
 |---|---|
-| **React Native + Expo SDK 57**, *development build* con EAS Build | Con Expo Go, las notificaciones push remotas dejaron de funcionar desde el SDK 53. El development build no depende de la versión de Expo Go. |
+| **React Native + Expo SDK 58**, *development build* con EAS Build | Con Expo Go, las notificaciones push remotas dejaron de funcionar desde el SDK 53. El development build no depende de la versión de Expo Go. |
 | **Supabase** (Postgres + RLS, Auth, Realtime, Storage, Edge Functions) | Cubre base de datos relacional, autenticación sin SMS (correo y Google), tiempo real y almacenamiento de fotos, con plan gratuito. |
 | **Sin NestJS** | Las Edge Functions bastan para la lógica de servidor de este alcance. |
 | **Supabase sobre Firebase** | En Firebase, Storage y las Cloud Functions con HTTP saliente exigen plan pago. |
@@ -79,7 +79,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 ## 9. Pendientes conocidos (antes de programar)
 1. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
-3. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 57), librería de gráficos para el reporte mensual (RF31).
+3. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).
 4. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
