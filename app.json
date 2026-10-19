@@ -22,6 +22,7 @@
       "package": "com.liusamfung.neighborgood"
     },
     "plugins": [
+      "./plugins/quitar-push-entitlement",
       "expo-router",
       [
         "expo-splash-screen",
