@@ -64,36 +64,38 @@ Solo celular y modo claro. Barra inferior por rol; pantallas apiladas con flecha
 | Directiva | Panel · Avisos · Encuestas · Incidencias |
 
 ## Mapa de pantallas
-Las rutas son una **propuesta** con Expo Router (la navegación aún no está cerrada). "Sin mockup" indica pantallas necesarias que todavía no se han diseñado.
+Las rutas siguen Expo Router, con la carpeta `src/app/` de la plantilla de SDK 57 (el alias `@/*` apunta a `src/*`).
+
+Cada rol tiene una **carpeta real** (`residente/`, `guardia/`, `directiva/`) y no un grupo `(residente)`: dos grupos con la misma pantalla (por ejemplo `index` o `avisos`) darían la misma URL, y Expo Router solo admite una pantalla activa por URL. Con carpetas reales las URLs son distintas (`/residente/avisos`, `/directiva/avisos`) y `Stack.Protected` en `src/app/_layout.tsx` deja entrar a cada rol solo a la suya. Los grupos `(auth)` y `(tabs)` se mantienen porque no repiten URLs. Las pantallas de la sección "sin mockup" ya tienen ruta provisional: `(auth)/registro`, `residente/(tabs)/incidencias`, `directiva/(tabs)/avisos` y `directiva/(tabs)/encuestas`. "Sin mockup" indica pantallas necesarias que todavía no se han diseñado.
 
 ### Residente
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
-| P1 | Login y registro | `P01_Login` | `app/(auth)/login.tsx` | `auth.users`, `residentes_habilitados`, `perfiles`, `registros_sesion` | RF1, RF2, RF6 |
-| P2 | Inicio | `P02_Inicio` | `app/(residente)/(tabs)/index.tsx` | `alertas`, `avisos`, `encuestas`, `pases_visita` | RF23 |
-| P3 | Elegir tipo de alerta y confirmar | `P03_TipoAlerta` | `app/(residente)/alerta/tipo.tsx` | `alertas` | RF23–RF25 |
-| P3b | Alerta enviada | `P03b_AlertaEnviada` | `app/(residente)/alerta/enviada.tsx` | `alertas` | RF23 |
-| P4 | Avisos (lista y detalle) | `P04_Avisos` | `app/(residente)/(tabs)/avisos.tsx` | `avisos`, `categorias_aviso` | RF10, RF11 |
-| P5 | Encuesta (votar) | `P05_Encuesta` | `app/(residente)/encuesta/[id].tsx` | `encuestas`, `encuesta_preguntas`, `encuesta_opciones`, `votos`, `voto_opciones` | RF9 |
-| P6 | Visitas y pase QR | `P06_Visitas` | `app/(residente)/(tabs)/visitas.tsx` | `pases_visita` | RF15–RF17, RF22 |
-| P7 | Reportar incidencia | `P07_Incidencia` | `app/(residente)/incidencias/nueva.tsx` | `incidencias`, `incidencia_fotos` | RF29 |
-| P8 | Perfil y contactos de emergencia | `P08_Perfil` | `app/(residente)/(tabs)/perfil.tsx` | `perfiles`, `contactos_emergencia` | RF4 |
+| P1 | Login y registro | `P01_Login` | `src/app/(auth)/login.tsx` | `auth.users`, `residentes_habilitados`, `perfiles`, `registros_sesion` | RF1, RF2, RF6 |
+| P2 | Inicio | `P02_Inicio` | `src/app/residente/(tabs)/index.tsx` | `alertas`, `avisos`, `encuestas`, `pases_visita` | RF23 |
+| P3 | Elegir tipo de alerta y confirmar | `P03_TipoAlerta` | `src/app/residente/alerta/tipo.tsx` | `alertas` | RF23–RF25 |
+| P3b | Alerta enviada | `P03b_AlertaEnviada` | `src/app/residente/alerta/enviada.tsx` | `alertas` | RF23 |
+| P4 | Avisos (lista y detalle) | `P04_Avisos` | `src/app/residente/(tabs)/avisos.tsx` | `avisos`, `categorias_aviso` | RF10, RF11 |
+| P5 | Encuesta (votar) | `P05_Encuesta` | `src/app/residente/encuesta/[id].tsx` | `encuestas`, `encuesta_preguntas`, `encuesta_opciones`, `votos`, `voto_opciones` | RF9 |
+| P6 | Visitas y pase QR | `P06_Visitas` | `src/app/residente/(tabs)/visitas.tsx` | `pases_visita` | RF15–RF17, RF22 |
+| P7 | Reportar incidencia | `P07_Incidencia` | `src/app/residente/incidencias/nueva.tsx` | `incidencias`, `incidencia_fotos` | RF29 |
+| P8 | Perfil y contactos de emergencia | `P08_Perfil` | `src/app/residente/(tabs)/perfil.tsx` | `perfiles`, `contactos_emergencia` | RF4 |
 
 ### Guardia
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
-| P9 | Alertas activas | `P09_AlertasGuardia` | `app/(guardia)/(tabs)/alertas.tsx` | `alertas` | RF25, RF28 |
-| P10 | Detalle de la alerta | `P10_DetalleAlerta` | `app/(guardia)/alerta/[id].tsx` | `alertas`, `alerta_atenciones`, `contactos_emergencia` | RF27 |
-| P11 | Escáner QR | `P11_EscanerQR` | `app/(guardia)/(tabs)/escaner.tsx` | `pases_visita` | RF18–RF20 |
+| P9 | Alertas activas | `P09_AlertasGuardia` | `src/app/guardia/(tabs)/alertas.tsx` | `alertas` | RF25, RF28 |
+| P10 | Detalle de la alerta | `P10_DetalleAlerta` | `src/app/guardia/alerta/[id].tsx` | `alertas`, `alerta_atenciones`, `contactos_emergencia` | RF27 |
+| P11 | Escáner QR | `P11_EscanerQR` | `src/app/guardia/(tabs)/escaner.tsx` | `pases_visita` | RF18–RF20 |
 
 ### Directiva
 | ID | Pantalla | Mockup / captura | Ruta propuesta | Tablas principales | RF |
 |---|---|---|---|---|---|
-| P12 | Panel | `P12_Panel` | `app/(directiva)/(tabs)/index.tsx` | `alertas`, `incidencias`, `encuestas`, `votos` | RF28, RF31 |
-| P13 | Crear aviso | `P13_CrearAviso` | `app/(directiva)/avisos/nuevo.tsx` | `avisos`, `aviso_sectores` | RF7, RF13 |
-| P14 | Crear encuesta | `P14_CrearEncuesta` | `app/(directiva)/encuestas/nueva.tsx` | `encuestas`, `encuesta_sectores`, `encuesta_preguntas`, `encuesta_opciones` | RF8, RF13, RF14 |
-| P14b | Resultados de la encuesta | `P14b_Resultados` | `app/(directiva)/encuestas/[id]/resultados.tsx` | `votos`, `voto_opciones` | RF12 |
-| P15 | Gestión de incidencias | `P15_Incidencias` | `app/(directiva)/(tabs)/incidencias.tsx` | `incidencias`, `incidencia_fotos` | RF30 |
+| P12 | Panel | `P12_Panel` | `src/app/directiva/(tabs)/index.tsx` | `alertas`, `incidencias`, `encuestas`, `votos` | RF28, RF31 |
+| P13 | Crear aviso | `P13_CrearAviso` | `src/app/directiva/avisos/nuevo.tsx` | `avisos`, `aviso_sectores` | RF7, RF13 |
+| P14 | Crear encuesta | `P14_CrearEncuesta` | `src/app/directiva/encuestas/nueva.tsx` | `encuestas`, `encuesta_sectores`, `encuesta_preguntas`, `encuesta_opciones` | RF8, RF13, RF14 |
+| P14b | Resultados de la encuesta | `P14b_Resultados` | `src/app/directiva/encuestas/[id]/resultados.tsx` | `votos`, `voto_opciones` | RF12 |
+| P15 | Gestión de incidencias | `P15_Incidencias` | `src/app/directiva/(tabs)/incidencias.tsx` | `incidencias`, `incidencia_fotos` | RF30 |
 
 ### Pantallas sin mockup (necesarias)
 - Crear cuenta (registro con correo habilitado).
