@@ -1,6 +1,8 @@
 import { Link, type Href } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Boton } from '@/componentes/formulario/Boton';
+import { useSesion } from '@/contexto/SesionContext';
 import { colores, espacios, radios, tamanos, tipografia } from '@/tema';
 
 type Props = {
@@ -15,6 +17,8 @@ type Props = {
 
 /** Pantalla provisional: se reemplaza por la real en el Sprint que implementa sus requisitos. */
 export function PantallaMarcador({ id, titulo, requisitos, enlace }: Props) {
+  const { perfil, cerrarSesion } = useSesion();
+
   return (
     <View style={estilos.contenedor}>
       <Text style={estilos.etiqueta}>
@@ -26,6 +30,21 @@ export function PantallaMarcador({ id, titulo, requisitos, enlace }: Props) {
         <Link href={enlace.href} style={estilos.boton}>
           {enlace.texto}
         </Link>
+      ) : null}
+      {/* Temporal: hasta que cada pantalla real tenga su propio perfil y salida. */}
+      {perfil ? (
+        <View style={estilos.sesion}>
+          <Text style={estilos.detalle}>
+            Sesión: {perfil.nombre} {perfil.apellido} · {perfil.rol}
+          </Text>
+          <Boton
+            variante="secundario"
+            texto="Cerrar sesión"
+            alPresionar={() =>
+              cerrarSesion().catch((error) => console.error('No se pudo cerrar la sesión', error))
+            }
+          />
+        </View>
       ) : null}
     </View>
   );
@@ -42,6 +61,7 @@ const estilos = StyleSheet.create({
   etiqueta: { ...tipografia.etiqueta, color: colores.principal },
   titulo: { ...tipografia.titulo, color: colores.texto },
   detalle: { ...tipografia.cuerpo, color: colores.textoSecundario },
+  sesion: { marginTop: espacios.entreTarjetas, gap: espacios.entreTarjetas },
   boton: {
     ...tipografia.subtitulo,
     marginTop: espacios.entreTarjetas,
