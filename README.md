@@ -56,7 +56,7 @@ Usuarios de prueba locales (contraseña `Prueba123!`): `directiva@`, `guardia@`,
 
 **Aplicar en el proyecto real:** en el SQL Editor de Supabase pega y ejecuta, en orden y una por una, las 6 partes de `supabase/migrations/`. Después ejecuta `supabase/verificacion.sql`: todas las filas deben decir `OK`. Si una parte falla a la mitad, `supabase/rollback.sql` (solo desarrollo, borra todos los datos) deja la base limpia para repetir.
 
-**Cuentas del personal.** Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`. La directiva y los guardias se crean a mano: Authentication → Add user (con correo confirmado) y luego `supabase/crear_personal.sql`.
+**Datos y cuentas del proyecto real.** El proyecto real empieza vacío. Después de las 6 partes: (1) ejecuta `supabase/catalogo_inicial.sql` (sectores, unidades y categorías; sin usuarios); (2) crea las cuentas en Authentication → Add user (con "Auto Confirm User") y completa sus perfiles con `supabase/crear_personal.sql`. Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`; para una demostración, la misma plantilla habilita un residente y el trigger le crea el perfil. Las contraseñas las eliges tú y se guardan en un gestor de contraseñas, nunca en el repositorio.
 
 ## Reglas
 - Una historia por rama, commits pequeños y en español; todo entra a `main` por pull request con *merge commit*.
