@@ -39,6 +39,15 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 | Modelo de datos (DBML) y diccionario de datos | `docs/db_diagram/` |
 | Migraciones SQL, datos de prueba, pruebas de RLS y verificación | `supabase/` |
 
+## Documentación (Google Docs)
+- Documento principal: [Documentación NeighborGood · Avance 2 (Google Doc)](https://docs.google.com/document/d/1zu4ESKZIwlvBpDbr9Sxd5O6Pe06XFvFAk1mCHtI9LIE/edit)
+- Carpeta de Drive: https://drive.google.com/drive/folders/1ieP6vNtkyREHZqm_HkXu0L3JUyF8VdOC
+
+Reglas:
+- Al terminar una sesión de trabajo, o al terminar un pull request con un merge satisfactorio a `main`, ofrece actualizar el documento principal comparándolo con el estado real del proyecto.
+- Antes de editar, lista los cambios que propones. No borres secciones sin preguntar.
+- El documento está en español.
+
 ## Reglas de Expo
 - Instalar librerías **siempre** con `npx expo install <paquete>` (resuelve la versión del SDK), nunca con `npm install`.
 - La versión de `expo`, `expo-router` y de todos los paquetes de Expo la fija el SDK 58: no las instales ni las cambies a mano con `@latest`. Para alinearlas usa `npx expo install --check` y `npx expo install --fix`.
