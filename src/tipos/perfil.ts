@@ -1,15 +1,9 @@
-export type Rol = 'directiva' | 'residente' | 'guardia';
+import type { Database, Tables } from '@/tipos/base_de_datos';
+
+/** Rol de un usuario: viene del tipo enumerado `rol_usuario` de la base de datos. */
+export type Rol = Database['public']['Enums']['rol_usuario'];
 
 export const ROLES: readonly Rol[] = ['directiva', 'residente', 'guardia'];
 
-/** Fila de la tabla `perfiles` (docs/db_diagram). */
-export type Perfil = {
-  id: string;
-  /** NULL para directiva y guardia; un residente siempre tiene unidad. */
-  unidad_id: string | null;
-  nombre: string;
-  apellido: string;
-  telefono: string | null;
-  rol: Rol;
-  activo: boolean;
-};
+/** Fila de la tabla `perfiles`, con los tipos generados por `supabase gen types`. */
+export type Perfil = Tables<'perfiles'>;

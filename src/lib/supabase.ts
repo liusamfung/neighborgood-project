@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { AppState } from 'react-native';
 
+import type { Database } from '@/tipos/base_de_datos';
+
 // Expo reemplaza estas variables al compilar; deben escribirse literalmente.
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -33,14 +35,18 @@ const almacenSeguro = {
 
 // Solo la anon key: la service_role vive únicamente en las Edge Functions.
 // Se usa || y no ?? porque un .env copiado de .env.example deja las variables como cadena vacía.
-export const supabase = createClient(url || 'http://localhost', anonKey || 'sin-configurar', {
-  auth: {
-    storage: almacenSeguro,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+export const supabase = createClient<Database>(
+  url || 'http://localhost',
+  anonKey || 'sin-configurar',
+  {
+    auth: {
+      storage: almacenSeguro,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
   },
-});
+);
 
 // En móvil no hay pestañas: el refresco del token solo corre con la app en primer plano.
 AppState.addEventListener('change', (estado) => {

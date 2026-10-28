@@ -34,6 +34,7 @@ const perfilDev: Perfil | null = rolDev && {
   telefono: null,
   rol: rolDev,
   activo: true,
+  creado_en: new Date(0).toISOString(),
 };
 
 export function SesionProvider({ children }: { children: ReactNode }) {
