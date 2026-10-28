@@ -5,7 +5,7 @@ Resumen para entender el proyecto de una sola lectura. Los detalles viven en los
 ## 1. Qué es
 **NeighborGood** es una app móvil para condominios y urbanizaciones cerradas. Reemplaza los grupos de WhatsApp con un solo lugar para avisos, encuestas, visitas, alertas de emergencia e incidencias. Es el proyecto del curso **Desarrollo Móvil** (UTP, 2026-II, "Caso 4: Gestión de Condominios y Alerta Comunitaria").
 
-Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existe el **proyecto Expo base** (sin lógica de negocio); el SQL de migración y las funcionalidades siguen pendientes.
+Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real) y el **inicio de sesión con correo y contraseña**; el resto de las funcionalidades sigue pendiente.
 
 ## 2. Roles
 | Rol | Qué hace |
@@ -80,7 +80,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - Los diagramas usan la **numeración RF corregida** (RF1 a RF31, sin huecos). La tabla de equivalencias con el Google Doc original está en `REQUISITOS.md`.
 
 ## 9. Pendientes conocidos (antes de programar)
-1. **Ejecutar la migración SQL en el proyecto real de Supabase** (issue #3). Ya está escrita y probada en local: 6 partes en `supabase/migrations/`, 192 pruebas pgTAP en `supabase/tests/`. Falta pegar las 6 partes en el SQL Editor, correr `supabase/verificacion.sql` y crear las cuentas de directiva y guardia (`supabase/crear_personal.sql`).
+1. **Inicio de sesión con Google** (issue #4): configurar OAuth en Google Cloud y en Supabase, y las URL de redirección `neighborgood://`. El inicio de sesión con correo y contraseña ya funciona (RF2): la migración está ejecutada y verificada en el proyecto real, las cuentas de directiva, guardia y residente existen, y la app lee el rol real desde `perfiles`. El rol de desarrollo `EXPO_PUBLIC_ROL_DEV` se eliminó.
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
 3. **Notificaciones push de Android:** configurar FCM (`google-services.json`) y las credenciales de EAS en el Sprint 5, y decidir qué hacer con el plugin `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE` cuando haya cuenta de pago.
 4. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).
