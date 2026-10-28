@@ -64,7 +64,7 @@ Solo celular y modo claro. Barra inferior por rol; pantallas apiladas con flecha
 | Directiva | Panel · Avisos · Encuestas · Incidencias |
 
 ## Mapa de pantallas
-Las rutas siguen Expo Router, con la carpeta `src/app/` de la plantilla de SDK 57 (el alias `@/*` apunta a `src/*`).
+Las rutas siguen Expo Router, con la carpeta `src/app/` de la plantilla de SDK 58 (el alias `@/*` apunta a `src/*`).
 
 Cada rol tiene una **carpeta real** (`residente/`, `guardia/`, `directiva/`) y no un grupo `(residente)`: dos grupos con la misma pantalla (por ejemplo `index` o `avisos`) darían la misma URL, y Expo Router solo admite una pantalla activa por URL. Con carpetas reales las URLs son distintas (`/residente/avisos`, `/directiva/avisos`) y `Stack.Protected` en `src/app/_layout.tsx` deja entrar a cada rol solo a la suya. Los grupos `(auth)` y `(tabs)` se mantienen porque no repiten URLs. Las pantallas de la sección "sin mockup" ya tienen ruta provisional: `(auth)/registro`, `residente/(tabs)/incidencias`, `directiva/(tabs)/avisos` y `directiva/(tabs)/encuestas`. "Sin mockup" indica pantallas necesarias que todavía no se han diseñado.
 
