@@ -51,7 +51,11 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "db:start": "supabase start -x imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:tipos": "supabase gen types typescript --local > src/tipos/base_de_datos.ts && prettier --write src/tipos/base_de_datos.ts"
   },
   "private": true,
   "description": "NeighborGood: app móvil de gestión de condominios y alerta comunitaria"

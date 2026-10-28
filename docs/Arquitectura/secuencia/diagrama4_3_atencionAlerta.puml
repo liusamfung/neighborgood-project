@@ -16,7 +16,7 @@ end box
 
 ADM -> APPR : marcar "estoy en camino" o "alerta atendida" (RF27)
 activate APPR
-APPR -> DB : actualizar estado de la alerta (RF27)
+APPR -> DB : registrar la respuesta en la bitácora; un trigger actualiza el estado de la alerta (RF27)
 activate DB
 DB --> APPR : estado actualizado
 deactivate DB

@@ -16,7 +16,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 - **Estado en la app:** React Context (sesión y rol) + TanStack Query (consultas a Supabase).
 - **Notificaciones:** Expo Push Service (→ FCM/APNs). Realtime para la app abierta; push para la app cerrada.
 - **Dispositivo:** `expo-camera` (escáner QR), `react-native-qrcode-svg` (dibujar el QR), `expo-notifications`, `expo-image-picker`, `expo-haptics`/`Vibration`.
-- **Migraciones:** SQL escrito a mano (con RLS), ejecutado en el SQL Editor de Supabase. **Sin Prisma.**
+- **Migraciones:** SQL escrito a mano (con RLS) en `supabase/migrations/`, probado en local con Docker (`supabase test db`) y ejecutado en el SQL Editor de Supabase. **Sin Prisma.**
 
 ## Reglas que no se negocian
 1. **Ningún secreto en el repo.** La `service_role key` vive solo en las Edge Functions (variables de entorno de Supabase). La app solo lleva la `anon key`.
@@ -37,6 +37,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 | Arquitectura C4 (PlantUML) | `docs/Arquitectura/` |
 | Diagramas de secuencia (PlantUML) | `docs/Arquitectura/secuencia/` |
 | Modelo de datos (DBML) y diccionario de datos | `docs/db_diagram/` |
+| Migraciones SQL, datos de prueba, pruebas de RLS y verificación | `supabase/` |
 
 ## Reglas de Expo
 - Instalar librerías **siempre** con `npx expo install <paquete>` (resuelve la versión del SDK), nunca con `npm install`.

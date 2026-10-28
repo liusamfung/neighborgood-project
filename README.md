@@ -42,6 +42,22 @@ npx eas-cli build --platform android --profile preview       # APK interno para 
 - Las claves de Supabase no están en git: se guardan como variables de EAS (`npx eas-cli env:set`) en los entornos `development` y `preview`.
 - Las push de Android necesitan `google-services.json` (FCM). Se configura en el Sprint 5, cuando se implementen las alertas.
 
+## Base de datos (Supabase)
+El modelo completo vive en `supabase/migrations/` (6 partes que se ejecutan en orden), con datos de prueba (`supabase/seed.sql`, solo local), pruebas de RLS (`supabase/tests/`) y un script de verificación (`supabase/verificacion.sql`).
+
+**Probar en tu máquina** (necesitas Docker Desktop abierto; la primera vez descarga unos GB):
+```bash
+npm run db:start      # arranca Supabase local
+npm run db:reset      # aplica las 6 partes y el seed
+npm run db:test       # pruebas pgTAP: RLS, restricciones y triggers
+npm run db:tipos      # regenera src/tipos/base_de_datos.ts
+```
+Usuarios de prueba locales (contraseña `Prueba123!`): `directiva@`, `guardia@`, `residente1@`, `residente2@`, `residente3@` e `intruso@neighborgood.test`. **El seed nunca se ejecuta en el proyecto real.**
+
+**Aplicar en el proyecto real:** en el SQL Editor de Supabase pega y ejecuta, en orden y una por una, las 6 partes de `supabase/migrations/`. Después ejecuta `supabase/verificacion.sql`: todas las filas deben decir `OK`. Si una parte falla a la mitad, `supabase/rollback.sql` (solo desarrollo, borra todos los datos) deja la base limpia para repetir.
+
+**Cuentas del personal.** Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`. La directiva y los guardias se crean a mano: Authentication → Add user (con correo confirmado) y luego `supabase/crear_personal.sql`.
+
 ## Reglas
 - Una historia por rama, commits pequeños y en español; todo entra a `main` por pull request con *merge commit*.
 - Ningún secreto en el repo: la app solo lleva la `anon key`; la `service_role` vive en las Edge Functions.

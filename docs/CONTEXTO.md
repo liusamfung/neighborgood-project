@@ -55,6 +55,9 @@ Fuente de verdad: `docs/db_diagram/diagrama-database_dbdiagramio` (DBML para dbd
 | F. Incidencias | `incidencias`, `incidencia_fotos` |
 
 Reglas del modelo que importan al programar:
+- **Cómo está implementado** (`supabase/migrations/`): los helpers de RLS viven en el esquema `privado` (no expuesto por la API) como funciones `SECURITY DEFINER`; la app solo habla con `public`. Dos funciones RPC: `emitir_voto` (vota por la unidad en una transacción) y `resultados_encuesta` (conteos, según `resultados_en_vivo`). Los pases los crean y validan Edge Functions (service role).
+- **Registro "suave":** un trigger sobre `auth.users` crea el `perfil` solo si el correo confirmado está en `residentes_habilitados`. Si no, no hay perfil: RLS no deja ver nada y la app cierra la sesión con "Tu correo no está habilitado". La directiva y los guardias se crean a mano.
+- **Alertas:** la app solo informa unidad, tipo y emisor; el estado, el sector y la hora los fijan triggers. El personal responde insertando en `alerta_atenciones` y un trigger actualiza `alertas.estado`.
 - `perfiles.rol` ∈ `directiva | residente | guardia`; un residente siempre tiene `unidad_id`.
 - Sectores: `torre | pabellon | manzana`. Avisos y encuestas usan `para_todos` más una tabla de sectores (separadas entre sí).
 - Un voto por unidad y encuesta (`votos` único en `encuesta_id, unidad_id`).
@@ -77,7 +80,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - Los diagramas usan la **numeración RF corregida** (RF1 a RF31, sin huecos). La tabla de equivalencias con el Google Doc original está en `REQUISITOS.md`.
 
 ## 9. Pendientes conocidos (antes de programar)
-1. **Escribir el SQL de migración con RLS**, a mano y en partes, a partir del DBML (tipos, tablas, restricciones, funciones, triggers, vista del reporte mensual y políticas RLS por rol). Aún no existe.
+1. **Ejecutar la migración SQL en el proyecto real de Supabase** (issue #3). Ya está escrita y probada en local: 6 partes en `supabase/migrations/`, 192 pruebas pgTAP en `supabase/tests/`. Falta pegar las 6 partes en el SQL Editor, correr `supabase/verificacion.sql` y crear las cuentas de directiva y guardia (`supabase/crear_personal.sql`).
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
 3. **Notificaciones push de Android:** configurar FCM (`google-services.json`) y las credenciales de EAS en el Sprint 5, y decidir qué hacer con el plugin `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE` cuando haya cuenta de pago.
 4. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).

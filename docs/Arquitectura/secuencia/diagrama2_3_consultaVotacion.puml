@@ -23,7 +23,7 @@ RES -> APP : filtrar por categoría (RF10)
 APP --> RES : listado filtrado
 
 RES -> APP : emitir voto en encuesta activa (RF9)
-APP -> DB : registrar voto de la unidad (RF9)
+APP -> DB : emitir_voto: registrar el voto de la unidad en una sola transacción (RF9)
 activate DB
 
 alt la unidad aún no ha votado
