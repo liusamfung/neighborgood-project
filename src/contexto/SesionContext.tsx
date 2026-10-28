@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 
 import { obtenerPerfil } from '@/repositorios/perfiles';
 import { cerrarSesion, escucharSesion, obtenerSesion } from '@/repositorios/sesion';
-import { ROLES, type Perfil, type Rol } from '@/tipos/perfil';
+import type { Perfil, Rol } from '@/tipos/perfil';
 
 type ValorSesion = {
   sesion: Session | null;
@@ -14,33 +14,19 @@ type ValorSesion = {
   /** true mientras se recupera la sesión guardada o se consulta el perfil. */
   cargando: boolean;
   errorPerfil: Error | null;
+  /** Por qué la app sacó al usuario tras iniciar sesión (sin perfil, inactivo o error). */
+  rechazo: string | null;
+  limpiarRechazo: () => void;
   cerrarSesion: () => Promise<void>;
 };
 
 const SesionContext = createContext<ValorSesion | null>(null);
 
-// SOLO DESARROLLO: permite recorrer los tres roles sin Supabase. Se elimina cuando exista
-// la migración de `perfiles` y el inicio de sesión real (Sprint 3). Expo reemplaza la
-// variable al compilar y `__DEV__` es false en producción, así que no llega a la build final.
-const rolDev: Rol | null = __DEV__
-  ? (ROLES.find((r) => r === process.env.EXPO_PUBLIC_ROL_DEV) ?? null)
-  : null;
-
-const perfilDev: Perfil | null = rolDev && {
-  id: 'dev',
-  unidad_id: null,
-  nombre: 'Desarrollo',
-  apellido: rolDev,
-  telefono: null,
-  rol: rolDev,
-  activo: true,
-  creado_en: new Date(0).toISOString(),
-};
-
 export function SesionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [sesion, setSesion] = useState<Session | null>(null);
   const [recuperando, setRecuperando] = useState(true);
+  const [rechazo, setRechazo] = useState<string | null>(null);
 
   useEffect(() => {
     let vigente = true;
@@ -62,21 +48,47 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const consulta = useQuery({
     queryKey: ['perfil', usuarioId],
     queryFn: () => obtenerPerfil(usuarioId as string),
-    enabled: Boolean(usuarioId) && !perfilDev,
+    enabled: Boolean(usuarioId),
   });
 
-  const perfil = perfilDev ?? consulta.data ?? null;
+  const perfil = consulta.data ?? null;
+  const rol = perfil?.activo ? perfil.rol : null;
+  const cargando = recuperando || (Boolean(usuarioId) && consulta.isPending);
+
+  const cerrar = async () => {
+    await cerrarSesion();
+    queryClient.removeQueries({ queryKey: ['perfil'] });
+  };
+
+  // Una sesión sin perfil activo no puede ver nada (RLS): se cierra y se explica el motivo.
+  // El mensaje vive aquí y no en la pantalla de login porque, mientras se carga el perfil,
+  // la navegación desmonta el login y un estado local se perdería. Se fija durante el render
+  // (patrón de React para ajustar el estado según otro valor) para que ya esté puesto cuando
+  // el login vuelva a montarse.
+  const sinAcceso = !cargando && Boolean(sesion) && rol === null;
+  const motivo = consulta.isError
+    ? 'No pudimos cargar tu perfil. Inténtalo de nuevo.'
+    : perfil
+      ? 'Tu cuenta está desactivada. Contacta a la directiva.'
+      : 'Tu correo no está habilitado. Contacta a la directiva.';
+  if (sinAcceso && rechazo !== motivo) setRechazo(motivo);
+
+  useEffect(() => {
+    if (!sinAcceso) return;
+    cerrar().catch((error) => console.error('No se pudo cerrar la sesión', error));
+    // `cerrar` solo debe ejecutarse al detectar la sesión sin acceso, no en cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sinAcceso]);
 
   const valor: ValorSesion = {
     sesion,
     perfil,
-    rol: perfil?.activo ? perfil.rol : null,
-    cargando: perfilDev ? false : recuperando || (Boolean(usuarioId) && consulta.isPending),
+    rol,
+    cargando,
     errorPerfil: consulta.error,
-    cerrarSesion: async () => {
-      await cerrarSesion();
-      queryClient.removeQueries({ queryKey: ['perfil'] });
-    },
+    rechazo,
+    limpiarRechazo: () => setRechazo(null),
+    cerrarSesion: cerrar,
   };
 
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>;

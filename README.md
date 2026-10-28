@@ -21,7 +21,9 @@ npx tsc --noEmit              # tipos
 npx expo lint                 # eslint
 npx expo-doctor               # diagnóstico del proyecto
 ```
-Solo se recompila (`npx expo run:ios`) si cambia algo nativo: una librería con código nativo o los plugins de `app.json`.
+Solo se recompila (`npx expo run:ios`) si cambia algo nativo: una librería con código nativo o los plugins de `app.json`. Si cambias el `.env`, reinicia el servidor con `npx expo start --dev-client --clear`.
+
+**Entrar a la app.** La pantalla de inicio de sesión usa cuentas reales de Supabase (correo y contraseña); cada rol ve solo su navegación. Las cuentas se crean como se explica en la sección de la base de datos; las contraseñas no están en el repositorio.
 
 ## iPhone con una cuenta de Apple gratuita
 1. En tu `.env` pon `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE=1`. Quita el permiso de push remoto, que una cuenta gratuita no puede firmar; ese iPhone no recibe push remotas (las locales sí). No afecta a Android ni a EAS.
