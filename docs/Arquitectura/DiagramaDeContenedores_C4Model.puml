@@ -11,7 +11,7 @@ Person(guardia, "Guardia de seguridad", "Escanea pases QR y registra ingresos y 
 
 System_Boundary(ng, "NeighborGood") {
 
-    Container(app, "App móvil", "React Native, Expo SDK 57 (development build)", "Una sola app para los 3 roles. Dibuja el QR del pase y escanea con la cámara")
+    Container(app, "App móvil", "React Native, Expo SDK 58 (development build)", "Una sola app para los 3 roles. Dibuja el QR del pase y escanea con la cámara")
 
     Boundary(sb, "Supabase (BaaS en la nube)") {
         Container(auth, "Auth", "Supabase Auth", "Registro e inicio de sesión con correo o Google. Emite un JWT por sesión")

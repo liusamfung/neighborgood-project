@@ -5,7 +5,7 @@ title Diagrama de componentes: App móvil de NeighborGood
 
 LAYOUT_WITH_LEGEND()
 
-Container_Boundary(app, "App móvil (React Native + Expo SDK 57)") {
+Container_Boundary(app, "App móvil (React Native + Expo SDK 58)") {
 
     Boundary(pres, "Capa de presentación") {
         Component(nav, "Navegación por rol", "Expo Router", "Muestra el menú y las rutas de Directiva, Residente o Guardia según el rol")

@@ -6,7 +6,7 @@ title Diagrama de despliegue: NeighborGood
 LAYOUT_WITH_LEGEND()
 
 Deployment_Node(cel, "Celular del usuario", "Android o iOS") {
-    Container(app, "App móvil", "React Native, Expo SDK 57", "Development build en pruebas y build de producción al entregar")
+    Container(app, "App móvil", "React Native, Expo SDK 58", "Development build en pruebas y build de producción al entregar")
 }
 
 Deployment_Node(eas, "EAS Build", "Nube de Expo") {
