@@ -40,7 +40,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 | Migraciones SQL, datos de prueba, pruebas de RLS y verificación | `supabase/` |
 
 ## Documentación (Google Docs)
-- Documento principal: [Documentación NeighborGood · Avance 2 (Google Doc)](https://docs.google.com/document/d/1zu4ESKZIwlvBpDbr9Sxd5O6Pe06XFvFAk1mCHtI9LIE/edit)
+- Documento principal: [Documentación_NeighborGood_Avance2](https://docs.google.com/document/d/1Ch64w83Pux51SVcB53y7BwrBZe7XO0V5REKRX-UWzH8/edit) (Google Doc convertido desde el Word, con sus imágenes)
 - Carpeta de Drive: https://drive.google.com/drive/folders/1ieP6vNtkyREHZqm_HkXu0L3JUyF8VdOC
 
 Reglas:
