@@ -23,6 +23,7 @@
     },
     "plugins": [
       "./plugins/quitar-push-entitlement",
+      "./plugins/desactivar-sandbox-scripts-ios",
       "expo-router",
       [
         "expo-splash-screen",
