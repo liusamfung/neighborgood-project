@@ -30,6 +30,8 @@ Solo se recompila (`npx expo run:ios`) si cambia algo nativo: una librería con 
 2. Activa el *Modo desarrollador* en el iPhone, conéctalo y confía en el Mac.
 3. `npx expo prebuild --platform ios --clean` (si cambiaste la variable o `app.json`) y luego `npx expo run:ios --device`.
 4. Cada día: `npx expo start --dev-client` con el iPhone en la misma Wi-Fi (o `--tunnel`).
+5. **Versión Release** (sin servidor Metro, para una demostración): `npx expo run:ios --device --configuration Release`. El JavaScript queda dentro de la app y las variables `EXPO_PUBLIC_*` del `.env` se fijan al compilar. Reemplaza a la development build (mismo identificador). Con una cuenta gratuita la app caduca a los 7 días: vuelve a ejecutar el comando antes de cada demostración.
+6. Si Xcode falla con `Sandbox: node(...) deny(1) file-write-unlink ... main.jsbundle`, el plugin `plugins/desactivar-sandbox-scripts-ios.js` pone `ENABLE_USER_SCRIPT_SANDBOXING = NO`; aplícalo con `npx expo prebuild --platform ios --clean`.
 
 La app instalada con cuenta gratuita **caduca a los 7 días**: repite el paso 3.
 
