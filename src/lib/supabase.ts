@@ -1,3 +1,13 @@
+/**
+ * Cliente de Supabase de la app: el único punto de conexión con el backend.
+ *
+ * Qué hace: crea `supabase` con la URL y la anon key del proyecto, guarda la sesión en el llavero del
+ * teléfono (SecureStore) y renueva el token solo con la app en primer plano.
+ * Cómo funciona: con la anon key no se puede leer nada sin iniciar sesión; los permisos por rol los
+ * imponen las políticas RLS de la base (supabase/migrations, parte 5).
+ * Se usa con: `src/repositorios/sesion.ts` y `src/repositorios/perfiles.ts` (las pantallas nunca lo
+ * importan). Depende de: `src/tipos/base_de_datos.ts` (tipos generados) y del `.env` (`EXPO_PUBLIC_*`).
+ */
 import 'react-native-url-polyfill/auto';
 
 import { createClient } from '@supabase/supabase-js';
@@ -6,7 +16,8 @@ import { AppState } from 'react-native';
 
 import type { Database } from '@/tipos/base_de_datos';
 
-// Expo reemplaza estas variables al compilar; deben escribirse literalmente.
+// Variables del `.env` (ignorado por git). Expo las reemplaza al compilar, por eso deben escribirse
+// literalmente `process.env.EXPO_PUBLIC_...` y no leerse de forma dinámica.
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -33,6 +44,10 @@ const almacenSeguro = {
   removeItem: (clave: string) => SecureStore.deleteItemAsync(clave),
 };
 
+/**
+ * Cliente tipado de Supabase. Úsalo solo desde `src/repositorios`, nunca desde una pantalla (RNF7).
+ * Lleva solo la anon key: la service_role vive únicamente en las Edge Functions.
+ */
 // Solo la anon key: la service_role vive únicamente en las Edge Functions.
 // Se usa || y no ?? porque un .env copiado de .env.example deja las variables como cadena vacía.
 export const supabase = createClient<Database>(
@@ -48,7 +63,8 @@ export const supabase = createClient<Database>(
   },
 );
 
-// En móvil no hay pestañas: el refresco del token solo corre con la app en primer plano.
+// En móvil no hay pestañas: el refresco automático del token solo corre con la app en primer plano
+// (se detiene en segundo plano para ahorrar batería y llamadas).
 AppState.addEventListener('change', (estado) => {
   if (estado === 'active') {
     supabase.auth.startAutoRefresh();
