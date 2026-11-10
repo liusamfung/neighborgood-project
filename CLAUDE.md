@@ -39,6 +39,15 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 | Modelo de datos (DBML) y diccionario de datos | `docs/db_diagram/` |
 | Migraciones SQL, datos de prueba, pruebas de RLS y verificación | `supabase/` |
 
+## Documentación (Google Docs)
+- Documento principal: [Documentación_NeighborGood_Avance2](https://docs.google.com/document/d/1Ch64w83Pux51SVcB53y7BwrBZe7XO0V5REKRX-UWzH8/edit) (Google Doc convertido desde el Word, con sus imágenes)
+- Carpeta de Drive: https://drive.google.com/drive/folders/1ieP6vNtkyREHZqm_HkXu0L3JUyF8VdOC
+
+Reglas:
+- Al terminar una sesión de trabajo, o al terminar un pull request con un merge satisfactorio a `main`, ofrece actualizar el documento principal comparándolo con el estado real del proyecto.
+- Antes de editar, lista los cambios que propones. No borres secciones sin preguntar.
+- El documento está en español.
+
 ## Comentarios en el código
 Pedido del profesor: el código se entiende leyendo sus comentarios. Esta regla vale para todo código nuevo y para cada cambio de código existente.
 - **Cabecera de archivo.** Todo archivo de código (`.ts`, `.tsx`, `.js`, `.sql`) empieza con un comentario que dice qué hace, cómo funciona a grandes rasgos y **con quién se relaciona** (qué archivos o servicios lo usan y de cuáles depende). Se omite solo en los archivos que se explican solos (por ejemplo, uno que solo reexporta). Las pantallas provisionales llevan una línea: ruta, rol, pantalla del mockup, RF y Sprint.
