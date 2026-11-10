@@ -20,6 +20,9 @@ select has_view('public', 'reporte_incidencias_mensual', 'Existe la vista del re
 select has_function('privado', 'rol_actual', 'Existe la función auxiliar privado.rol_actual');
 select has_function('public', 'emitir_voto', array['uuid', 'jsonb'], 'Existe la función emitir_voto');
 select has_function('public', 'resultados_encuesta', array['uuid'], 'Existe la función resultados_encuesta');
+select has_function('public', 'crear_encuesta',
+  array['text', 'text', 'uuid', 'public.prioridad_encuesta', 'boolean', 'timestamp with time zone', 'timestamp with time zone', 'uuid[]', 'jsonb'],
+  'Existe la función crear_encuesta');
 
 select is((select count(*)::int from storage.buckets where id in ('avisos', 'incidencias') and not public), 2,
   'Los buckets avisos e incidencias existen y son privados');

@@ -7,11 +7,11 @@
 --     Nunca lo ejecutes en un proyecto con datos reales.
 --
 -- Úsalo cuando una parte de la migración falló a la mitad en el SQL Editor y
--- quieres empezar de cero: después vuelve a ejecutar las 6 partes en orden.
+-- quieres empezar de cero: después vuelve a ejecutar las 7 partes en orden.
 -- En local no hace falta: `supabase db reset` hace lo mismo y además aplica el seed.
 --
--- Se relaciona con: deshace las partes 1 a 6 de supabase/migrations en orden inverso; después se
---   vuelven a ejecutar las 6 partes. En local, `supabase db reset` hace lo mismo y además carga
+-- Se relaciona con: deshace las partes 1 a 7 de supabase/migrations en orden inverso; después se
+--   vuelven a ejecutar las 7 partes. En local, `supabase db reset` hace lo mismo y además carga
 --   seed.sql.
 -- =====================================================================
 begin;
@@ -36,6 +36,7 @@ drop view if exists public.reporte_incidencias_mensual;
 
 drop function if exists public.emitir_voto(uuid, jsonb);
 drop function if exists public.resultados_encuesta(uuid);
+drop function if exists public.crear_encuesta(text, text, uuid, public.prioridad_encuesta, boolean, timestamptz, timestamptz, uuid[], jsonb);
 
 drop table if exists
   public.incidencia_fotos, public.incidencias,
