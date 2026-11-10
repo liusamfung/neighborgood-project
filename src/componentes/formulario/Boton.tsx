@@ -3,7 +3,8 @@
  *
  * Qué hace: dibuja un botón con los colores y tamaños del sistema de diseño, con estado "cargando"
  * (muestra un indicador y bloquea el toque) y "deshabilitado".
- * Se usa con: `src/app/(auth)/login.tsx` (Iniciar sesión) y `src/componentes/PantallaMarcador.tsx`
+ * Se usa con: `src/app/(auth)/login.tsx`, `src/app/(auth)/registro.tsx`, las pantallas de
+ * `src/app/directiva/residentes` y `src/componentes/PantallaMarcador.tsx`
  * (Cerrar sesión); lo usarán también los formularios de RF1, RF4 y RF5.
  * Depende de: `src/tema` (colores, radios, tamaños y tipografía).
  */
