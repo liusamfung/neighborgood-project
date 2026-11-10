@@ -2,6 +2,10 @@
 -- NeighborGood · Parte 2 de 6: restricciones CHECK e índices
 -- Los CHECK son las reglas que el modelo dejó como notas; los índices son
 -- los del modelo más los de las columnas que usan las políticas RLS.
+--
+-- Se relaciona con: la parte 1 (crea las tablas que aquí se modifican), la parte 5
+-- (las políticas RLS filtran por las columnas que aquí se indexan) y las pruebas
+-- supabase/tests/database/02_restricciones.test.sql (comprueban cada CHECK).
 -- =====================================================================
 begin;
 
@@ -21,10 +25,12 @@ alter table public.contactos_emergencia
   add constraint ck_contactos_orden_1_a_3
   check (orden between 1 and 3);
 
+-- RF7: un aviso termina de ser vigente después de empezar.
 alter table public.avisos
   add constraint ck_avisos_vigencia_valida
   check (vigente_hasta > vigente_desde);
 
+-- RF8: una encuesta cierra después de abrir.
 alter table public.encuestas
   add constraint ck_encuestas_cierre_posterior
   check (cierra_en > abre_en);
@@ -50,6 +56,8 @@ alter table public.incidencia_fotos
   check (orden between 1 and 3);
 
 -- ───────────── Índices del modelo ─────────────
+-- Aceleran las consultas más frecuentes de la app: historial de sesiones, avisos vigentes,
+-- pases de una unidad por día, alertas de un sector y el reporte mensual de incidencias.
 create index idx_registros_sesion_usuario_fecha on public.registros_sesion (usuario_id, iniciado_en);
 create index idx_dispositivos_usuario           on public.dispositivos (usuario_id);
 create index idx_avisos_vigente_hasta           on public.avisos (vigente_hasta);
@@ -58,6 +66,8 @@ create index idx_alertas_sector_creada          on public.alertas (sector_id, cr
 create index idx_incidencias_creada             on public.incidencias (creada_en);
 
 -- ───────────── Índices para las políticas RLS y las llaves foráneas ─────────────
+-- Postgres no indexa las llaves foráneas por sí solo. Cada índice acelera los joins de las
+-- políticas RLS (parte 5) y los borrados en cascada de la parte 1.
 create index idx_perfiles_unidad               on public.perfiles (unidad_id);
 create index idx_residentes_habilitados_unidad on public.residentes_habilitados (unidad_id);
 create index idx_residentes_habilitados_creador on public.residentes_habilitados (creado_por);
@@ -74,7 +84,7 @@ create index idx_pases_residente               on public.pases_visita (residente
 create index idx_pases_guardia                 on public.pases_visita (guardia_id);
 create index idx_alertas_emisor                on public.alertas (emisor_id);
 create index idx_alertas_unidad                on public.alertas (unidad_id);
-create index idx_alertas_abiertas              on public.alertas (emisor_id) where estado <> 'atendida';
+create index idx_alertas_abiertas              on public.alertas (emisor_id) where estado <> 'atendida';  -- parcial: solo alertas abiertas
 create index idx_atenciones_alerta             on public.alerta_atenciones (alerta_id);
 create index idx_atenciones_usuario            on public.alerta_atenciones (usuario_id);
 create index idx_incidencias_reportado_por     on public.incidencias (reportado_por);
