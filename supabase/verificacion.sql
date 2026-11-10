@@ -1,7 +1,7 @@
 -- =====================================================================
 -- NeighborGood · verificación de la migración (SOLO LECTURA)
 --
--- Pégalo en el SQL Editor del proyecto real después de ejecutar las 6 partes.
+-- Pégalo en el SQL Editor del proyecto real después de ejecutar las 7 partes.
 -- No modifica nada. Cada fila dice OK o REVISAR; si alguna sale REVISAR,
 -- no sigas: avisa antes de usar la base.
 --

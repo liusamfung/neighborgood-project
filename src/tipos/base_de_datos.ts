@@ -862,6 +862,20 @@ export type Database = {
       };
     };
     Functions: {
+      crear_encuesta: {
+        Args: {
+          p_abre_en: string;
+          p_categoria_id: string;
+          p_cierra_en: string;
+          p_descripcion: string;
+          p_preguntas: Json;
+          p_prioridad: Database['public']['Enums']['prioridad_encuesta'];
+          p_resultados_en_vivo: boolean;
+          p_sectores: string[];
+          p_titulo: string;
+        };
+        Returns: string;
+      };
       emitir_voto: { Args: { p_encuesta_id: string; p_opciones: Json }; Returns: string };
       resultados_encuesta: {
         Args: { p_encuesta_id: string };
