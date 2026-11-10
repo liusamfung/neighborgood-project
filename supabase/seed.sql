@@ -13,14 +13,21 @@
 --   residente3@neighborgood.test  residente, unidad B-101 (Torre B)
 --   intruso@neighborgood.test     cuenta confirmada pero NO habilitada: no recibe perfil
 -- Los ids son fijos para que las pruebas de supabase/tests puedan referirse a ellos.
+--
+-- Se relaciona con: las migraciones de supabase/migrations (crea filas en sus tablas y activa el
+--   trigger de registro), las pruebas de supabase/tests/database (usan estos ids fijos) y el README
+--   (usuarios de prueba). Prefijos de los ids: 1 sectores, 2 unidades, 4 categorías, 5 avisos, 6
+--   encuestas (60 encuesta, 61 pregunta, 62 opción), 7 pases, 8 incidencias y 9 usuarios.
 -- =====================================================================
 
 -- ───────────── Estructura del condominio ─────────────
+-- Tres sectores: dos torres y un pabellón (RF13).
 insert into public.sectores (id, nombre, tipo) values
   ('10000000-0000-0000-0000-000000000001', 'Torre A',     'torre'),
   ('10000000-0000-0000-0000-000000000002', 'Torre B',     'torre'),
   ('10000000-0000-0000-0000-000000000003', 'Pabellón C',  'pabellon');
 
+-- Doce unidades, cuatro por sector. unidades.sector_id → sectores.id.
 insert into public.unidades (id, sector_id, codigo) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'A-101'),
   ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'A-102'),
@@ -35,6 +42,7 @@ insert into public.unidades (id, sector_id, codigo) values
   ('20000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000003', 'C-3'),
   ('20000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000003', 'C-4');
 
+-- Las cinco categorías de avisos y encuestas (RF10).
 insert into public.categorias_aviso (id, nombre) values
   ('40000000-0000-0000-0000-000000000001', 'Mantenimiento'),
   ('40000000-0000-0000-0000-000000000002', 'Seguridad'),
@@ -44,6 +52,9 @@ insert into public.categorias_aviso (id, nombre) values
 
 -- ───────────── Personal: directiva y guardia ─────────────
 -- Sus perfiles se insertan a mano (el trigger de registro solo crea los de los residentes).
+-- Crea un usuario de Supabase Auth ya confirmado y con identidad de correo, como si se hubiera
+-- registrado. p_id: id fijo del usuario; p_correo: su correo (la contraseña es la del encabezado).
+-- Vive en pg_temp: desaparece al terminar la sesión y no queda en la base.
 create or replace function pg_temp.crear_usuario(p_id uuid, p_correo text)
 returns void language plpgsql as $$
 begin
@@ -66,12 +77,15 @@ end $$;
 select pg_temp.crear_usuario('90000000-0000-0000-0000-000000000001', 'directiva@neighborgood.test');
 select pg_temp.crear_usuario('90000000-0000-0000-0000-000000000002', 'guardia@neighborgood.test');
 
+-- perfiles.id → auth.users.id (los usuarios de arriba); perfiles.unidad_id queda en null para el personal.
 insert into public.perfiles (id, unidad_id, nombre, apellido, telefono, rol) values
   ('90000000-0000-0000-0000-000000000001', null, 'Marta',  'Quispe Huamán', '999000001', 'directiva'),
   ('90000000-0000-0000-0000-000000000002', null, 'Jorge',  'Salazar Vega',  '999000002', 'guardia');
 
 -- ───────────── Residentes: primero se habilitan, luego se registran ─────────────
 -- Al insertar el usuario confirmado, el trigger crea su perfil porque el correo está habilitado.
+-- residentes_habilitados.unidad_id → unidades.id; creado_por → perfiles.id (la directiva).
+-- residente1 y residente2 comparten unidad: sirven para probar "un voto por unidad" (RF9).
 insert into public.residentes_habilitados (unidad_id, nombre, correo, creado_por) values
   ('20000000-0000-0000-0000-000000000001', 'Rosa Mendoza Paredes', 'residente1@neighborgood.test', '90000000-0000-0000-0000-000000000001'),
   ('20000000-0000-0000-0000-000000000001', 'Luis Mendoza Paredes', 'residente2@neighborgood.test', '90000000-0000-0000-0000-000000000001'),
@@ -83,10 +97,15 @@ select pg_temp.crear_usuario('90000000-0000-0000-0000-000000000013', 'residente3
 select pg_temp.crear_usuario('90000000-0000-0000-0000-000000000099', 'intruso@neighborgood.test');  -- sin perfil
 
 -- ───────────── Contenido de ejemplo ─────────────
+-- Cada insert usa los ids de arriba como llaves foráneas (usuario_id, autor_id, unidad_id...).
+
+-- Dos de los tres contactos posibles de residente1 (RF4). contactos_emergencia.usuario_id → perfiles.id.
 insert into public.contactos_emergencia (usuario_id, nombre, telefono, parentesco, orden) values
   ('90000000-0000-0000-0000-000000000011', 'Pedro Mendoza', '988111111', 'Esposo', 1),
   ('90000000-0000-0000-0000-000000000011', 'Ana Paredes',   '988222222', 'Madre',  2);
 
+-- Tres avisos de la directiva: uno para todos, uno solo para la Torre A y uno ya vencido (historial, RF11).
+-- avisos.autor_id → perfiles.id; categoria_id → categorias_aviso.id.
 insert into public.avisos (id, autor_id, categoria_id, para_todos, titulo, descripcion, vigente_desde, vigente_hasta) values
   ('50000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', true,
    'Corte de agua programado', 'El sábado se cortará el agua de 8 a. m. a 12 m. por mantenimiento de la cisterna.',
@@ -97,23 +116,31 @@ insert into public.avisos (id, autor_id, categoria_id, para_todos, titulo, descr
   ('50000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000003', true,
    'Reunión de vecinos (ya realizada)', 'Se aprobó el cronograma de mantenimiento del año.',
    now() - interval '30 days', now() - interval '20 days');
+-- Destino del aviso de fumigación: solo la Torre A. aviso_sectores.aviso_id → avisos.id; sector_id → sectores.id.
 insert into public.aviso_sectores (aviso_id, sector_id) values
   ('50000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001');
 
+-- Una encuesta obligatoria (prioridad alta) con resultados en vivo, abierta ahora (RF8, RF12, RF14).
+-- encuestas.autor_id → perfiles.id; categoria_id → categorias_aviso.id.
 insert into public.encuestas (id, autor_id, categoria_id, para_todos, titulo, descripcion, prioridad, resultados_en_vivo, abre_en, cierra_en) values
   ('60000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000005', true,
    'Horario de la piscina', 'Elige el horario de atención para el próximo año.', 'alta', true,
    now() - interval '1 day', now() + interval '7 days');
+-- Una pregunta de selección única y sus dos opciones. encuesta_preguntas.encuesta_id → encuestas.id;
+-- encuesta_opciones.pregunta_id → encuesta_preguntas.id.
 insert into public.encuesta_preguntas (id, encuesta_id, texto, seleccion, orden) values
   ('61000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', '¿Qué horario prefieres?', 'unica', 1);
 insert into public.encuesta_opciones (id, pregunta_id, texto, orden) values
   ('62000000-0000-0000-0000-000000000001', '61000000-0000-0000-0000-000000000001', '6 a. m. a 10 p. m.', 1),
   ('62000000-0000-0000-0000-000000000002', '61000000-0000-0000-0000-000000000001', '8 a. m. a 8 p. m.',  2);
 
+-- Un pase vigente para hoy (fecha en hora de Lima) de residente1 (RF15).
+-- pases_visita.residente_id → perfiles.id; unidad_id → unidades.id.
 insert into public.pases_visita (id, residente_id, unidad_id, nombre_visitante, fecha_visita, hora_estimada) values
   ('70000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000011', '20000000-0000-0000-0000-000000000001',
    'Tomás Vega', (now() at time zone 'America/Lima')::date, '16:30');
 
+-- Una incidencia pendiente de residente1 (RF29). incidencias.reportado_por → perfiles.id; unidad_id → unidades.id.
 insert into public.incidencias (id, reportado_por, unidad_id, ubicacion, descripcion) values
   ('80000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000011', '20000000-0000-0000-0000-000000000001',
    'Dpto A-101', 'El foco del pasillo del primer piso está quemado.');

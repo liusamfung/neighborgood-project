@@ -8,6 +8,10 @@
 --
 -- Dos funciones públicas (RPC) concentran las operaciones que no deben
 -- hacerse con inserciones sueltas desde la app: emitir_voto y resultados_encuesta.
+--
+-- Se relaciona con: la parte 1 (las tablas que consultan), la parte 5 (las políticas RLS llaman a
+-- estas funciones), auth.users (el trigger que crea el perfil) y la app, que llamará a las dos RPC
+-- (RF9 y RF12). Se prueban en supabase/tests/database/03_triggers.test.sql y 04_politicas_por_rol.test.sql.
 -- =====================================================================
 begin;
 
@@ -15,6 +19,7 @@ create schema if not exists privado;
 
 -- ───────────── Funciones auxiliares (consultan quién es el usuario actual) ─────────────
 -- Devuelven NULL si no hay sesión, no hay perfil o el perfil está inactivo.
+-- Rol del usuario con sesión (directiva, residente o guardia).
 create or replace function privado.rol_actual()
 returns public.rol_usuario
 language sql stable security definer set search_path = ''
@@ -22,6 +27,7 @@ as $$
   select p.rol from public.perfiles p where p.id = (select auth.uid()) and p.activo
 $$;
 
+-- Unidad del usuario con sesión (NULL para directiva y guardia).
 create or replace function privado.unidad_actual()
 returns uuid
 language sql stable security definer set search_path = ''
@@ -29,6 +35,7 @@ as $$
   select p.unidad_id from public.perfiles p where p.id = (select auth.uid()) and p.activo
 $$;
 
+-- Sector de la unidad del usuario con sesión; las políticas de avisos, encuestas y alertas lo comparan.
 create or replace function privado.sector_actual()
 returns uuid
 language sql stable security definer set search_path = ''
@@ -39,10 +46,12 @@ as $$
    where p.id = (select auth.uid()) and p.activo
 $$;
 
+-- true si hay sesión y el perfil existe y está activo.
 create or replace function privado.es_usuario_activo()
 returns boolean language sql stable security definer set search_path = ''
 as $$ select privado.rol_actual() is not null $$;
 
+-- es_directiva, es_guardia y es_residente: true si el usuario de la sesión tiene ese rol (false si no hay sesión).
 create or replace function privado.es_directiva()
 returns boolean language sql stable security definer set search_path = ''
 as $$ select coalesce(privado.rol_actual() = 'directiva', false) $$;
@@ -66,6 +75,7 @@ returns date language sql stable set search_path = ''
 as $$ select (now() at time zone 'America/Lima')::date $$;
 
 -- ───────────── Funciones auxiliares por tema (evitan recursión entre políticas) ─────────────
+-- true si el aviso está dirigido (tabla aviso_sectores) al sector del usuario de la sesión.
 create or replace function privado.aviso_en_mi_sector(p_aviso uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -75,6 +85,7 @@ as $$
   )
 $$;
 
+-- true si la encuesta está dirigida (tabla encuesta_sectores) al sector del usuario de la sesión.
 create or replace function privado.encuesta_en_mi_sector(p_encuesta uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -117,6 +128,7 @@ as $$
   )
 $$;
 
+-- Una pregunta es visible si lo es su encuesta (la usan las políticas de preguntas y opciones).
 create or replace function privado.puede_ver_pregunta(p_pregunta uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -137,6 +149,7 @@ as $$
      )
 $$;
 
+-- true si la alerta fue enviada por el usuario de la sesión (el emisor ve el estado de su alerta).
 create or replace function privado.es_emisor_de(p_alerta uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -157,6 +170,7 @@ as $$
   )
 $$;
 
+-- true si el usuario de la sesión reportó la incidencia.
 create or replace function privado.es_dueno_de_incidencia(p_incidencia uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -166,6 +180,7 @@ as $$
   )
 $$;
 
+-- La directiva ve todas las incidencias; el residente, solo las suyas.
 create or replace function privado.puede_ver_incidencia(p_incidencia uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
@@ -187,25 +202,32 @@ declare
   v_nombre   text;
   v_apellido text;
 begin
+  -- Sin correo confirmado no se crea perfil: así nadie reclama un correo ajeno.
   if new.email is null or new.email_confirmed_at is null then
     return new;
   end if;
+  -- Si ya tiene perfil no se hace nada (el trigger también corre al actualizar el correo).
   if exists (select 1 from public.perfiles p where p.id = new.id) then
     return new;
   end if;
 
+  -- Busca el alta de la directiva: mismo correo, aún sin registrar y con la unidad habilitada.
+  -- `for update` bloquea la fila para que dos registros simultáneos no la usen a la vez.
   select h.* into v_hab
     from public.residentes_habilitados h
     join public.unidades u on u.id = h.unidad_id and u.habilitada
    where h.correo = lower(btrim(new.email)) and not h.registrado
      for update of h;
+  -- Sin alta no hay perfil (registro "suave"): RLS no dejará ver nada.
   if not found then
     return new;
   end if;
 
+  -- El nombre completo del alta se divide en nombre (primera palabra) y apellido (el resto).
   v_nombre   := split_part(btrim(v_hab.nombre), ' ', 1);
   v_apellido := btrim(substr(btrim(v_hab.nombre), length(v_nombre) + 1));
 
+  -- Crea el perfil de residente en la unidad del alta y marca el alta como registrada.
   insert into public.perfiles (id, unidad_id, nombre, apellido, rol)
   values (new.id, v_hab.unidad_id, v_nombre, v_apellido, 'residente');
 
@@ -221,6 +243,8 @@ create trigger trg_auth_users_crear_perfil
   execute function privado.crear_perfil_al_registrarse();
 
 -- ───────────── Trigger: la alerta nace activa y copia el sector de su unidad ─────────────
+-- La app solo informa unidad, tipo y emisor (RF23); aquí se fijan sector, estado y hora para que
+-- el cliente no pueda falsearlos.
 create or replace function privado.completar_alerta()
 returns trigger
 language plpgsql security definer set search_path = ''
@@ -325,6 +349,7 @@ create trigger trg_perfiles_proteger
   for each row execute function privado.proteger_perfil();
 
 -- ───────────── Trigger: fechas y responsable al cambiar el estado de una incidencia ─────────────
+-- Registra quién cambió el estado y cuándo (RF30); resuelta_en solo se llena al pasar a 'resuelto'.
 create or replace function privado.preparar_actualizacion_incidencia()
 returns trigger
 language plpgsql set search_path = ''
@@ -346,6 +371,7 @@ create trigger trg_incidencias_preparar
   for each row execute function privado.preparar_actualizacion_incidencia();
 
 -- ───────────── Trigger: "usado" y "anulado" son estados finales del pase ─────────────
+-- Un pase usado o anulado ya no cambia (RF19, RF22); al anular se guarda la hora.
 create or replace function privado.proteger_pase()
 returns trigger
 language plpgsql set search_path = ''
@@ -381,6 +407,7 @@ declare
   v_preguntas  integer;
   v_respondidas integer;
 begin
+  -- 1. Quién vota: solo un residente con unidad (el voto es de la unidad, no de la persona).
   if not privado.es_residente() then
     raise exception 'Solo un residente puede votar' using errcode = '42501';
   end if;
@@ -389,6 +416,7 @@ begin
     raise exception 'Tu perfil no tiene unidad' using errcode = '42501';
   end if;
 
+  -- 2. La encuesta debe existir, estar abierta y dirigida al sector del residente.
   select * into v_enc from public.encuestas where id = p_encuesta_id;
   if not found then
     raise exception 'La encuesta no existe' using errcode = 'P0002';
@@ -400,6 +428,7 @@ begin
     raise exception 'La encuesta no está dirigida a tu sector' using errcode = '42501';
   end if;
 
+  -- 3. El envío debe traer al menos una opción por cada pregunta de la encuesta.
   if p_opciones is null or jsonb_typeof(p_opciones) <> 'array' or jsonb_array_length(p_opciones) = 0 then
     raise exception 'Debes enviar al menos una opción' using errcode = '22023';
   end if;
@@ -409,6 +438,8 @@ begin
     raise exception 'Debes responder todas las preguntas de la encuesta' using errcode = '22023';
   end if;
 
+  -- 4. Se inserta el voto (la llave única encuesta_id + unidad_id rechaza el segundo voto de la
+  -- unidad) y después sus opciones; los triggers de voto_opciones validan cada una.
   insert into public.votos (encuesta_id, unidad_id, usuario_id)
   values (p_encuesta_id, v_unidad, (select auth.uid()))
   returning id into v_voto;
@@ -430,6 +461,7 @@ returns table (pregunta_id uuid, opcion_id uuid, total bigint)
 language plpgsql stable security definer set search_path = ''
 as $$
 #variable_conflict use_column
+-- use_column: si un nombre coincide con una columna de salida, se entiende como columna.
 declare
   v_enc public.encuestas%rowtype;
 begin
@@ -444,6 +476,7 @@ begin
     raise exception 'Los resultados de esta encuesta todavía no están disponibles' using errcode = '42501';
   end if;
 
+  -- Solo cuenta votos (no revela quién votó). El left join deja las opciones sin votos con total 0.
   return query
     select o.pregunta_id, o.id, count(vo.voto_id)::bigint
       from public.encuesta_preguntas q
@@ -456,6 +489,8 @@ end;
 $$;
 
 -- ───────────── Permisos de ejecución ─────────────
+-- Sin sesión (anon) no se ejecuta nada; los usuarios con sesión y las Edge Functions (service_role)
+-- sí. El esquema `privado` tampoco lo expone la API de Supabase.
 revoke all on schema privado from public;
 grant usage on schema privado to authenticated, service_role;
 

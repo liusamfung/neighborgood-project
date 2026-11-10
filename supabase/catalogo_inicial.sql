@@ -8,6 +8,10 @@
 -- Es seguro ejecutarlo más de una vez (no duplica nada). Ejecútalo en el SQL Editor
 -- después de las 6 partes de la migración. Más adelante la directiva administrará
 -- estos datos desde la app; mientras tanto se cargan así.
+--
+-- Se relaciona con: las tablas sectores, unidades y categorias_aviso (parte 1). Debe ejecutarse
+--   antes de crear_personal.sql, porque todo residente necesita una unidad. seed.sql carga el mismo
+--   catálogo, pero solo en la base local.
 -- =====================================================================
 begin;
 

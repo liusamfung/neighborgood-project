@@ -7,9 +7,15 @@
 --                  {usuario_id}/{incidencia_id}/{orden}.jpg
 --                  Escribe el residente dentro de su carpeta; leen el dueño y la directiva.
 -- storage.objects también es una tabla: la regla "RLS en todas las tablas" aplica aquí.
+--
+-- Se relaciona con: privado.es_usuario_activo, es_directiva y es_residente (parte 3), las tablas
+-- avisos e incidencia_fotos (cuyas columnas imagen_path y foto_path guardan estas rutas) y las
+-- pantallas de avisos (RF7) e incidencias (RF29) que suben y leen los archivos.
 -- =====================================================================
 begin;
 
+-- Crea los dos buckets: privados (public = false), de hasta 5 MB y solo imágenes JPEG, PNG o WebP.
+-- `on conflict do nothing` permite volver a ejecutar la parte sin error.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('avisos',      'avisos',      false, 5242880, array['image/jpeg', 'image/png', 'image/webp']),
@@ -35,6 +41,8 @@ create policy "storage avisos: la directiva borra" on storage.objects
   using (bucket_id = 'avisos' and privado.es_directiva());
 
 -- ───────────── incidencias ─────────────
+-- La primera carpeta de la ruta es el id del residente: `storage.foldername(name))[1]` la extrae
+-- y las políticas la comparan con auth.uid(). No hay política de update: una foto no se reemplaza.
 create policy "storage incidencias: leen el dueño y la directiva" on storage.objects
   for select to authenticated
   using (

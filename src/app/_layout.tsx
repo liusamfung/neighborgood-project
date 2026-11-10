@@ -1,3 +1,12 @@
+/**
+ * Layout raíz de la app: fuentes, proveedores y navegación según el rol.
+ *
+ * Qué hace: carga las fuentes Inter, mantiene el splash hasta saber si hay sesión y monta los proveedores
+ * (TanStack Query y sesión). `Navegacion` usa `Stack.Protected` para que cada rol vea solo su carpeta de
+ * rutas (`residente`, `guardia` o `directiva`) y quien no tiene sesión vea solo `(auth)`.
+ * Se usa con: `src/contexto/SesionContext.tsx` (rol y estado de carga), `src/lib/queryClient.ts` y los
+ * `_layout.tsx` de cada carpeta de rol. Es una barrera de la app; los permisos reales los impone RLS.
+ */
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -12,6 +21,7 @@ import { useEffect } from 'react';
 import { SesionProvider, useSesion } from '@/contexto/SesionContext';
 import { queryClient } from '@/lib/queryClient';
 
+// Mantiene visible el splash hasta que `Navegacion` lo oculte, cuando ya se sabe si hay sesión.
 SplashScreen.preventAutoHideAsync();
 
 /**
@@ -47,6 +57,7 @@ function Navegacion() {
   );
 }
 
+/** Componente raíz de Expo Router: espera las fuentes y monta los proveedores (consultas y sesión). */
 export default function RootLayout() {
   const [fuentesCargadas, errorFuentes] = useFonts({
     Inter_400Regular,

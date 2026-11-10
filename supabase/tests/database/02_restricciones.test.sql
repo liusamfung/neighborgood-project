@@ -1,5 +1,8 @@
 -- Pruebas de restricciones (CHECK, únicas y llaves foráneas). Se ejecutan como postgres,
 -- sin pasar por RLS, para probar solo las reglas de la estructura. Usan los datos de seed.sql.
+--
+-- Se relaciona con: la migración 1 (llaves únicas y foráneas), la 2 (CHECK) y la 3 (triggers que
+-- también rechazan datos inválidos, con su propio código de error).
 begin;
 create extension if not exists pgtap with schema extensions;
 select * from no_plan();

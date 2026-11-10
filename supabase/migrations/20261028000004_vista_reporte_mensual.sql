@@ -4,12 +4,17 @@
 -- (la directiva ve todas las incidencias; un residente solo vería las suyas).
 -- Los meses se calculan en la zona horaria America/Lima, no en UTC.
 -- Los permisos de la vista se otorgan en la parte 5.
+--
+-- Se relaciona con: la tabla incidencias (parte 1, de donde sale el conteo), las políticas RLS de la
+-- parte 5 (la vista las hereda), supabase/tests/database/05_vista_reporte.test.sql y la pantalla de
+-- la gráfica mensual de la directiva (Sprint 5).
 -- =====================================================================
 begin;
 
 create or replace view public.reporte_incidencias_mensual
 with (security_invoker = true)
 as
+-- Una fila por mes: `mes` es el primer día del mes en hora de Lima; el resto son conteos por estado.
 select
   date_trunc('month', i.creada_en at time zone 'America/Lima')::date as mes,
   count(*)                                              as total,

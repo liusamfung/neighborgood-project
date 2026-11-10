@@ -12,6 +12,11 @@
 --
 -- Roles de la app: directiva, residente y guardia (perfiles.rol). Un usuario sin perfil
 -- o con perfil inactivo no ve ni escribe nada.
+--
+-- Se relaciona con: la parte 1 (las 21 tablas), la parte 3 (las funciones privado.* que llaman las
+-- políticas y los triggers que fijan estado y fechas), la parte 4 (la vista del reporte) y la parte 6
+-- (Storage). Se prueba en supabase/tests/database/04_politicas_por_rol.test.sql; la app solo lleva
+-- la anon key, así que estas reglas son la defensa real (regla 2 de CLAUDE.md).
 -- =====================================================================
 begin;
 
@@ -118,7 +123,7 @@ create policy "perfiles: actualización" on public.perfiles
   using (id = (select auth.uid()) or privado.es_directiva())
   with check (id = (select auth.uid()) or privado.es_directiva());
 
--- ── registros_sesion ──
+-- ── registros_sesion (RF6): cada usuario ve su historial y la directiva el de todos; solo se inserta el propio ──
 create policy "registros_sesion: lectura" on public.registros_sesion
   for select to authenticated
   using (usuario_id = (select auth.uid()) or privado.es_directiva());
@@ -126,7 +131,9 @@ create policy "registros_sesion: cada usuario registra el suyo" on public.regist
   for insert to authenticated
   with check (usuario_id = (select auth.uid()) and privado.es_usuario_activo());
 
--- ── contactos_emergencia ──
+-- ── contactos_emergencia (RF4) ──
+-- Cada usuario gestiona los suyos (el máximo de 3 lo impone el CHECK de la parte 2). El personal los
+-- lee solo si el usuario tiene una alerta en curso (privado.puede_ver_contactos).
 create policy "contactos_emergencia: lectura" on public.contactos_emergencia
   for select to authenticated
   using (usuario_id = (select auth.uid()) or privado.puede_ver_contactos(usuario_id));
@@ -145,7 +152,8 @@ create policy "dispositivos: cada usuario gestiona los suyos" on public.disposit
   using (usuario_id = (select auth.uid()))
   with check (usuario_id = (select auth.uid()) and privado.es_usuario_activo());
 
--- ── avisos y aviso_sectores ──
+-- ── avisos y aviso_sectores (RF7, RF11, RF13) ──
+-- La lectura delega en privado.puede_ver_aviso (parte 3): rol, fecha de inicio y sector.
 create policy "avisos: lectura" on public.avisos
   for select to authenticated
   using (
@@ -167,7 +175,8 @@ create policy "aviso_sectores: lectura" on public.aviso_sectores
 create policy "aviso_sectores: la directiva gestiona" on public.aviso_sectores
   for all to authenticated using (privado.es_directiva()) with check (privado.es_directiva());
 
--- ── encuestas y sus tablas hijas ──
+-- ── encuestas y sus tablas hijas (RF8, RF12, RF13) ──
+-- La lectura delega en privado.puede_ver_encuesta (parte 3): rol, fecha de apertura y sector.
 create policy "encuestas: lectura" on public.encuestas
   for select to authenticated
   using (
@@ -238,6 +247,7 @@ create policy "alertas: el residente emite desde su unidad" on public.alertas
     and unidad_id = privado.unidad_actual()
   );
 
+-- Bitácora de respuestas (RF27): el personal inserta y el trigger de la parte 3 actualiza el estado de la alerta.
 create policy "alerta_atenciones: lectura" on public.alerta_atenciones
   for select to authenticated
   using (privado.es_personal() or privado.es_emisor_de(alerta_id));
@@ -245,7 +255,9 @@ create policy "alerta_atenciones: el personal responde" on public.alerta_atencio
   for insert to authenticated
   with check (privado.es_personal() and usuario_id = (select auth.uid()));
 
--- ── incidencias ──
+-- ── incidencias (RF29, RF30) ──
+-- El residente reporta desde su unidad con sus fotos; la directiva cambia el estado y el trigger de la
+-- parte 3 fija las fechas y el responsable.
 create policy "incidencias: lectura" on public.incidencias
   for select to authenticated
   using (reportado_por = (select auth.uid()) or privado.es_directiva());
