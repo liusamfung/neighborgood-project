@@ -9,6 +9,10 @@
 -- Úsalo cuando una parte de la migración falló a la mitad en el SQL Editor y
 -- quieres empezar de cero: después vuelve a ejecutar las 6 partes en orden.
 -- En local no hace falta: `supabase db reset` hace lo mismo y además aplica el seed.
+--
+-- Se relaciona con: deshace las partes 1 a 6 de supabase/migrations en orden inverso; después se
+--   vuelven a ejecutar las 6 partes. En local, `supabase db reset` hace lo mismo y además carga
+--   seed.sql.
 -- =====================================================================
 begin;
 

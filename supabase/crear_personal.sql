@@ -7,6 +7,10 @@
 --
 -- Las cuentas se crean en el panel: Authentication → Users → Add user → Create new user,
 -- con el correo y la contraseña, y marcando "Auto Confirm User".
+--
+-- Se relaciona con: catalogo_inicial.sql (se ejecuta antes), las tablas perfiles y
+--   residentes_habilitados (parte 1), el trigger privado.crear_perfil_al_registrarse (parte 3, crea
+--   el perfil del residente) y el panel Authentication de Supabase, donde se crean los usuarios.
 -- =====================================================================
 
 -- ───────────── A. Directiva y guardia ─────────────

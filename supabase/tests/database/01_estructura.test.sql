@@ -1,7 +1,11 @@
 -- Pruebas de estructura: tablas, RLS, permisos y objetos auxiliares.
 -- Se ejecutan con `supabase test db` y no dejan rastro (todo se revierte al final).
+--
+-- Se relaciona con: las 6 migraciones (comprueba su resultado) y supabase/verificacion.sql, que
+-- hace los mismos controles contra el proyecto real.
 begin;
 create extension if not exists pgtap with schema extensions;
+-- no_plan(): no se fija de antemano cuántas pruebas hay; finish() las cuenta al final.
 select * from no_plan();
 
 -- ───────────── Tablas, tipos y objetos ─────────────
