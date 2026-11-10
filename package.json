@@ -55,7 +55,10 @@
     "db:start": "supabase start -x imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:tipos": "supabase gen types typescript --local > src/tipos/base_de_datos.ts && prettier --write src/tipos/base_de_datos.ts"
+    "db:tipos": "supabase gen types typescript --local > src/tipos/base_de_datos.ts && prettier --write src/tipos/base_de_datos.ts",
+    "fn:probar": "deno test --allow-env --config supabase/functions/quien-soy/deno.json \"supabase/functions/**/*_test.ts\"",
+    "fn:formato": "deno fmt --no-semicolons --single-quote --line-width 110 supabase/functions",
+    "fn:desplegar": "supabase functions deploy --use-api"
   },
   "private": true,
   "description": "NeighborGood: app móvil de gestión de condominios y alerta comunitaria"

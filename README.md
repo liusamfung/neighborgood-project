@@ -62,6 +62,32 @@ Usuarios de prueba locales (contraseña `Prueba123!`): `directiva@`, `guardia@`,
 
 **Datos y cuentas del proyecto real.** El proyecto real empieza vacío. Después de las 6 partes: (1) ejecuta `supabase/catalogo_inicial.sql` (sectores, unidades y categorías; sin usuarios); (2) crea las cuentas en Authentication → Add user (con "Auto Confirm User") y completa sus perfiles con `supabase/crear_personal.sql`. Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`; para una demostración, la misma plantilla habilita un residente y el trigger le crea el perfil. Las contraseñas las eliges tú y se guardan en un gestor de contraseñas, nunca en el repositorio.
 
+## Edge Functions (Supabase)
+El código de servidor vive en `supabase/functions/` (TypeScript sobre Deno). Hay una carpeta por función (`index.ts`, `manejador.ts` y `deno.json`) y `_compartido/` con el código común (la carpeta con `_` no se despliega). La función de ejemplo es `quien-soy`: devuelve el id, el correo, el rol y la unidad de quien la llama.
+
+**Una vez por Mac**
+```bash
+brew install deno
+supabase login                          # abre el navegador
+supabase link --project-ref <ref>       # <ref> es el subdominio de EXPO_PUBLIC_SUPABASE_URL
+```
+`link` puede pedir la contraseña de la base de datos: omítela, las funciones no la usan.
+
+**Día a día**
+```bash
+npm run fn:probar       # pruebas con Deno (sin red ni Docker)
+npm run fn:formato      # da formato al código de las funciones
+npm run fn:desplegar    # sube todas las funciones al proyecto (compila en el servidor, sin Docker)
+```
+
+**Crear una función nueva:** `supabase functions new <nombre> --auth user`; deja la lógica en `manejador.ts` (para poder probarla), registra `[functions.<nombre>]` en `supabase/config.toml` y agrega su `manejador_test.ts`. Para comprobar el rol usa `exigirPerfil` de `_compartido/perfil.ts`.
+
+**Llamarla desde la app:** `invocarFuncion<T>('nombre', cuerpo)` de `src/repositorios/funciones.ts` manda el JWT del usuario sola. Para probar la conexión de punta a punta: development build, iniciar sesión y tocar "Probar Edge Function" en cualquier pantalla provisional (solo aparece en desarrollo).
+
+**Secretos.** Supabase inyecta en cada función `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY`; el paquete `@supabase/server` las lee y entrega los clientes ya creados. **La `service_role` nunca se escribe en el repositorio ni en la app.** Los secretos propios (por ejemplo, el token de Expo Push) se cargan con `supabase secrets set NOMBRE=valor` (el nombre no puede empezar por `SUPABASE_`); `supabase secrets list` los lista. Para probar en local, ponlos en `supabase/functions/.env` (ignorado por git).
+
+**Cuidado:** hay un solo proyecto de Supabase (DEV, QA y PRD), así que desplegar es publicar en producción. El cliente administrador (`ctx.supabaseAdmin`) se usa solo después de validar rol y unidad, y solo para la operación mínima.
+
 ## Reglas
 - Una historia por rama, commits pequeños y en español; todo entra a `main` por pull request con *merge commit*.
 - Ningún secreto en el repo: la app solo lleva la `anon key`; la `service_role` vive en las Edge Functions.

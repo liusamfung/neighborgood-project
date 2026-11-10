@@ -3,14 +3,16 @@
  *
  * Qué hace: muestra el ID de la pantalla del mockup (P1, P2...), su título y los requisitos (RF) que
  * implementará, para poder recorrer la navegación por rol desde el Sprint 3. Si hay una sesión, muestra
- * el nombre y el rol del usuario y un botón "Cerrar sesión" (temporal).
+ * el nombre y el rol del usuario y un botón "Cerrar sesión" (temporal). En desarrollo (`__DEV__`) añade
+ * `ProbarFuncion`, la prueba temporal de las Edge Functions (issue #6).
  * Se usa con: casi todas las rutas de `src/app/**`, hasta que cada una se reemplace por la real.
- * Depende de: `Boton` (cerrar sesión), `useSesion` (`src/contexto/SesionContext.tsx`) y `src/tema`.
+ * Depende de: `Boton` (cerrar sesión), `ProbarFuncion`, `useSesion` (`src/contexto/SesionContext.tsx`) y `src/tema`.
  */
 import { Link, type Href } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Boton } from '@/componentes/formulario/Boton';
+import { ProbarFuncion } from '@/componentes/ProbarFuncion';
 import { useSesion } from '@/contexto/SesionContext';
 import { colores, espacios, radios, tamanos, tipografia } from '@/tema';
 
@@ -52,6 +54,8 @@ export function PantallaMarcador({ id, titulo, requisitos, enlace }: Props) {
           <Text style={estilos.detalle}>
             Sesión: {perfil.nombre} {perfil.apellido} · {perfil.rol}
           </Text>
+          {/* Solo en desarrollo: no aparece en la versión Release. */}
+          {__DEV__ ? <ProbarFuncion /> : null}
           <Boton
             variante="secundario"
             texto="Cerrar sesión"
