@@ -6,7 +6,7 @@
 -- residente necesita una unidad. No crea cuentas ni contraseñas.
 --
 -- Es seguro ejecutarlo más de una vez (no duplica nada). Ejecútalo en el SQL Editor
--- después de las 7 partes de la migración. Más adelante la directiva administrará
+-- después de las 8 partes de la migración. Más adelante la directiva administrará
 -- estos datos desde la app; mientras tanto se cargan así.
 --
 -- Se relaciona con: las tablas sectores, unidades y categorias_aviso (parte 1). Debe ejecutarse
