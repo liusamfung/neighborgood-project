@@ -1,3 +1,7 @@
+/**
+ * Barra inferior de la Directiva: Panel, Avisos, Encuestas e Incidencias (4 pestañas, DISENO.md).
+ * Se usa con: `src/componentes/navegacion/opciones.tsx` (aspecto y función `pestana`).
+ */
 import { Tabs } from 'expo-router';
 
 import { opcionesPestanas, pestana } from '@/componentes/navegacion/opciones';

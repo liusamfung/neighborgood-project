@@ -1,3 +1,13 @@
+/**
+ * Ruta `/login` (sin sesión): pantalla P1 · Login del mockup.
+ *
+ * Qué hace: pide correo y contraseña, valida que no estén vacíos y llama a `iniciarSesion`. Muestra los
+ * errores en español y, si la sesión se abrió pero el usuario no tiene perfil activo, el motivo que deja
+ * el contexto (`rechazo`). Si todo sale bien, el contexto carga el perfil y la navegación abre la
+ * pantalla de su rol (RF2, RF3, RF6). El registro (RF1) es otra pantalla.
+ * Se usa con: `src/repositorios/sesion.ts`, `src/contexto/SesionContext.tsx`, los componentes
+ * `Boton` y `CampoTexto` y el tema (`src/tema`).
+ */
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -19,6 +29,10 @@ export default function Login() {
   // El rechazo viene del contexto (sesión sin perfil): la app ya cerró la sesión.
   const mensaje = error ?? rechazo;
 
+  /**
+   * Valida los campos y pide iniciar sesión. Muestra el error en pantalla si falla; si sale bien no
+   * hace nada más, porque el contexto detecta la sesión nueva y la navegación cambia sola.
+   */
   async function entrar() {
     limpiarRechazo();
     setError(null);
@@ -99,6 +113,7 @@ export default function Login() {
   );
 }
 
+// Estilos con los tokens del tema; `contenido` centra el formulario y deja espacio al teclado.
 const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   contenido: {

@@ -1,3 +1,8 @@
+/**
+ * Barra inferior del Residente: Inicio, Avisos, Visitas, Incidencias y Perfil (5 pestañas, DISENO.md).
+ * Cada pestaña es un archivo de esta carpeta; el título y el ícono salen de `pestana()`.
+ * Se usa con: `src/componentes/navegacion/opciones.tsx` (aspecto y función `pestana`).
+ */
 import { Tabs } from 'expo-router';
 
 import { opcionesPestanas, pestana } from '@/componentes/navegacion/opciones';
