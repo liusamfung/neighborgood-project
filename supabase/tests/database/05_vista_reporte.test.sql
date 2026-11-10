@@ -1,8 +1,14 @@
 -- Pruebas de la vista reporte_incidencias_mensual: meses en la zona America/Lima y permisos.
+--
+-- Se relaciona con: la migración 4 (la vista), la 5 (RLS y permisos que la vista hereda) y
+-- seed.sql (una incidencia de ejemplo). Los ayudantes tests.como* son los mismos de 03 y 04.
 begin;
 create extension if not exists pgtap with schema extensions;
 select * from no_plan();
 
+-- Ayudantes de prueba: tests.como(uid) actúa como ese usuario autenticado (rol authenticated con su id en
+-- el JWT), tests.como_anon() como un visitante sin sesión y tests.como_postgres() vuelve al administrador.
+-- Así se prueba RLS sin pasar por la API.
 create schema tests;
 grant usage on schema tests to public;
 create function tests.como(p_uid uuid) returns void language plpgsql as $$

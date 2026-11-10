@@ -1,10 +1,16 @@
 -- Matriz de políticas RLS: qué ve y qué escribe cada rol. Usa los datos de seed.sql.
 -- Usuarios del seed: directiva 90..01, guardia 90..02, residentes 90..11 y 90..12 (unidad A-101, Torre A),
 -- residente 90..13 (unidad B-101, Torre B) e intruso 90..99 (cuenta confirmada sin perfil).
+--
+-- Se relaciona con: la migración 5 (las políticas y permisos que se prueban), la 3 (funciones privado.*
+-- que usan las políticas) y la 6 (Storage). Es la prueba principal de la regla 2 de CLAUDE.md.
 begin;
 create extension if not exists pgtap with schema extensions;
 select * from no_plan();
 
+-- Ayudantes de prueba: tests.como(uid) actúa como ese usuario autenticado (rol authenticated con su id en
+-- el JWT), tests.como_anon() como un visitante sin sesión y tests.como_postgres() vuelve al administrador.
+-- Así se prueba RLS sin pasar por la API.
 create schema tests;
 grant usage on schema tests to public;
 create function tests.como(p_uid uuid) returns void language plpgsql as $$

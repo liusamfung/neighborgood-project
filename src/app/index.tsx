@@ -1,3 +1,8 @@
+/**
+ * Punto de entrada de la app (ruta `/`): redirige a cada usuario a la pantalla de inicio de su rol,
+ * o al login si no tiene rol.
+ * Se usa con: `useSesion` (`src/contexto/SesionContext.tsx`) y el tipo `Rol` (`src/tipos/perfil.ts`).
+ */
 import { Redirect, type Href } from 'expo-router';
 
 import { useSesion } from '@/contexto/SesionContext';

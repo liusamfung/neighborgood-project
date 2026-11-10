@@ -1,10 +1,16 @@
 -- Pruebas de triggers y de las reglas que viven en la base. Usan los datos de seed.sql.
 -- Las funciones del esquema `tests` permiten actuar como un usuario de la API (rol authenticated)
 -- y volver a postgres; desaparecen al terminar (rollback).
+--
+-- Se relaciona con: la migración 3 (triggers y funciones que se prueban), la 1 (tablas) y la 2
+-- (CHECK). Los ayudantes tests.como* son los mismos de 04 y 05.
 begin;
 create extension if not exists pgtap with schema extensions;
 select * from no_plan();
 
+-- Ayudantes de prueba: tests.como(uid) actúa como ese usuario autenticado (rol authenticated con su id en
+-- el JWT), tests.como_anon() como un visitante sin sesión y tests.como_postgres() vuelve al administrador.
+-- Así se prueba RLS sin pasar por la API.
 create schema tests;
 grant usage on schema tests to public;
 create function tests.como(p_uid uuid) returns void language plpgsql as $$

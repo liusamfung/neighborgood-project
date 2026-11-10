@@ -64,3 +64,11 @@ Usuarios de prueba locales (contraseña `Prueba123!`): `directiva@`, `guardia@`,
 - Una historia por rama, commits pequeños y en español; todo entra a `main` por pull request con *merge commit*.
 - Ningún secreto en el repo: la app solo lleva la `anon key`; la `service_role` vive en las Edge Functions.
 - Instalar librerías con `npx expo install`.
+
+## Recomendaciones de Desarrollo y Buenas Prácticas
+
+### Entorno y Dependencias
+- **Instalación estricta de módulos nativos:** Usa siempre `npx expo install <paquete>` en lugar de `npm install` directo para librerías que tocan la capa nativa (cámara, notificaciones, almacenamiento seguro, geolocalización). Esto garantiza versiones alineadas con el SDK de Expo configurado y previene fallos silenciosos de enlazado en `prebuild`.
+- **Caché y Metro Bundler:** Si la app presenta comportamientos fantasma tras modificar el `.env`, assets o configuraciones en `app.json`, limpia la caché de arranque ejecutando:
+  ```bash
+  npx expo start --dev-client -c

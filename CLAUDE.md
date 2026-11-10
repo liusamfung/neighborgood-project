@@ -48,6 +48,15 @@ Reglas:
 - Antes de editar, lista los cambios que propones. No borres secciones sin preguntar.
 - El documento está en español.
 
+## Comentarios en el código
+Pedido del profesor: el código se entiende leyendo sus comentarios. Esta regla vale para todo código nuevo y para cada cambio de código existente.
+- **Cabecera de archivo.** Todo archivo de código (`.ts`, `.tsx`, `.js`, `.sql`) empieza con un comentario que dice qué hace, cómo funciona a grandes rasgos y **con quién se relaciona** (qué archivos o servicios lo usan y de cuáles depende). Se omite solo en los archivos que se explican solos (por ejemplo, uno que solo reexporta). Las pantallas provisionales llevan una línea: ruta, rol, pantalla del mockup, RF y Sprint.
+- **Funciones y bloques.** Toda función, componente, hook, función SQL, trigger y política lleva un comentario encima: qué hace y, si no es evidente, sus parámetros y qué devuelve. Los bloques de código no evidentes llevan un comentario con el porqué.
+- **SQL.** Cada campo que es llave foránea lleva al costado `-- FK → tabla.columna` (y `(borrado en cascada)` si aplica).
+- **Estilo.** En español. TS y TSX usan bloques `/** ... */` para cabecera y funciones y `//` dentro del código. No se repite lo que ya dice el nombre: se explican las relaciones y las decisiones.
+- **Archivos generados** (por ejemplo `src/tipos/base_de_datos.ts`): no se editan ni se comentan; se regeneran con su comando (`npm run db:tipos`).
+- Los comentarios se actualizan **en el mismo commit** que el código, y la revisión de cada pull request incluye comprobarlo.
+
 ## Reglas de Expo
 - Instalar librerías **siempre** con `npx expo install <paquete>` (resuelve la versión del SDK), nunca con `npm install`.
 - La versión de `expo`, `expo-router` y de todos los paquetes de Expo la fija el SDK 58: no las instales ni las cambies a mano con `@latest`. Para alinearlas usa `npx expo install --check` y `npx expo install --fix`.
