@@ -5,7 +5,7 @@ Resumen para entender el proyecto de una sola lectura. Los detalles viven en los
 ## 1. Qué es
 **NeighborGood** es una app móvil para condominios y urbanizaciones cerradas. Reemplaza los grupos de WhatsApp con un solo lugar para avisos, encuestas, visitas, alertas de emergencia e incidencias. Es el proyecto del curso **Desarrollo Móvil** (UTP, 2026-II, "Caso 4: Gestión de Condominios y Alerta Comunitaria").
 
-Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real) y el **inicio de sesión con correo y contraseña**; el resto de las funcionalidades sigue pendiente.
+Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real), el **inicio de sesión con correo y contraseña** y la **estructura de Edge Functions** con una función de ejemplo (`quien-soy`, issue #6); el resto de las funcionalidades sigue pendiente.
 
 ## 2. Roles
 | Rol | Qué hace |

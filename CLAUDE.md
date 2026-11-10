@@ -19,7 +19,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 - **Migraciones:** SQL escrito a mano (con RLS) en `supabase/migrations/`, probado en local con Docker (`supabase test db`) y ejecutado en el SQL Editor de Supabase. **Sin Prisma.**
 
 ## Reglas que no se negocian
-1. **Ningún secreto en el repo.** La `service_role key` vive solo en las Edge Functions (variables de entorno de Supabase). La app solo lleva la `anon key`.
+1. **Ningún secreto en el repo.** La `service_role key` vive solo en las Edge Functions: Supabase la inyecta como `SUPABASE_SERVICE_ROLE_KEY` y se lee con `Deno.env`, nunca se escribe en el repo. La app solo lleva la `anon key`.
 2. **RLS activada en todas las tablas.** Los permisos por rol se imponen en la base, no solo en la app.
 3. **El pase QR:** la Edge Function crea y valida el UUID v4 (`gen_random_uuid()`); la app solo dibuja el QR. El pase vale solo el día de la visita, hasta las 23:59 (zona `America/Lima`). El estado "vencido" no se guarda: se calcula al escanear.
 4. **La alerta de pánico** guarda solo la ubicación del departamento (la unidad). Sin proveedor de mapas.
@@ -38,6 +38,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 | Diagramas de secuencia (PlantUML) | `docs/Arquitectura/secuencia/` |
 | Modelo de datos (DBML) y diccionario de datos | `docs/db_diagram/` |
 | Migraciones SQL, datos de prueba, pruebas de RLS y verificación | `supabase/` |
+| Edge Functions (Deno), código compartido y sus pruebas | `supabase/functions/` |
 
 ## Documentación (Google Docs)
 - Documento principal: [Documentación_NeighborGood_Avance2](https://docs.google.com/document/d/1Ch64w83Pux51SVcB53y7BwrBZe7XO0V5REKRX-UWzH8/edit) (Google Doc convertido desde el Word, con sus imágenes)
