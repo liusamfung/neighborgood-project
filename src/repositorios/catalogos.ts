@@ -6,11 +6,11 @@
  * Cómo funciona: las políticas RLS dejan leer ambas tablas a cualquier usuario activo; solo la
  * directiva puede escribirlas.
  * Se usa con: `src/hooks/useCatalogos.ts` (las pone en caché) y, a través de él, la pantalla
- * `src/app/directiva/encuestas/nueva.tsx` (y más adelante la de avisos, RF7).
- * Depende de: `src/lib/supabase.ts` y `src/tipos/encuesta.ts`.
+ * `src/app/directiva/encuestas/nueva.tsx` y `src/app/directiva/avisos/nuevo.tsx`.
+ * Depende de: `src/lib/supabase.ts` y `src/tipos/catalogos.ts`.
  */
 import { supabase } from '@/lib/supabase';
-import type { Categoria, Sector } from '@/tipos/encuesta';
+import type { Categoria, Sector } from '@/tipos/catalogos';
 
 /** Categorías de avisos y encuestas, ordenadas por nombre. Lanza el error de Supabase si falla. */
 export async function listarCategorias(): Promise<Categoria[]> {
