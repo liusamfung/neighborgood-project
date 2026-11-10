@@ -862,6 +862,18 @@ export type Database = {
       };
     };
     Functions: {
+      crear_aviso: {
+        Args: {
+          p_categoria_id: string;
+          p_descripcion: string;
+          p_imagen_path?: string;
+          p_sectores: string[];
+          p_titulo: string;
+          p_vigente_desde: string;
+          p_vigente_hasta: string;
+        };
+        Returns: string;
+      };
       crear_encuesta: {
         Args: {
           p_abre_en: string;
