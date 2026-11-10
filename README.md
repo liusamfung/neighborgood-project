@@ -47,20 +47,20 @@ npx eas-cli build --platform android --profile preview       # APK interno para 
 - Las push de Android necesitan `google-services.json` (FCM). Se configura en el Sprint 5, cuando se implementen las alertas.
 
 ## Base de datos (Supabase)
-El modelo completo vive en `supabase/migrations/` (7 partes que se ejecutan en orden), con datos de prueba (`supabase/seed.sql`, solo local), pruebas de RLS (`supabase/tests/`) y un script de verificación (`supabase/verificacion.sql`).
+El modelo completo vive en `supabase/migrations/` (8 partes que se ejecutan en orden), con datos de prueba (`supabase/seed.sql`, solo local), pruebas de RLS (`supabase/tests/`) y un script de verificación (`supabase/verificacion.sql`).
 
 **Probar en tu máquina** (necesitas Docker Desktop abierto; la primera vez descarga unos GB):
 ```bash
 npm run db:start      # arranca Supabase local
-npm run db:reset      # aplica las 7 partes y el seed
+npm run db:reset      # aplica las 8 partes y el seed
 npm run db:test       # pruebas pgTAP: RLS, restricciones y triggers
 npm run db:tipos      # regenera src/tipos/base_de_datos.ts
 ```
 Usuarios de prueba locales (contraseña `Prueba123!`): `directiva@`, `guardia@`, `residente1@`, `residente2@`, `residente3@` e `intruso@neighborgood.test`. **El seed nunca se ejecuta en el proyecto real.**
 
-**Aplicar en el proyecto real:** en el SQL Editor de Supabase pega y ejecuta, en orden y una por una, las 7 partes de `supabase/migrations/`. Después ejecuta `supabase/verificacion.sql`: todas las filas deben decir `OK`. Si una parte falla a la mitad, `supabase/rollback.sql` (solo desarrollo, borra todos los datos) deja la base limpia para repetir.
+**Aplicar en el proyecto real:** en el SQL Editor de Supabase pega y ejecuta, en orden y una por una, las 8 partes de `supabase/migrations/`. Después ejecuta `supabase/verificacion.sql`: todas las filas deben decir `OK`. Si una parte falla a la mitad, `supabase/rollback.sql` (solo desarrollo, borra todos los datos) deja la base limpia para repetir.
 
-**Datos y cuentas del proyecto real.** El proyecto real empieza vacío. Después de las 7 partes: (1) ejecuta `supabase/catalogo_inicial.sql` (sectores, unidades y categorías; sin usuarios); (2) crea las cuentas en Authentication → Add user (con "Auto Confirm User") y completa sus perfiles con `supabase/crear_personal.sql`. Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`; para una demostración, la misma plantilla habilita un residente y el trigger le crea el perfil. Las contraseñas las eliges tú y se guardan en un gestor de contraseñas, nunca en el repositorio.
+**Datos y cuentas del proyecto real.** El proyecto real empieza vacío. Después de las 8 partes: (1) ejecuta `supabase/catalogo_inicial.sql` (sectores, unidades y categorías; sin usuarios); (2) crea las cuentas en Authentication → Add user (con "Auto Confirm User") y completa sus perfiles con `supabase/crear_personal.sql`. Los residentes se registran solos, pero solo si la directiva habilitó su correo en `residentes_habilitados`; para una demostración, la misma plantilla habilita un residente y el trigger le crea el perfil. Las contraseñas las eliges tú y se guardan en un gestor de contraseñas, nunca en el repositorio.
 
 ## Edge Functions (Supabase)
 El código de servidor vive en `supabase/functions/` (TypeScript sobre Deno). Hay una carpeta por función (`index.ts`, `manejador.ts` y `deno.json`) y `_compartido/` con el código común (la carpeta con `_` no se despliega). La función de ejemplo es `quien-soy`: devuelve el id, el correo, el rol y la unidad de quien la llama.

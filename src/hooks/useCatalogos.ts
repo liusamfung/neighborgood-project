@@ -3,7 +3,7 @@
  *
  * Qué hace: entrega las listas que necesitan los formularios de la directiva y las guarda 10 minutos,
  * porque casi nunca cambian; así abrir otra pantalla no repite la consulta.
- * Se usa con: `src/app/directiva/encuestas/nueva.tsx` (y la pantalla de avisos, RF7).
+ * Se usa con: `src/app/directiva/encuestas/nueva.tsx` y `src/app/directiva/avisos/nuevo.tsx`.
  * Depende de: `src/repositorios/catalogos.ts` y de `QueryClientProvider` (`src/app/_layout.tsx`).
  */
 import { useQuery } from '@tanstack/react-query';
