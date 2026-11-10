@@ -13,6 +13,12 @@ const { withEntitlementsPlist } = require('expo/config-plugins');
  *
  * Nunca afecta a Android: este plugin solo registra un cambio de iOS. Tampoco afecta a las builds de EAS ni a
  * nadie que no active la variable, y el código de la app es el mismo para todos.
+ *
+ * Se usa con: `app.json` (lista `plugins`) y `npx expo prebuild`, que aplica el cambio al proyecto `ios/`;
+ * lee la variable del `.env` (ignorado por git). Depende de `expo-notifications`, que añade el permiso.
+ *
+ * @param config configuración de Expo (`app.json`) que recibe cualquier plugin.
+ * @returns la misma configuración, con o sin la modificación del archivo de permisos de iOS.
  */
 module.exports = function quitarPushEntitlement(config) {
   if (process.env.NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE !== '1') {
