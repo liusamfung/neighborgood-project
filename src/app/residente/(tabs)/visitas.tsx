@@ -11,6 +11,8 @@
  * Se usa con: `src/hooks/usePases.ts`, `src/repositorios/pases.ts` (tipos, Realtime y mensajes),
  * `compartirPase`, `confirmar`, `CampoTexto`, `CampoFecha`, `Boton`, `Insignia`, `useSesion` y el tema.
  */
+import { IconoCuadro } from '@/componentes/IconoCuadro';
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -39,7 +41,7 @@ import {
   type EstadoVisible,
   type Pase,
 } from '@/repositorios/pases';
-import { chipsPase, colores, espacios, radios, tipografia } from '@/tema';
+import { chipsPase, colores, espacios, radios, sombras, tipografia } from '@/tema';
 import { compartirPase } from '@/utilidades/compartirPase';
 import { confirmar } from '@/utilidades/confirmar';
 import {
@@ -177,7 +179,12 @@ export default function Visitas() {
               alCambiar={setLlegada}
             />
             <Text style={estilos.detalle}>El pase vale solo ese día, hasta las 23:59.</Text>
-            <Boton texto="Crear pase" alPresionar={crearPase} cargando={crear.isPending} />
+            <Boton
+              icono="plus"
+              texto="Crear pase"
+              alPresionar={crearPase}
+              cargando={crear.isPending}
+            />
           </View>
 
           {error ? (
@@ -197,7 +204,7 @@ export default function Visitas() {
               <Boton variante="secundario" texto="Reintentar" alPresionar={() => pases.refetch()} />
             </>
           ) : pases.data.length === 0 ? (
-            <Text style={estilos.detalle}>Todavía no has creado pases de visita.</Text>
+            <EstadoVacio icono="grid" mensaje="Todavía no has creado pases de visita." />
           ) : (
             pases.data.map((pase) => {
               const estado = estadoVisible(pase, hoy);
@@ -205,6 +212,7 @@ export default function Visitas() {
               return (
                 <View key={pase.id} style={estilos.tarjeta}>
                   <View style={estilos.fila}>
+                    <IconoCuadro icono="user" tamano={40} />
                     <Text style={[estilos.nombre, estilos.flexible]}>{pase.nombre_visitante}</Text>
                     <Insignia texto={ESTADOS[estado].texto} color={ESTADOS[estado].color} />
                   </View>
@@ -222,6 +230,7 @@ export default function Visitas() {
                   {estado === 'vigente' ? (
                     <Boton
                       variante="secundario"
+                      icono="grid"
                       texto={verQr ? 'Ocultar código QR' : 'Ver código QR'}
                       alPresionar={() => setAbierto(verQr ? null : pase.id)}
                     />
@@ -239,9 +248,13 @@ export default function Visitas() {
                           }}
                         />
                       </View>
-                      <Boton texto="Compartir pase" alPresionar={() => compartir(pase)} />
                       <Boton
-                        variante="secundario"
+                        icono="share-2"
+                        texto="Compartir pase"
+                        alPresionar={() => compartir(pase)}
+                      />
+                      <Boton
+                        variante="peligro"
                         texto="Anular pase"
                         alPresionar={() => confirmarAnulacion(pase)}
                         cargando={anular.isPending}
@@ -262,9 +275,10 @@ const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   flexible: { flex: 1 },
   contenido: { padding: espacios.margenLateral, gap: 16 },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  titulo: { ...tipografia.tituloPantalla, color: colores.texto },
   subtitulo: { ...tipografia.titulo, fontSize: 18, color: colores.texto },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 10,
     backgroundColor: colores.superficie,

@@ -11,7 +11,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { ConteoOpcion, PreguntaEncuesta } from '@/repositorios/encuestas';
-import { colores, radios, tipografia } from '@/tema';
+import { colores, radios, sombras, tipografia } from '@/tema';
 
 /** Datos que recibe el componente. */
 type Props = {
@@ -62,6 +62,7 @@ export function ResultadosEncuesta({ preguntas, conteos }: Props) {
 const estilos = StyleSheet.create({
   contenedor: { gap: 12 },
   pregunta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 10,
     backgroundColor: colores.superficie,

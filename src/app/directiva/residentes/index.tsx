@@ -12,6 +12,8 @@
  * error), `Boton`, el tema (`src/tema`) y `directiva/_layout.tsx`, que registra la ruta. Se llega desde
  * el Panel (`directiva/(tabs)/index.tsx`).
  */
+import { IconoCuadro } from '@/componentes/IconoCuadro';
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -37,7 +39,7 @@ import {
   type ResidenteRegistrado,
 } from '@/repositorios/residentes';
 import { confirmar } from '@/utilidades/confirmar';
-import { colores, chipsPase, espacios, radios, tamanos, tipografia } from '@/tema';
+import { chipsPase, colores, espacios, radios, sombras, tamanos, tipografia } from '@/tema';
 
 /** Texto de la unidad con su sector, por ejemplo "Torre A · Dpto 302". */
 function textoUnidad(unidad: { codigo: string; sectores: { nombre: string } } | null): string {
@@ -107,6 +109,7 @@ export default function Residentes() {
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={recargar} />}
     >
       <Boton
+        icono="user-plus"
         texto="Dar de alta un residente"
         alPresionar={() => router.push('/directiva/residentes/nuevo')}
       />
@@ -132,13 +135,18 @@ export default function Residentes() {
             <Text style={estilos.tituloSeccion}>Altas pendientes</Text>
             <Text style={estilos.detalle}>Correos habilitados que aún no crean su cuenta.</Text>
             {pendientes.data.length === 0 ? (
-              <Text style={estilos.vacio}>No hay altas pendientes.</Text>
+              <EstadoVacio icono="mail" mensaje="No hay altas pendientes." />
             ) : (
               pendientes.data.map((alta) => (
                 <View key={alta.id} style={estilos.tarjeta}>
-                  <Text style={estilos.nombre}>{alta.nombre}</Text>
-                  <Text style={estilos.detalle}>{alta.correo}</Text>
-                  <Text style={estilos.detalle}>{textoUnidad(alta.unidades)}</Text>
+                  <View style={estilos.filaNombre}>
+                    <IconoCuadro icono="mail" tamano={40} />
+                    <View style={estilos.flexible}>
+                      <Text style={estilos.nombre}>{alta.nombre}</Text>
+                      <Text style={estilos.detalle}>{alta.correo}</Text>
+                      <Text style={estilos.detalle}>{textoUnidad(alta.unidades)}</Text>
+                    </View>
+                  </View>
                   <AccionFila texto="Quitar alta" alPresionar={() => confirmarQuitarAlta(alta)} />
                 </View>
               ))
@@ -148,11 +156,12 @@ export default function Residentes() {
           <View style={estilos.seccion}>
             <Text style={estilos.tituloSeccion}>Residentes registrados</Text>
             {registrados.data.length === 0 ? (
-              <Text style={estilos.vacio}>Todavía no hay residentes registrados.</Text>
+              <EstadoVacio icono="users" mensaje="Todavía no hay residentes registrados." />
             ) : (
               registrados.data.map((residente) => (
                 <View key={residente.id} style={estilos.tarjeta}>
                   <View style={estilos.filaNombre}>
+                    <IconoCuadro icono="user" tamano={40} />
                     <Text style={[estilos.nombre, estilos.flexible]}>
                       {residente.nombre} {residente.apellido}
                     </Text>
@@ -204,6 +213,7 @@ const estilos = StyleSheet.create({
   seccion: { gap: espacios.entreTarjetas },
   tituloSeccion: { ...tipografia.titulo, fontSize: 18, color: colores.texto },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 4,
     backgroundColor: colores.superficie,
@@ -215,7 +225,6 @@ const estilos = StyleSheet.create({
   flexible: { flex: 1 },
   nombre: { ...tipografia.subtitulo, color: colores.texto },
   detalle: { ...tipografia.cuerpo, color: colores.textoSecundario },
-  vacio: { ...tipografia.cuerpo, color: colores.textoSecundario, paddingVertical: 8 },
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
   chip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radios.chip },
   textoChip: { ...tipografia.etiqueta },

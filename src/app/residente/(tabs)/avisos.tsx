@@ -10,6 +10,7 @@
  * Se usa con: `src/hooks/useAvisos.ts`, `src/hooks/useEncuestas.ts`, `src/hooks/useCatalogos.ts`,
  * `TarjetaAviso`, `TarjetaEncuesta`, `ChipsSeleccion`, `Boton` y el tema.
  */
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -109,11 +110,14 @@ export default function Avisos() {
             <Boton variante="secundario" texto="Reintentar" alPresionar={recargar} />
           </View>
         ) : sinResultados ? (
-          <Text style={estilos.vacio}>
-            {enHistorial
-              ? 'No hay avisos ni encuestas anteriores en esta categoría.'
-              : 'No hay avisos ni encuestas vigentes en esta categoría.'}
-          </Text>
+          <EstadoVacio
+            icono="bell"
+            mensaje={
+              enHistorial
+                ? 'No hay avisos ni encuestas anteriores en esta categoría.'
+                : 'No hay avisos ni encuestas vigentes en esta categoría.'
+            }
+          />
         ) : (
           <View style={estilos.lista}>
             {/* Las encuestas van primero: piden una acción del residente. */}
@@ -141,9 +145,8 @@ export default function Avisos() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   contenido: { padding: espacios.margenLateral, gap: 16 },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  titulo: { ...tipografia.tituloPantalla, color: colores.texto },
   lista: { gap: espacios.entreTarjetas },
   indicador: { marginTop: 32 },
-  vacio: { ...tipografia.cuerpo, color: colores.textoSecundario, paddingVertical: 16 },
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
 });

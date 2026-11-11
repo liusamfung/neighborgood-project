@@ -8,6 +8,7 @@
  * Se usa con: `src/hooks/useEncuestas.ts`, `TarjetaEncuesta`, `ChipsSeleccion`, `Boton`, el tema y la
  * barra inferior de `(tabs)/_layout.tsx`.
  */
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -58,6 +59,7 @@ export default function Encuestas() {
       >
         <Text style={estilos.titulo}>Encuestas</Text>
         <Boton
+          icono="plus"
           texto="Crear encuesta"
           alPresionar={() => router.push('/directiva/encuestas/nueva')}
         />
@@ -82,9 +84,10 @@ export default function Encuestas() {
             />
           </View>
         ) : visibles.length === 0 ? (
-          <Text style={estilos.vacio}>
-            {enHistorial ? 'No hay encuestas cerradas.' : 'No hay encuestas abiertas.'}
-          </Text>
+          <EstadoVacio
+            icono="check-square"
+            mensaje={enHistorial ? 'No hay encuestas cerradas.' : 'No hay encuestas abiertas.'}
+          />
         ) : (
           <View style={estilos.lista}>
             {visibles.map((encuesta) => (
@@ -111,9 +114,8 @@ export default function Encuestas() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   contenido: { padding: espacios.margenLateral, gap: 16 },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  titulo: { ...tipografia.tituloPantalla, color: colores.texto },
   lista: { gap: espacios.entreTarjetas },
   indicador: { marginTop: 32 },
-  vacio: { ...tipografia.cuerpo, color: colores.textoSecundario, paddingVertical: 16 },
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
 });

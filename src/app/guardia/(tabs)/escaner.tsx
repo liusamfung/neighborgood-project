@@ -11,6 +11,7 @@
  * Se usa con: `src/hooks/usePases.ts` (`useValidarPase`), `src/repositorios/pases.ts` (tipos y
  * mensajes), `expo-camera`, `Boton`, `CampoTexto`, el tema y la barra inferior de `(tabs)/_layout.tsx`.
  */
+import { IconoCuadro } from '@/componentes/IconoCuadro';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -29,7 +30,7 @@ import { Boton } from '@/componentes/formulario/Boton';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { useValidarPase } from '@/hooks/usePases';
 import { mensajeDeErrorPase, type PaseGuardia } from '@/repositorios/pases';
-import { chipsPase, colores, espacios, radios, tipografia } from '@/tema';
+import { chipsPase, colores, espacios, radios, sombras, tipografia } from '@/tema';
 import { soloHora } from '@/utilidades/fechas';
 
 /** Resultado de la última validación: el pase que ingresó o el motivo del rechazo. */
@@ -77,6 +78,12 @@ export default function Escaner() {
             <View style={[estilos.resultado, resultado.pase ? estilos.valido : estilos.rechazado]}>
               {resultado.pase ? (
                 <>
+                  <IconoCuadro
+                    icono="check"
+                    tamano={64}
+                    redondo
+                    color={{ fondo: chipsPase.vigente.texto, texto: colores.superficie }}
+                  />
                   <Text style={[estilos.veredicto, { color: chipsPase.vigente.texto }]}>
                     Pase válido
                   </Text>
@@ -89,14 +96,22 @@ export default function Escaner() {
                   ) : null}
                 </>
               ) : (
-                <Text
-                  accessibilityRole="alert"
-                  style={[estilos.veredicto, { color: chipsPase.anulado.texto }]}
-                >
-                  {resultado.motivo}
-                </Text>
+                <>
+                  <IconoCuadro
+                    icono="x"
+                    tamano={64}
+                    redondo
+                    color={{ fondo: colores.emergencia, texto: colores.superficie }}
+                  />
+                  <Text
+                    accessibilityRole="alert"
+                    style={[estilos.veredicto, { color: chipsPase.anulado.texto }]}
+                  >
+                    {resultado.motivo}
+                  </Text>
+                </>
               )}
-              <Boton texto="Escanear otro pase" alPresionar={escanearOtro} />
+              <Boton icono="camera" texto="Escanear otro pase" alPresionar={escanearOtro} />
             </View>
           ) : validar.isPending ? (
             <View style={estilos.camara}>
@@ -147,6 +162,7 @@ export default function Escaner() {
 
           <Boton
             variante="secundario"
+            icono="list"
             texto="Visitas de hoy y salidas"
             alPresionar={() => router.push('/guardia/visitas')}
           />
@@ -160,7 +176,7 @@ const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   flexible: { flex: 1 },
   contenido: { padding: espacios.margenLateral, gap: 16 },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  titulo: { ...tipografia.tituloPantalla, color: colores.texto },
   subtitulo: { ...tipografia.subtitulo, color: colores.texto },
   // Recuadro cuadrado de la cámara; `overflow` recorta la imagen a las esquinas redondeadas.
   camara: {
@@ -173,6 +189,7 @@ const estilos = StyleSheet.create({
     borderRadius: radios.tarjeta,
   },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 12,
     backgroundColor: colores.superficie,
@@ -180,7 +197,13 @@ const estilos = StyleSheet.create({
     borderColor: colores.borde,
     borderRadius: radios.tarjeta,
   },
-  resultado: { padding: 20, gap: 10, borderWidth: 2, borderRadius: radios.tarjeta },
+  resultado: {
+    alignItems: 'center',
+    padding: 24,
+    gap: 10,
+    borderWidth: 2,
+    borderRadius: radios.tarjeta,
+  },
   valido: { backgroundColor: chipsPase.vigente.fondo, borderColor: chipsPase.vigente.texto },
   rechazado: { backgroundColor: chipsPase.anulado.fondo, borderColor: colores.peligroBorde },
   veredicto: { ...tipografia.titulo },

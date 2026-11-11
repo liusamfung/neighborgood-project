@@ -25,3 +25,11 @@ export const tamanos = {
   alturaBoton: 56,
   areaTactilMinima: 44,
 } as const;
+
+/**
+ * Sombra suave de las tarjetas: las separa del fondo gris sin recargar la pantalla.
+ * `boxShadow` funciona en iOS, Android y web con la arquitectura nueva de React Native.
+ */
+export const sombras = {
+  tarjeta: { boxShadow: '0px 2px 8px rgba(15, 118, 110, 0.08)' },
+} as const;

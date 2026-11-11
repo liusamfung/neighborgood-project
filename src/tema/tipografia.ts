@@ -18,6 +18,8 @@ export const fuentes = {
  * `{ ...tipografia.titulo, color: colores.texto }`.
  */
 export const tipografia = {
+  /** Título grande de las pantallas con pestaña ("Avisos", "Visitas"), como en los mockups. */
+  tituloPantalla: { fontFamily: fuentes.bold, fontSize: 28 },
   titulo: { fontFamily: fuentes.bold, fontSize: 22 },
   subtitulo: { fontFamily: fuentes.semibold, fontSize: 16 },
   cuerpo: { fontFamily: fuentes.regular, fontSize: 14 },

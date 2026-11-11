@@ -10,6 +10,8 @@
  * Se usa con: `src/hooks/usePases.ts`, `src/repositorios/pases.ts` (tipos y mensajes), `Boton`,
  * `Insignia`, el tema y `guardia/_layout.tsx`, que registra la ruta. Se llega desde el Escáner (P11).
  */
+import { IconoCuadro } from '@/componentes/IconoCuadro';
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,7 +26,7 @@ import { Boton } from '@/componentes/formulario/Boton';
 import { Insignia } from '@/componentes/Insignia';
 import { useRegistrarSalida, useVisitasDeHoy } from '@/hooks/usePases';
 import { mensajeDeErrorPase } from '@/repositorios/pases';
-import { chipsPase, colores, espacios, radios, tipografia } from '@/tema';
+import { chipsPase, colores, espacios, radios, sombras, tipografia } from '@/tema';
 import { soloHora } from '@/utilidades/fechas';
 
 /** Lista de visitas de hoy para registrar su salida (RF20). */
@@ -66,11 +68,12 @@ export default function VisitasDeHoy() {
           <Boton variante="secundario" texto="Reintentar" alPresionar={() => visitas.refetch()} />
         </>
       ) : visitas.data.length === 0 ? (
-        <Text style={estilos.detalle}>Hoy todavía no ha ingresado ninguna visita.</Text>
+        <EstadoVacio icono="users" mensaje="Hoy todavía no ha ingresado ninguna visita." />
       ) : (
         visitas.data.map((visita) => (
           <View key={visita.id} style={estilos.tarjeta}>
             <View style={estilos.fila}>
+              <IconoCuadro icono="user" tamano={40} />
               <Text style={[estilos.nombre, estilos.flexible]}>{visita.nombre_visitante}</Text>
               <Insignia
                 texto={visita.salida_en ? 'Salió' : 'Dentro'}
@@ -85,6 +88,7 @@ export default function VisitasDeHoy() {
             {!visita.salida_en ? (
               <Boton
                 variante="secundario"
+                icono="log-out"
                 texto="Registrar salida"
                 alPresionar={() => registrar(visita.id)}
                 // Solo gira el botón de la visita que se está registrando.
@@ -103,6 +107,7 @@ const estilos = StyleSheet.create({
   contenido: { padding: espacios.margenLateral, gap: espacios.entreTarjetas },
   indicador: { marginTop: 32 },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 8,
     backgroundColor: colores.superficie,

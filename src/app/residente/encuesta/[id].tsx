@@ -24,7 +24,7 @@ import {
   type OpcionElegida,
   type PreguntaEncuesta,
 } from '@/repositorios/encuestas';
-import { chipsIncidencia, colores, espacios, radios, tamanos, tipografia } from '@/tema';
+import { chipsIncidencia, colores, espacios, radios, sombras, tamanos, tipografia } from '@/tema';
 import { fechaYHora } from '@/utilidades/fechas';
 
 /** P5 · Votar una encuesta y ver sus resultados. */
@@ -142,7 +142,7 @@ export default function Encuesta() {
               {error}
             </Text>
           ) : null}
-          <Boton texto="Enviar voto" alPresionar={enviar} cargando={voto.isPending} />
+          <Boton icono="send" texto="Enviar voto" alPresionar={enviar} cargando={voto.isPending} />
         </>
       ) : null}
 
@@ -183,6 +183,7 @@ const estilos = StyleSheet.create({
   },
   seccion: { gap: espacios.entreTarjetas },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 8,
     backgroundColor: colores.superficie,

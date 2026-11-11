@@ -9,6 +9,7 @@
  * Se usa con: `src/hooks/useAvisos.ts`, `TarjetaAviso`, `ChipsSeleccion`, `Boton`, el tema y la barra
  * inferior de `(tabs)/_layout.tsx`.
  */
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -58,7 +59,11 @@ export default function Avisos() {
         }
       >
         <Text style={estilos.titulo}>Avisos</Text>
-        <Boton texto="Crear aviso" alPresionar={() => router.push('/directiva/avisos/nuevo')} />
+        <Boton
+          icono="plus"
+          texto="Crear aviso"
+          alPresionar={() => router.push('/directiva/avisos/nuevo')}
+        />
         <ChipsSeleccion
           etiqueta="Mostrar"
           opciones={VISTAS}
@@ -76,9 +81,10 @@ export default function Avisos() {
             <Boton variante="secundario" texto="Reintentar" alPresionar={() => avisos.refetch()} />
           </View>
         ) : visibles.length === 0 ? (
-          <Text style={estilos.vacio}>
-            {enHistorial ? 'No hay avisos vencidos.' : 'No hay avisos vigentes.'}
-          </Text>
+          <EstadoVacio
+            icono="bell"
+            mensaje={enHistorial ? 'No hay avisos vencidos.' : 'No hay avisos vigentes.'}
+          />
         ) : (
           <View style={estilos.lista}>
             {visibles.map((aviso) => (
@@ -94,9 +100,8 @@ export default function Avisos() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   contenido: { padding: espacios.margenLateral, gap: 16 },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  titulo: { ...tipografia.tituloPantalla, color: colores.texto },
   lista: { gap: espacios.entreTarjetas },
   indicador: { marginTop: 32 },
-  vacio: { ...tipografia.cuerpo, color: colores.textoSecundario, paddingVertical: 16 },
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
 });

@@ -9,6 +9,8 @@
  * Se usa con: `src/hooks/useContactos.ts`, `src/repositorios/contactos.ts` (tipos y mensajes),
  * `useSesion` (perfil y cerrar sesión), `Boton`, `CampoTexto`, `confirmar` y el tema.
  */
+import { IconoCuadro } from '@/componentes/IconoCuadro';
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -32,7 +34,7 @@ import {
   type Contacto,
   type DatosContacto,
 } from '@/repositorios/contactos';
-import { colores, espacios, radios, tamanos, tipografia } from '@/tema';
+import { colores, espacios, radios, sombras, tamanos, tipografia } from '@/tema';
 import { confirmar } from '@/utilidades/confirmar';
 
 // Formulario vacío para un contacto nuevo.
@@ -105,12 +107,22 @@ export default function Perfil() {
         style={estilos.flexible}
       >
         <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-          <View style={estilos.tarjeta}>
-            <Text style={estilos.titulo}>
-              {perfil?.nombre} {perfil?.apellido}
-            </Text>
-            <Text style={estilos.detalle}>Residente</Text>
-            {perfil?.telefono ? <Text style={estilos.detalle}>{perfil.telefono}</Text> : null}
+          {/* Cabecera teal con las iniciales del residente, su nombre y su rol. */}
+          <View style={estilos.cabecera}>
+            <View style={estilos.avatar}>
+              <Text style={estilos.iniciales}>
+                {(perfil?.nombre ?? '').charAt(0)}
+                {(perfil?.apellido ?? '').charAt(0)}
+              </Text>
+            </View>
+            <View style={estilos.flexible}>
+              <Text style={estilos.titulo}>
+                {perfil?.nombre} {perfil?.apellido}
+              </Text>
+              <Text style={estilos.subtituloCabecera}>
+                Residente{perfil?.telefono ? ` · ${perfil.telefono}` : ''}
+              </Text>
+            </View>
           </View>
 
           <View style={estilos.seccion}>
@@ -135,15 +147,20 @@ export default function Perfil() {
                 />
               </>
             ) : lista.length === 0 ? (
-              <Text style={estilos.detalle}>Todavía no tienes contactos de emergencia.</Text>
+              <EstadoVacio icono="phone" mensaje="Todavía no tienes contactos de emergencia." />
             ) : (
               lista.map((contacto) => (
                 <View key={contacto.id} style={estilos.tarjeta}>
-                  <Text style={estilos.nombre}>{contacto.nombre}</Text>
-                  <Text style={estilos.detalle}>
-                    {contacto.parentesco ? `${contacto.parentesco} · ` : ''}
-                    {contacto.telefono}
-                  </Text>
+                  <View style={estilos.filaContacto}>
+                    <IconoCuadro icono="phone" />
+                    <View style={estilos.flexible}>
+                      <Text style={estilos.nombre}>{contacto.nombre}</Text>
+                      <Text style={estilos.detalle}>
+                        {contacto.parentesco ? `${contacto.parentesco} · ` : ''}
+                        {contacto.telefono}
+                      </Text>
+                    </View>
+                  </View>
                   <View style={estilos.acciones}>
                     <Pressable
                       accessibilityRole="button"
@@ -197,6 +214,7 @@ export default function Perfil() {
               // Con 3 contactos el botón desaparece (corrección 6 de DISENO.md).
               <Boton
                 variante="secundario"
+                icono="plus"
                 texto="Agregar contacto"
                 alPresionar={() => {
                   setError(null);
@@ -213,7 +231,8 @@ export default function Perfil() {
           </View>
 
           <Boton
-            variante="secundario"
+            variante="peligro"
+            icono="log-out"
             texto="Cerrar sesión"
             alPresionar={() =>
               cerrarSesion().catch((e) => console.error('No se pudo cerrar la sesión', e))
@@ -232,10 +251,32 @@ const estilos = StyleSheet.create({
   contenido: { padding: espacios.margenLateral, gap: 24 },
   seccion: { gap: espacios.entreTarjetas },
   filaTitulo: { flexDirection: 'row', alignItems: 'center' },
-  titulo: { ...tipografia.titulo, color: colores.texto },
+  // Cabecera: tarjeta teal con el avatar de iniciales a la izquierda.
+  cabecera: {
+    ...sombras.tarjeta,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 20,
+    backgroundColor: colores.principal,
+    borderRadius: radios.tarjeta,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colores.suave,
+  },
+  iniciales: { ...tipografia.titulo, color: colores.principal, textTransform: 'uppercase' },
+  titulo: { ...tipografia.titulo, color: colores.superficie },
+  subtituloCabecera: { ...tipografia.cuerpo, color: colores.suave },
+  filaContacto: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   tituloSeccion: { ...tipografia.titulo, fontSize: 18, color: colores.texto },
   contador: { ...tipografia.subtitulo, color: colores.principal },
   tarjeta: {
+    ...sombras.tarjeta,
     padding: 16,
     gap: 8,
     backgroundColor: colores.superficie,
