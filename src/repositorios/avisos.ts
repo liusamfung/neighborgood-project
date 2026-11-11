@@ -1,5 +1,6 @@
 /**
- * Repositorio de avisos: publicar un aviso nuevo con su imagen opcional (RF7, RF13).
+ * Repositorio de avisos: publicar un aviso nuevo con su imagen opcional (RF7, RF13) y listar los avisos
+ * visibles, con filtro por categoría (RF10, RF11).
  *
  * Qué hace: sube la imagen al bucket privado `avisos` (si hay) y llama a la función SQL `crear_aviso`,
  * que guarda el aviso y sus sectores en una sola transacción. También traduce los errores de la base
@@ -7,7 +8,8 @@
  * Cómo funciona: Storage y Postgres son dos servicios y no comparten transacción. Por eso la imagen se
  * sube primero y, si después `crear_aviso` falla, se borra para no dejar archivos sueltos. La función
  * corre con los permisos del usuario, así que RLS decide quién puede publicar (solo la directiva).
- * Se usa con: `src/hooks/useCrearAviso.ts` y la pantalla `src/app/directiva/avisos/nuevo.tsx`.
+ * Se usa con: `src/hooks/useCrearAviso.ts` y la pantalla `src/app/directiva/avisos/nuevo.tsx`;
+ * `listarAvisos`, con `src/hooks/useAvisos.ts` y la pantalla P4 del residente.
  * Depende de: `src/lib/supabase.ts`, `src/tipos/aviso.ts`, `expo-file-system` (lee el archivo local) y de
  * la migración `supabase/migrations/20261110000002_crear_aviso.sql`.
  */
@@ -15,7 +17,31 @@ import type { PostgrestError } from '@supabase/supabase-js';
 import { File } from 'expo-file-system';
 
 import { supabase } from '@/lib/supabase';
-import type { BorradorAviso, ImagenElegida } from '@/tipos/aviso';
+import type { AvisoListado, BorradorAviso, ImagenElegida } from '@/tipos/aviso';
+
+// Columnas de la lista de avisos (P4); la categoría llega por la relación con `categorias_aviso`.
+const COLUMNAS_LISTADO =
+  'id, titulo, descripcion, imagen_path, vigente_desde, vigente_hasta, creado_en, categoria:categorias_aviso (id, nombre)';
+
+/**
+ * Lista los avisos que el usuario puede ver, del más reciente al más antiguo (RF10, RF11).
+ *
+ * @param categoriaId filtra por una categoría (RF10); `null` o ausente trae todas.
+ * @returns los avisos visibles para el usuario. Quién ve qué lo decide la política RLS
+ * "avisos: lectura": la directiva ve todos; el residente, solo los vigentes de su sector o
+ * los marcados para todos. Lanza el error de Supabase si la consulta falla.
+ */
+export async function listarAvisos(categoriaId?: string | null): Promise<AvisoListado[]> {
+  let consulta = supabase
+    .from('avisos')
+    .select(COLUMNAS_LISTADO)
+    .order('vigente_desde', { ascending: false });
+  // El filtro corre en la base (menos datos viajan); sin categoría, la consulta trae todas.
+  if (categoriaId) consulta = consulta.eq('categoria_id', categoriaId);
+  const { data, error } = await consulta;
+  if (error) throw error;
+  return data;
+}
 
 /** Nombre del bucket privado de Storage donde viven las imágenes de los avisos (migración 6). */
 const BUCKET_AVISOS = 'avisos';
