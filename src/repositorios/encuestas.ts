@@ -1,5 +1,7 @@
 /**
- * Repositorio de encuestas: publicar una encuesta nueva (RF8, RF13, RF14).
+ * Repositorio de encuestas: publicar una encuesta nueva (RF8, RF13, RF14), listar y leer encuestas
+ * (RF11), votar (`emitirVoto`, RF9) y contar los votos (`resultadosEncuesta`, RF12). La parte de
+ * lectura y voto la usan `src/hooks/useEncuestas.ts`, la pantalla P5 del residente y la P14b.
  *
  * Qué hace: convierte el borrador de la pantalla P14 en la llamada a la función SQL `crear_encuesta`,
  * que guarda la encuesta, sus sectores, preguntas y opciones en una sola transacción: o queda todo o
@@ -66,4 +68,136 @@ export function mensajeDeErrorEncuesta(error: unknown): string {
   // Sin código de Postgres: la petición ni llegó al servidor (sin internet).
   if (!e?.code) return 'No hay conexión. Revisa tu internet e inténtalo de nuevo.';
   return 'No pudimos publicar la encuesta. Inténtalo de nuevo.';
+}
+
+/** Encuesta tal como se muestra en las listas (RF11, RF14), con su categoría y los votos visibles. */
+export type EncuestaListada = {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  /** `alta` = obligatoria (RF14). */
+  prioridad: 'normal' | 'alta';
+  /** true = los residentes ven los resultados antes del cierre (RF12). */
+  resultados_en_vivo: boolean;
+  abre_en: string;
+  cierra_en: string;
+  /** FK → categorias_aviso.id */
+  categoria_id: string;
+  para_todos: boolean;
+  categorias_aviso: { nombre: string };
+  /**
+   * Votos que RLS deja ver: un residente recibe solo el de su unidad (0 o 1 fila, sirve para saber
+   * si su unidad ya votó); la directiva recibe todos (uno por unidad que participó).
+   */
+  votos: { id: string }[];
+};
+
+/** Opción de respuesta de una pregunta. */
+export type OpcionEncuesta = { id: string; texto: string; orden: number };
+
+/** Pregunta de una encuesta con sus opciones. */
+export type PreguntaEncuesta = {
+  id: string;
+  texto: string;
+  seleccion: 'unica' | 'multiple';
+  orden: number;
+  encuesta_opciones: OpcionEncuesta[];
+};
+
+/** Encuesta completa para votar o ver sus resultados (P5 y P14b). */
+export type EncuestaDetalle = EncuestaListada & { encuesta_preguntas: PreguntaEncuesta[] };
+
+/** Opción elegida al votar: `emitir_voto` exige la pregunta junto a la opción. */
+export type OpcionElegida = { pregunta_id: string; opcion_id: string };
+
+/** Fila de `resultados_encuesta`: cuántos votos tiene una opción. */
+export type ConteoOpcion = { pregunta_id: string; opcion_id: string; total: number };
+
+// Columnas comunes de la lista y del detalle.
+const COLUMNAS_ENCUESTA =
+  'id, titulo, descripcion, prioridad, resultados_en_vivo, abre_en, cierra_en, categoria_id, para_todos, categorias_aviso(nombre), votos(id)';
+
+/**
+ * Lista las encuestas que el usuario puede ver, de la más reciente a la más antigua (RF11).
+ * El filtro por sector y por fecha de apertura lo aplica la política RLS "encuestas: lectura" (RF13).
+ */
+export async function listarEncuestas(): Promise<EncuestaListada[]> {
+  const { data, error } = await supabase
+    .from('encuestas')
+    .select(COLUMNAS_ENCUESTA)
+    .order('abre_en', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Trae una encuesta con sus preguntas y opciones, ya ordenadas.
+ *
+ * @param encuestaId id de la encuesta.
+ * @returns la encuesta, o `null` si no existe o RLS no deja verla.
+ */
+export async function obtenerEncuesta(encuestaId: string): Promise<EncuestaDetalle | null> {
+  const { data, error } = await supabase
+    .from('encuestas')
+    .select(
+      `${COLUMNAS_ENCUESTA}, encuesta_preguntas(id, texto, seleccion, orden, encuesta_opciones(id, texto, orden))`,
+    )
+    .eq('id', encuestaId)
+    .order('orden', { referencedTable: 'encuesta_preguntas' })
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  // Las opciones se ordenan aquí: PostgREST no ordena una tabla anidada dos niveles con claridad.
+  for (const pregunta of data.encuesta_preguntas) {
+    pregunta.encuesta_opciones.sort((a, b) => a.orden - b.orden);
+  }
+  return data;
+}
+
+/**
+ * Emite el voto de la unidad del residente (RF9) con la función SQL `emitir_voto`.
+ *
+ * @param encuestaId encuesta que se vota.
+ * @param opciones al menos una opción por cada pregunta.
+ * Lanza el error de Supabase si falla; `23505` significa que la unidad ya había votado.
+ */
+export async function emitirVoto(encuestaId: string, opciones: OpcionElegida[]): Promise<void> {
+  const { error } = await supabase.rpc('emitir_voto', {
+    p_encuesta_id: encuestaId,
+    p_opciones: opciones,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Cuenta los votos por opción con la función SQL `resultados_encuesta` (RF12).
+ * La función solo responde a un residente si la encuesta es "en vivo" o ya cerró; a la directiva
+ * le responde siempre. No revela quién votó.
+ */
+export async function resultadosEncuesta(encuestaId: string): Promise<ConteoOpcion[]> {
+  const { data, error } = await supabase.rpc('resultados_encuesta', {
+    p_encuesta_id: encuestaId,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Traduce un error de `emitirVoto` a un texto en español para el residente.
+ *
+ * @param error lo que lanzó `emitirVoto` (error de Postgres o de red).
+ */
+export function mensajeDeErrorVoto(error: unknown): string {
+  const e = error as Partial<PostgrestError> | null;
+  switch (e?.code) {
+    case '23505': // llave única (encuesta_id, unidad_id): un voto por unidad (RF9)
+      return 'Tu unidad ya votó en esta encuesta.';
+    case '22023': // la función emitir_voto ya responde en español
+    case '42501':
+      return e.message ?? 'No se pudo registrar el voto.';
+    case 'P0002':
+      return 'La encuesta ya no existe.';
+  }
+  if (!e?.code) return 'No hay conexión. Revisa tu internet e inténtalo de nuevo.';
+  return 'No pudimos registrar tu voto. Inténtalo de nuevo.';
 }

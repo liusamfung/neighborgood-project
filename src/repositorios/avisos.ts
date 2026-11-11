@@ -1,5 +1,7 @@
 /**
- * Repositorio de avisos: publicar un aviso nuevo con su imagen opcional (RF7, RF13).
+ * Repositorio de avisos: publicar un aviso nuevo con su imagen opcional (RF7, RF13) y listar los
+ * avisos que el usuario puede ver (`listarAvisos` y `urlImagenAviso`; RF10, RF11), que usan
+ * `src/hooks/useAvisos.ts` y las pestañas Avisos del residente y de la directiva.
  *
  * Qué hace: sube la imagen al bucket privado `avisos` (si hay) y llama a la función SQL `crear_aviso`,
  * que guarda el aviso y sus sectores en una sola transacción. También traduce los errores de la base
@@ -99,4 +101,52 @@ export function mensajeDeErrorAviso(error: unknown): string {
   // Sin código de Postgres: la petición ni llegó al servidor (sin internet).
   if (!e?.code) return 'No hay conexión. Revisa tu internet e inténtalo de nuevo.';
   return 'No pudimos publicar el aviso. Inténtalo de nuevo.';
+}
+
+/** Aviso tal como se muestra en las listas (RF10, RF11), con el nombre de su categoría. */
+export type AvisoListado = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  /** Ruta en el bucket privado `avisos`; `null` si el aviso no tiene imagen. */
+  imagen_path: string | null;
+  vigente_desde: string;
+  vigente_hasta: string;
+  /** FK → categorias_aviso.id */
+  categoria_id: string;
+  /** true = todo el condominio; false = solo algunos sectores (RF13). */
+  para_todos: boolean;
+  categorias_aviso: { nombre: string };
+};
+
+/**
+ * Lista los avisos que el usuario puede ver, del más reciente al más antiguo (RF10, RF11).
+ *
+ * Cómo funciona: no filtra por sector ni por rol; lo hace la política RLS "avisos: lectura". Un
+ * residente recibe solo los avisos ya iniciados y dirigidos a todos o a su sector (RF13); la directiva
+ * los recibe todos. Incluye los vencidos: la pantalla los separa en "Vigentes" e "Historial".
+ */
+export async function listarAvisos(): Promise<AvisoListado[]> {
+  const { data, error } = await supabase
+    .from('avisos')
+    .select(
+      'id, titulo, descripcion, imagen_path, vigente_desde, vigente_hasta, categoria_id, para_todos, categorias_aviso(nombre)',
+    )
+    .order('vigente_desde', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Pide una dirección temporal para ver la imagen de un aviso.
+ *
+ * @param imagenPath valor de `avisos.imagen_path`.
+ * @returns una URL firmada que vale una hora (el bucket `avisos` es privado, no tiene URL pública).
+ */
+export async function urlImagenAviso(imagenPath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(BUCKET_AVISOS)
+    .createSignedUrl(imagenPath, 60 * 60);
+  if (error) throw error;
+  return data.signedUrl;
 }
