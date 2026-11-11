@@ -156,11 +156,9 @@ export default function Panel() {
             }
             style={({ pressed }) => [estilos.tarjeta, pressed && estilos.presionado]}
           >
-            <View style={estilos.fila}>
-              <Text style={[estilos.etiqueta, estilos.flexible]}>Encuesta en curso 🗳️</Text>
-              <Text style={estilos.detalle}>Cierra el {fechaYHora(encuesta.cierra_en)}</Text>
-            </View>
+            <Text style={estilos.etiqueta}>Encuesta en curso 🗳️</Text>
             <Text style={estilos.tituloTarjeta}>{encuesta.titulo}</Text>
+            <Text style={estilos.detalle}>Cierra el {fechaYHora(encuesta.cierra_en)}</Text>
             {conPorcentaje ? (
               <>
                 {/* Pista gris con la barra teal del porcentaje de unidades que ya votaron. */}
