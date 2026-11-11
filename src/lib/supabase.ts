@@ -12,7 +12,7 @@ import 'react-native-url-polyfill/auto';
 
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import type { Database } from '@/tipos/base_de_datos';
 
@@ -44,6 +44,15 @@ const almacenSeguro = {
   removeItem: (clave: string) => SecureStore.deleteItemAsync(clave),
 };
 
+// SecureStore no existe en el navegador. Para poder abrir la app con `npx expo start --web` (solo
+// para revisar pantallas en desarrollo), en web la sesión se guarda en `localStorage`. En el
+// teléfono se sigue usando el llavero.
+const almacenWeb = {
+  getItem: async (clave: string) => globalThis.localStorage?.getItem(clave) ?? null,
+  setItem: async (clave: string, valor: string) => globalThis.localStorage?.setItem(clave, valor),
+  removeItem: async (clave: string) => globalThis.localStorage?.removeItem(clave),
+};
+
 /**
  * Cliente tipado de Supabase. Úsalo solo desde `src/repositorios`, nunca desde una pantalla (RNF7).
  * Lleva solo la anon key: la service_role vive únicamente en las Edge Functions.
@@ -55,7 +64,7 @@ export const supabase = createClient<Database>(
   anonKey || 'sin-configurar',
   {
     auth: {
-      storage: almacenSeguro,
+      storage: Platform.OS === 'web' ? almacenWeb : almacenSeguro,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
