@@ -82,7 +82,9 @@ export default function NuevoResidente() {
     alta.mutate(
       { nombre: nombreLimpio, correo: correoLimpio, unidadId: unidad.id, creadoPor: perfil.id },
       {
-        onSuccess: () => router.back(),
+        // Si se llegó por un enlace directo no hay pantalla anterior: se abre la lista.
+        onSuccess: () =>
+          router.canGoBack() ? router.back() : router.replace('/directiva/residentes'),
         onError: (e) => setError(mensajeDeErrorResidentes(e)),
       },
     );
