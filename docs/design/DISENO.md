@@ -109,7 +109,7 @@ Los mockups se hicieron antes de cruzarlos con el modelo de datos. Estas diferen
 | # | Pantalla | Mockup | Debe ser (modelo / requisitos) |
 |---|---|---|---|
 | 1 | P3b, P9, P10, P12 | Las alertas usan los estados *Pendiente*, *En atención* y *Resuelto*, y el guardia tiene un solo botón "Atender". | Estados de alerta: `activa`, `en_camino`, `atendida` (RF27). Etiquetas sugeridas: **Activa**, **En camino**, **Atendida**. El personal tiene dos acciones: "Estoy en camino" y "Marcar como atendida". "Resueltas hoy" pasa a "Atendidas hoy". |
-| 2 | P6 | "Nuevo pase para hoy", solo con el nombre. | Pedir **nombre, fecha de la visita y hora estimada** (`nombre_visitante`, `fecha_visita`, `hora_estimada`; RF15). |
+| 2 | P6 | "Nuevo pase para hoy", solo con el nombre. | Pedir **nombre, fecha de la visita y hora estimada** (`nombre_visitante`, `fecha_visita`, `hora_estimada`; RF15). **Aplicada en la app (issue #25).** |
 | 3 | P7 | Sin campo de ubicación; "Puedes añadir varias" fotos. | Agregar **Ubicación**, precargada con la unidad y editable (`ubicacion`; RF29). Fotos: **mínimo 1 (lo valida la app) y máximo 3** (límite en la base). |
 | 4 | P13 | Sin imagen ni fechas. | Agregar **imagen adjunta opcional** y **vigencia** desde/hasta (`imagen_path`, `vigente_desde`, `vigente_hasta`; RF7). La lista de categorías sale de `categorias_aviso`, no está fija. **Aplicada en la app (issue #17).** |
 | 5 | P14 | Sin categoría, fechas ni opción de resultados en vivo. | Agregar **categoría** (`categoria_id`), **apertura y cierre** (`abre_en`, `cierra_en`) y el interruptor **Resultados en vivo** (`resultados_en_vivo`; RF12). "Obligatoria" equivale a `prioridad = alta`. "Todo el condominio" equivale a `para_todos = true`. **Aplicada en la app (issue #18).** |
