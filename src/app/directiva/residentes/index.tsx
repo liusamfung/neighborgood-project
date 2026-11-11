@@ -6,8 +6,8 @@
  * todavía no crearon su cuenta (se puede quitar el alta). "Residentes registrados" son los perfiles con
  * rol residente (se puede dar de baja: el perfil queda con `activo = false`). El botón de arriba abre
  * el formulario de alta (`/directiva/residentes/nuevo`).
- * Cómo funciona: lee y escribe con los hooks de TanStack Query; cada acción pide confirmación con un
- * `Alert` y, al terminar, las listas se refrescan solas.
+ * Cómo funciona: lee y escribe con los hooks de TanStack Query; cada acción pide confirmación con
+ * `confirmar` (`src/utilidades/confirmar.ts`) y, al terminar, las listas se refrescan solas.
  * Se usa con: `src/hooks/useResidentes.ts`, `src/repositorios/residentes.ts` (tipos y mensajes de
  * error), `Boton`, el tema (`src/tema`) y `directiva/_layout.tsx`, que registra la ruta. Se llega desde
  * el Panel (`directiva/(tabs)/index.tsx`).
@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -37,6 +36,7 @@ import {
   type AltaPendiente,
   type ResidenteRegistrado,
 } from '@/repositorios/residentes';
+import { confirmar } from '@/utilidades/confirmar';
 import { colores, chipsPase, espacios, radios, tamanos, tipografia } from '@/tema';
 
 /** Texto de la unidad con su sector, por ejemplo "Torre A · Dpto 302". */
@@ -79,39 +79,24 @@ export default function Residentes() {
 
   /** Pide confirmación y quita un alta pendiente: ese correo ya no podrá registrarse. */
   function confirmarQuitarAlta(alta: AltaPendiente) {
-    Alert.alert('Quitar alta', `${alta.correo} ya no podrá crear su cuenta.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Quitar alta',
-        style: 'destructive',
-        onPress: () => {
-          setErrorAccion(null);
-          quitarAlta.mutate(alta.id, {
-            onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)),
-          });
-        },
-      },
-    ]);
+    confirmar('Quitar alta', `${alta.correo} ya no podrá crear su cuenta.`, 'Quitar alta', () => {
+      setErrorAccion(null);
+      quitarAlta.mutate(alta.id, { onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)) });
+    });
   }
 
   /** Pide confirmación y da de baja a un residente: su perfil queda con `activo = false`. */
   function confirmarBaja(residente: ResidenteRegistrado) {
-    Alert.alert(
+    confirmar(
       'Dar de baja',
       `${residente.nombre} ${residente.apellido} ya no podrá entrar a la app.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Dar de baja',
-          style: 'destructive',
-          onPress: () => {
-            setErrorAccion(null);
-            darDeBaja.mutate(residente.id, {
-              onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)),
-            });
-          },
-        },
-      ],
+      'Dar de baja',
+      () => {
+        setErrorAccion(null);
+        darDeBaja.mutate(residente.id, {
+          onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)),
+        });
+      },
     );
   }
 

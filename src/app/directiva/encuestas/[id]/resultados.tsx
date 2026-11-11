@@ -9,11 +9,19 @@
  * `directiva/_layout.tsx`, que la declara como pantalla apilada. Se llega desde la pestaña Encuestas.
  */
 import { useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { ResultadosEncuesta } from '@/componentes/encuestas/ResultadosEncuesta';
 import { Boton } from '@/componentes/formulario/Boton';
 import { Insignia } from '@/componentes/Insignia';
+import { useAhora } from '@/hooks/useAhora';
 import { useEncuesta, useResultadosEncuesta } from '@/hooks/useEncuestas';
 import { chipsIncidencia, chipsPase, colores, espacios, tipografia } from '@/tema';
 import { fechaYHora } from '@/utilidades/fechas';
@@ -23,6 +31,7 @@ export default function Resultados() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const consulta = useEncuesta(id);
   const resultados = useResultadosEncuesta(id, true);
+  const ahora = useAhora();
 
   /** Vuelve a pedir la encuesta y su conteo. */
   function recargar() {
@@ -45,7 +54,7 @@ export default function Resultados() {
     );
   }
 
-  const cerrada = new Date(encuesta.cierra_en).getTime() <= Date.now();
+  const cerrada = new Date(encuesta.cierra_en).getTime() <= ahora;
   const votos = encuesta.votos.length;
 
   return (

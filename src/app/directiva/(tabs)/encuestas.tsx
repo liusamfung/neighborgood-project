@@ -10,12 +10,20 @@
  */
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TarjetaEncuesta } from '@/componentes/encuestas/TarjetaEncuesta';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
+import { useAhora } from '@/hooks/useAhora';
 import { useEncuestas } from '@/hooks/useEncuestas';
 import { colores, espacios, tipografia } from '@/tema';
 
@@ -32,7 +40,7 @@ export default function Encuestas() {
   const [vista, setVista] = useState('abiertas');
 
   const enHistorial = vista === 'historial';
-  const ahora = Date.now();
+  const ahora = useAhora();
   const visibles = (encuestas.data ?? []).filter(
     (e) => new Date(e.cierra_en).getTime() <= ahora === enHistorial,
   );
@@ -83,6 +91,7 @@ export default function Encuestas() {
               <TarjetaEncuesta
                 key={encuesta.id}
                 encuesta={encuesta}
+                cerrada={enHistorial}
                 rol="directiva"
                 alPresionar={() =>
                   router.push({

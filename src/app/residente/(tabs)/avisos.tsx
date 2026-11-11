@@ -12,13 +12,21 @@
  */
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TarjetaAviso } from '@/componentes/avisos/TarjetaAviso';
 import { TarjetaEncuesta } from '@/componentes/encuestas/TarjetaEncuesta';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
+import { useAhora } from '@/hooks/useAhora';
 import { useAvisos } from '@/hooks/useAvisos';
 import { useCategorias } from '@/hooks/useCatalogos';
 import { useEncuestas } from '@/hooks/useEncuestas';
@@ -50,12 +58,13 @@ export default function Avisos() {
   }
 
   // Un aviso o encuesta es "vigente" mientras no pase su fecha de fin; después va al historial.
-  const ahora = Date.now();
+  const ahora = useAhora();
   const enHistorial = vista === 'historial';
   const deLaCategoria = (id: string) => categoria.length === 0 || categoria.includes(id);
 
   const encuestasVisibles = (encuestas.data ?? []).filter(
-    (e) => deLaCategoria(e.categoria_id) && new Date(e.cierra_en).getTime() <= ahora === enHistorial,
+    (e) =>
+      deLaCategoria(e.categoria_id) && new Date(e.cierra_en).getTime() <= ahora === enHistorial,
   );
   const avisosVisibles = (avisos.data ?? []).filter(
     (a) =>
@@ -112,6 +121,7 @@ export default function Avisos() {
               <TarjetaEncuesta
                 key={encuesta.id}
                 encuesta={encuesta}
+                cerrada={enHistorial}
                 rol="residente"
                 alPresionar={() =>
                   router.push({ pathname: '/residente/encuesta/[id]', params: { id: encuesta.id } })

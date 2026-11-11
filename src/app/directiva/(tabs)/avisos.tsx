@@ -11,12 +11,20 @@
  */
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TarjetaAviso } from '@/componentes/avisos/TarjetaAviso';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
+import { useAhora } from '@/hooks/useAhora';
 import { useAvisos } from '@/hooks/useAvisos';
 import { colores, espacios, tipografia } from '@/tema';
 
@@ -33,7 +41,7 @@ export default function Avisos() {
   const [vista, setVista] = useState('vigentes');
 
   const enHistorial = vista === 'historial';
-  const ahora = Date.now();
+  const ahora = useAhora();
   const visibles = (avisos.data ?? []).filter(
     (a) => new Date(a.vigente_hasta).getTime() <= ahora === enHistorial,
   );
@@ -43,7 +51,10 @@ export default function Avisos() {
       <ScrollView
         contentContainerStyle={estilos.contenido}
         refreshControl={
-          <RefreshControl refreshing={avisos.isRefetching} onRefresh={() => void avisos.refetch()} />
+          <RefreshControl
+            refreshing={avisos.isRefetching}
+            onRefresh={() => void avisos.refetch()}
+          />
         }
       >
         <Text style={estilos.titulo}>Avisos</Text>

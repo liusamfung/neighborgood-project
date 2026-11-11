@@ -17,6 +17,8 @@ import { fechaYHora } from '@/utilidades/fechas';
 /** Datos que recibe la tarjeta. */
 type Props = {
   encuesta: EncuestaListada;
+  /** true si la encuesta ya pasó su `cierra_en`; lo calcula la pantalla con `useAhora`. */
+  cerrada: boolean;
   /** Quién mira la lista: cambia la línea de estado. */
   rol: 'residente' | 'directiva';
   /** Se llama al tocar la tarjeta; la pantalla decide a qué ruta ir. */
@@ -24,8 +26,7 @@ type Props = {
 };
 
 /** Tarjeta de una encuesta con su estado (abierta o cerrada) y su prioridad. */
-export function TarjetaEncuesta({ encuesta, rol, alPresionar }: Props) {
-  const cerrada = new Date(encuesta.cierra_en).getTime() <= Date.now();
+export function TarjetaEncuesta({ encuesta, cerrada, rol, alPresionar }: Props) {
   const votos = encuesta.votos.length;
   // El residente solo recibe el voto de su unidad (RLS); la directiva recibe el de todas.
   const estado =

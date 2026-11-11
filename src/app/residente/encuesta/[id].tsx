@@ -17,6 +17,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { ResultadosEncuesta } from '@/componentes/encuestas/ResultadosEncuesta';
 import { Boton } from '@/componentes/formulario/Boton';
 import { Insignia } from '@/componentes/Insignia';
+import { useAhora } from '@/hooks/useAhora';
 import { useEmitirVoto, useEncuesta, useResultadosEncuesta } from '@/hooks/useEncuestas';
 import {
   mensajeDeErrorVoto,
@@ -35,8 +36,9 @@ export default function Encuesta() {
   const [elegidas, setElegidas] = useState<Record<string, string[]>>({});
   const [error, setError] = useState<string | null>(null);
 
+  const ahora = useAhora();
   const encuesta = consulta.data;
-  const cerrada = encuesta ? new Date(encuesta.cierra_en).getTime() <= Date.now() : false;
+  const cerrada = encuesta ? new Date(encuesta.cierra_en).getTime() <= ahora : false;
   const yaVoto = (encuesta?.votos.length ?? 0) > 0;
   // RF12: el residente ve resultados si son en vivo o si la encuesta ya cerró.
   const verResultados = Boolean(encuesta) && (encuesta!.resultados_en_vivo || cerrada);
