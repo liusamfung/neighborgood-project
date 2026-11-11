@@ -5,8 +5,8 @@
  * español, para que las pantallas no usen `supabase.functions` directamente (RNF7).
  * Cómo funciona: `supabase.functions.invoke` manda solo el JWT del usuario con sesión iniciada; la
  * función comprueba quién es y su rol. La app nunca lleva la `service_role`.
- * Se usa con: `src/componentes/ProbarFuncion.tsx` (prueba temporal) y, más adelante, las pantallas del
- * pase QR (RF15 a RF22). Depende de `src/lib/supabase.ts` y de `supabase/functions/quien-soy`.
+ * Se usa con: `src/repositorios/pases.ts` (`crear-pase`, RF15) y, más adelante, las demás pantallas del
+ * pase QR (RF16 a RF22). Depende de `src/lib/supabase.ts`; `quienSoy` llama a `supabase/functions/quien-soy`.
  */
 import {
   FunctionsFetchError,
@@ -83,7 +83,10 @@ export async function invocarFuncion<T>(
   return data as T;
 }
 
-/** Pregunta al servidor quién es el usuario con sesión (función de ejemplo del issue #6). */
+/**
+ * Pregunta al servidor quién es el usuario con sesión. Es la función de ejemplo del issue #6: ninguna
+ * pantalla la usa, queda como referencia para probar que la app llega a las Edge Functions.
+ */
 export function quienSoy(): Promise<RespuestaQuienSoy> {
   return invocarFuncion<RespuestaQuienSoy>('quien-soy');
 }

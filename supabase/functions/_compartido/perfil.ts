@@ -32,6 +32,13 @@ export type Perfil = {
  */
 export type ContextoMinimo = Pick<SupabaseContext, 'supabase' | 'userClaims'>
 
+/**
+ * Contexto para las funciones que escriben con la `service_role` (por ejemplo, crear un pase): suma el
+ * cliente administrador (`supabaseAdmin`), que se salta RLS. Se usa solo después de comprobar quién
+ * llama con `exigirPerfil`; la clave la inyecta Supabase en el entorno y nunca se escribe en el repo.
+ */
+export type ContextoConAdmin = ContextoMinimo & Pick<SupabaseContext, 'supabaseAdmin'>
+
 /** Resultado de `exigirPerfil`: o hay perfil, o hay una respuesta de error que se devuelve tal cual. */
 export type ResultadoPerfil =
   | { perfil: Perfil; respuesta?: never }
