@@ -423,3 +423,16 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/quien-soy/deno.json"
 entrypoint = "./functions/quien-soy/index.ts"
+
+# Pases de visita (RF15 a RF22). La lógica y el rol permitido están en el manejador de cada función.
+[functions.crear-pase]
+enabled = true
+verify_jwt = true
+import_map = "./functions/crear-pase/deno.json"
+entrypoint = "./functions/crear-pase/index.ts"
+
+[functions.validar-pase]
+enabled = true
+verify_jwt = true
+import_map = "./functions/validar-pase/deno.json"
+entrypoint = "./functions/validar-pase/index.ts"
