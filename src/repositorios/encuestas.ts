@@ -85,6 +85,8 @@ export type EncuestaListada = {
   categoria_id: string;
   para_todos: boolean;
   categorias_aviso: { nombre: string };
+  /** Sectores destino cuando `para_todos` es false (RF13); vacío si es para todo el condominio. */
+  encuesta_sectores: { sectores: { nombre: string } }[];
   /**
    * Votos que RLS deja ver: un residente recibe solo el de su unidad (0 o 1 fila, sirve para saber
    * si su unidad ya votó); la directiva recibe todos (uno por unidad que participó).
@@ -115,7 +117,7 @@ export type ConteoOpcion = { pregunta_id: string; opcion_id: string; total: numb
 
 // Columnas comunes de la lista y del detalle.
 const COLUMNAS_ENCUESTA =
-  'id, titulo, descripcion, prioridad, resultados_en_vivo, abre_en, cierra_en, categoria_id, para_todos, categorias_aviso(nombre), votos(id)';
+  'id, titulo, descripcion, prioridad, resultados_en_vivo, abre_en, cierra_en, categoria_id, para_todos, categorias_aviso(nombre), encuesta_sectores(sectores(nombre)), votos(id)';
 
 /**
  * Lista las encuestas que el usuario puede ver, de la más reciente a la más antigua (RF11).

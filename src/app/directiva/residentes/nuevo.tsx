@@ -5,7 +5,8 @@
  * `residentes_habilitados`. Desde ese momento ese correo puede crear su cuenta (RF1) y el trigger de la
  * base le crea el perfil con ese nombre y esa unidad.
  * Cómo funciona: la unidad se elige de la lista de unidades habilitadas, filtrada por lo que se escribe
- * (sector o código). Al guardar vuelve a la lista de residentes, que se refresca sola.
+ * (sector o código). Al guardar aparece la franja de confirmación y la pantalla vuelve a la lista de
+ * residentes, que se refresca sola: el formulario se descarta y no se puede enviar dos veces.
  * Se usa con: `src/hooks/useResidentes.ts` (`useUnidades`, `useDarDeAlta`),
  * `src/repositorios/residentes.ts` (mensajes de error), `useSesion` (quién hace el alta), `Boton`,
  * `CampoTexto`, el tema y `directiva/_layout.tsx`, que registra la ruta.
@@ -25,10 +26,12 @@ import {
 
 import { Boton } from '@/componentes/formulario/Boton';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
+import { useMensaje } from '@/contexto/MensajeContext';
 import { useSesion } from '@/contexto/SesionContext';
 import { useDarDeAlta, useUnidades } from '@/hooks/useResidentes';
 import { mensajeDeErrorResidentes, type UnidadConSector } from '@/repositorios/residentes';
 import { colores, espacios, radios, tamanos, tipografia } from '@/tema';
+import { volverA } from '@/utilidades/navegacion';
 
 // Comprobación sencilla de formato (algo@algo.algo), igual que en el registro.
 const FORMATO_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,6 +50,7 @@ export default function NuevoResidente() {
   const { perfil } = useSesion();
   const unidades = useUnidades();
   const alta = useDarDeAlta();
+  const { mostrarMensaje } = useMensaje();
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [busqueda, setBusqueda] = useState('');
@@ -82,9 +86,11 @@ export default function NuevoResidente() {
     alta.mutate(
       { nombre: nombreLimpio, correo: correoLimpio, unidadId: unidad.id, creadoPor: perfil.id },
       {
-        // Si se llegó por un enlace directo no hay pantalla anterior: se abre la lista.
-        onSuccess: () =>
-          router.canGoBack() ? router.back() : router.replace('/directiva/residentes'),
+        // La franja confirma y la pantalla vuelve a la lista: el formulario se descarta.
+        onSuccess: () => {
+          mostrarMensaje(`✅ ${nombreLimpio} ya puede crear su cuenta con ${correoLimpio}`);
+          volverA(router, '/directiva/residentes');
+        },
         onError: (e) => setError(mensajeDeErrorResidentes(e)),
       },
     );
@@ -189,7 +195,13 @@ export default function NuevoResidente() {
           </Text>
         ) : null}
 
-        <Boton texto="Dar de alta" alPresionar={guardar} cargando={alta.isPending} />
+        {/* Tras guardar, el botón sigue bloqueado mientras la pantalla se cierra. */}
+        <Boton
+          icono="user-plus"
+          texto="Dar de alta"
+          alPresionar={guardar}
+          cargando={alta.isPending || alta.isSuccess}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -15,6 +15,7 @@ import {
   listarAltasPendientes,
   listarResidentes,
   listarUnidades,
+  obtenerUnidad,
   quitarAlta,
 } from '@/repositorios/residentes';
 
@@ -24,6 +25,21 @@ const CLAVE = ['residentes'] as const;
 /** Unidades habilitadas con su sector, para el selector del formulario de alta. */
 export function useUnidades() {
   return useQuery({ queryKey: ['unidades'], queryFn: listarUnidades });
+}
+
+/**
+ * Unidad del usuario con sesión, con el nombre de su sector.
+ *
+ * @param unidadId valor de `perfiles.unidad_id`; con `null` (directiva y guardia) no se consulta.
+ */
+export function useUnidad(unidadId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['unidades', unidadId],
+    queryFn: () => obtenerUnidad(unidadId as string),
+    enabled: Boolean(unidadId),
+    // La unidad de un residente casi nunca cambia: se reutiliza 10 minutos.
+    staleTime: 10 * 60 * 1000,
+  });
 }
 
 /** Altas que aún nadie usó para registrarse. */

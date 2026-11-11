@@ -31,6 +31,10 @@ type Props = {
 /** Tarjeta de una encuesta con su estado (abierta o cerrada) y su prioridad. */
 export function TarjetaEncuesta({ encuesta, cerrada, rol, alPresionar }: Props) {
   const votos = encuesta.votos.length;
+  // RF13: a quién va dirigida; con sectores se listan sus nombres.
+  const destino = encuesta.para_todos
+    ? 'Todo el condominio'
+    : encuesta.encuesta_sectores.map((s) => s.sectores.nombre).join(', ') || 'Por sector';
   // El residente solo recibe el voto de su unidad (RLS); la directiva recibe el de todas.
   const pendiente = rol === 'residente' && votos === 0 && !cerrada;
   const estado =
@@ -59,7 +63,7 @@ export function TarjetaEncuesta({ encuesta, cerrada, rol, alPresionar }: Props) 
         </View>
         <Text style={estilos.titulo}>{encuesta.titulo}</Text>
         <Text style={estilos.detalle}>
-          {cerrada ? 'Cerró el ' : 'Cierra el '}
+          {destino} · {cerrada ? 'cerró el ' : 'cierra el '}
           {fechaYHora(encuesta.cierra_en)}
         </Text>
         <View style={estilos.insignias}>

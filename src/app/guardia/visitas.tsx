@@ -7,8 +7,8 @@
  * Cómo funciona: la lista sale de `pases_visita` (RLS deja ver al guardia solo los pases de hoy en
  * hora de Lima). La salida la registra la Edge Function `validar-pase` con la acción `salida`; la base
  * impide que la salida sea anterior al ingreso.
- * Se usa con: `src/hooks/usePases.ts`, `src/repositorios/pases.ts` (tipos y mensajes), `Boton`,
- * `Insignia`, el tema y `guardia/_layout.tsx`, que registra la ruta. Se llega desde el Escáner (P11).
+ * Se usa con: `src/hooks/usePases.ts`, `src/repositorios/pases.ts` (tipos y mensajes), `useMensaje`,
+ * `Boton`, `Insignia`, `IconoCuadro`, `EstadoVacio`, el tema y `guardia/_layout.tsx`, que registra la ruta. Se llega desde el Escáner (P11).
  */
 import { IconoCuadro } from '@/componentes/IconoCuadro';
 import { EstadoVacio } from '@/componentes/EstadoVacio';
@@ -24,6 +24,7 @@ import {
 
 import { Boton } from '@/componentes/formulario/Boton';
 import { Insignia } from '@/componentes/Insignia';
+import { useMensaje } from '@/contexto/MensajeContext';
 import { useRegistrarSalida, useVisitasDeHoy } from '@/hooks/usePases';
 import { mensajeDeErrorPase } from '@/repositorios/pases';
 import { chipsPase, colores, espacios, radios, sombras, tipografia } from '@/tema';
@@ -33,12 +34,16 @@ import { soloHora } from '@/utilidades/fechas';
 export default function VisitasDeHoy() {
   const visitas = useVisitasDeHoy();
   const salida = useRegistrarSalida();
+  const { mostrarMensaje } = useMensaje();
   const [error, setError] = useState<string | null>(null);
 
   /** Registra la salida de una visita y muestra el error si falla. */
   function registrar(paseId: string) {
     setError(null);
-    salida.mutate(paseId, { onError: (e) => setError(mensajeDeErrorPase(e)) });
+    salida.mutate(paseId, {
+      onSuccess: (pase) => mostrarMensaje(`👋 Salida de ${pase.nombre_visitante} registrada`),
+      onError: (e) => setError(mensajeDeErrorPase(e)),
+    });
   }
 
   return (
@@ -68,7 +73,7 @@ export default function VisitasDeHoy() {
           <Boton variante="secundario" texto="Reintentar" alPresionar={() => visitas.refetch()} />
         </>
       ) : visitas.data.length === 0 ? (
-        <EstadoVacio icono="users" mensaje="Hoy todavía no ha ingresado ninguna visita." />
+        <EstadoVacio emoji="🚪" mensaje="Hoy todavía no ha ingresado ninguna visita." />
       ) : (
         visitas.data.map((visita) => (
           <View key={visita.id} style={estilos.tarjeta}>

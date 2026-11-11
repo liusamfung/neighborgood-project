@@ -47,6 +47,10 @@ export function TarjetaAviso({ aviso, vencido }: Props) {
   const [abierta, setAbierta] = useState(false);
   const imagen = useImagenAviso(aviso.imagen_path, abierta);
   const categoria = aviso.categorias_aviso.nombre;
+  // RF13: a quién va dirigido. Con sectores se listan sus nombres, como en el mockup ("TORRE A").
+  const destino = aviso.para_todos
+    ? 'Todo el condominio'
+    : aviso.aviso_sectores.map((s) => s.sectores.nombre).join(', ') || 'Por sector';
 
   return (
     <Pressable
@@ -59,7 +63,7 @@ export function TarjetaAviso({ aviso, vencido }: Props) {
         <IconoCuadro icono={iconoDeCategoria(categoria)} />
         <View style={estilos.cuerpo}>
           <Text style={estilos.etiqueta}>
-            {categoria} · {aviso.para_todos ? 'Todo el condominio' : 'Tu sector'}
+            {categoria} · {destino}
           </Text>
           <Text style={estilos.titulo}>{aviso.titulo}</Text>
           {/* Cerrada muestra dos líneas del mensaje; abierta, todo. */}

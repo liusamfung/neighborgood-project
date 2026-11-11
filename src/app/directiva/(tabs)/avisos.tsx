@@ -58,7 +58,7 @@ export default function Avisos() {
           />
         }
       >
-        <Text style={estilos.titulo}>Avisos</Text>
+        <Text style={estilos.titulo}>Avisos 📢</Text>
         <Boton
           icono="plus"
           texto="Crear aviso"
@@ -82,7 +82,7 @@ export default function Avisos() {
           </View>
         ) : visibles.length === 0 ? (
           <EstadoVacio
-            icono="bell"
+            emoji="📭"
             mensaje={enHistorial ? 'No hay avisos vencidos.' : 'No hay avisos vigentes.'}
           />
         ) : (

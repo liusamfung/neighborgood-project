@@ -84,7 +84,7 @@ export default function Avisos() {
           />
         }
       >
-        <Text style={estilos.titulo}>Avisos</Text>
+        <Text style={estilos.titulo}>Avisos 📢</Text>
 
         <ChipsSeleccion
           etiqueta="Mostrar"
@@ -111,7 +111,7 @@ export default function Avisos() {
           </View>
         ) : sinResultados ? (
           <EstadoVacio
-            icono="bell"
+            emoji="📭"
             mensaje={
               enHistorial
                 ? 'No hay avisos ni encuestas anteriores en esta categoría.'

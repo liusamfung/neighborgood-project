@@ -22,6 +22,7 @@ function pase(cambios: Partial<PaseLeido> = {}): PaseLeido {
     ingreso_en: null,
     salida_en: null,
     unidades: { codigo: 'Dpto 302', sectores: { nombre: 'Torre A' } },
+    residente: { nombre: 'Rosa', apellido: 'Mendoza Paredes' },
     ...cambios,
   }
 }

@@ -26,6 +26,8 @@ export type DatosContacto = {
   telefono: string;
   /** Opcional: relación con el residente, por ejemplo "Hija". */
   parentesco: string;
+  /** Opcional: lo usará la próxima feature de correo de alerta (RF26, fuera de alcance por ahora). */
+  correo: string;
 };
 
 /** Error propio: el usuario ya tiene los 3 contactos permitidos. */
@@ -63,13 +65,14 @@ export async function agregarContacto(usuarioId: string, datos: DatosContacto): 
     nombre: datos.nombre.trim(),
     telefono: datos.telefono.trim(),
     parentesco: datos.parentesco.trim() || null,
+    correo: datos.correo.trim().toLowerCase() || null,
     orden: libre,
   });
   if (error) throw error;
 }
 
 /**
- * Cambia el nombre, el teléfono o el parentesco de un contacto (el orden no cambia).
+ * Cambia el nombre, el teléfono, el parentesco o el correo de un contacto (el orden no cambia).
  *
  * @param contactoId id de la fila de `contactos_emergencia`.
  */
@@ -80,6 +83,7 @@ export async function editarContacto(contactoId: string, datos: DatosContacto): 
       nombre: datos.nombre.trim(),
       telefono: datos.telefono.trim(),
       parentesco: datos.parentesco.trim() || null,
+      correo: datos.correo.trim().toLowerCase() || null,
     })
     .eq('id', contactoId);
   if (error) throw error;

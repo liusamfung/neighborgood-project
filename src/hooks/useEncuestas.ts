@@ -18,6 +18,9 @@ import {
   type OpcionElegida,
 } from '@/repositorios/encuestas';
 
+// Cada cuánto se actualiza el conteo de una encuesta abierta (RF12).
+const INTERVALO_EN_VIVO_MS = 10 * 1000;
+
 /** Encuestas que RLS deja ver al usuario, de la más reciente a la más antigua. */
 export function useEncuestas() {
   return useQuery({ queryKey: ['encuestas'], queryFn: listarEncuestas });
@@ -37,12 +40,16 @@ export function useEncuesta(encuestaId: string) {
  * @param encuestaId encuesta que se consulta.
  * @param activo false mientras el usuario todavía no puede ver los resultados (RF12): así no se
  * llama a la función solo para recibir un error de permiso.
+ * @param enVivo true mientras la encuesta sigue abierta: el conteo se vuelve a pedir cada 10 segundos
+ * para que se actualice solo (RF12, "resultados en tiempo real"). No se usa Realtime porque RLS no
+ * deja a un residente leer los votos de otras unidades; la función SQL entrega solo el conteo.
  */
-export function useResultadosEncuesta(encuestaId: string, activo: boolean) {
+export function useResultadosEncuesta(encuestaId: string, activo: boolean, enVivo = false) {
   return useQuery({
     queryKey: ['encuestas', encuestaId, 'resultados'],
     queryFn: () => resultadosEncuesta(encuestaId),
     enabled: activo,
+    refetchInterval: enVivo ? INTERVALO_EN_VIVO_MS : false,
   });
 }
 

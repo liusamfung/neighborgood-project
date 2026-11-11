@@ -7,7 +7,8 @@
  * rol residente (se puede dar de baja: el perfil queda con `activo = false`). El botón de arriba abre
  * el formulario de alta (`/directiva/residentes/nuevo`).
  * Cómo funciona: lee y escribe con los hooks de TanStack Query; cada acción pide confirmación con
- * `confirmar` (`src/utilidades/confirmar.ts`) y, al terminar, las listas se refrescan solas.
+ * `confirmar` (`src/utilidades/confirmar.ts`); al terminar aparece la franja de confirmación
+ * (`useMensaje`) y las listas se refrescan solas.
  * Se usa con: `src/hooks/useResidentes.ts`, `src/repositorios/residentes.ts` (tipos y mensajes de
  * error), `Boton`, el tema (`src/tema`) y `directiva/_layout.tsx`, que registra la ruta. Se llega desde
  * el Panel (`directiva/(tabs)/index.tsx`).
@@ -27,6 +28,7 @@ import {
 } from 'react-native';
 
 import { Boton } from '@/componentes/formulario/Boton';
+import { useMensaje } from '@/contexto/MensajeContext';
 import {
   useAltasPendientes,
   useDarDeBaja,
@@ -66,6 +68,7 @@ export default function Residentes() {
   const registrados = useResidentesRegistrados();
   const quitarAlta = useQuitarAlta();
   const darDeBaja = useDarDeBaja();
+  const { mostrarMensaje } = useMensaje();
   // Error de la última acción (quitar alta o dar de baja); los de carga se muestran aparte.
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
 
@@ -83,7 +86,10 @@ export default function Residentes() {
   function confirmarQuitarAlta(alta: AltaPendiente) {
     confirmar('Quitar alta', `${alta.correo} ya no podrá crear su cuenta.`, 'Quitar alta', () => {
       setErrorAccion(null);
-      quitarAlta.mutate(alta.id, { onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)) });
+      quitarAlta.mutate(alta.id, {
+        onSuccess: () => mostrarMensaje(`🗑️ Alta de ${alta.correo} quitada`),
+        onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)),
+      });
     });
   }
 
@@ -96,6 +102,8 @@ export default function Residentes() {
       () => {
         setErrorAccion(null);
         darDeBaja.mutate(residente.id, {
+          onSuccess: () =>
+            mostrarMensaje(`✅ ${residente.nombre} ${residente.apellido} fue dado de baja`),
           onError: (e) => setErrorAccion(mensajeDeErrorResidentes(e)),
         });
       },
@@ -132,10 +140,10 @@ export default function Residentes() {
       ) : (
         <>
           <View style={estilos.seccion}>
-            <Text style={estilos.tituloSeccion}>Altas pendientes</Text>
+            <Text style={estilos.tituloSeccion}>Altas pendientes ✉️</Text>
             <Text style={estilos.detalle}>Correos habilitados que aún no crean su cuenta.</Text>
             {pendientes.data.length === 0 ? (
-              <EstadoVacio icono="mail" mensaje="No hay altas pendientes." />
+              <EstadoVacio emoji="📭" mensaje="No hay altas pendientes." />
             ) : (
               pendientes.data.map((alta) => (
                 <View key={alta.id} style={estilos.tarjeta}>
@@ -154,9 +162,9 @@ export default function Residentes() {
           </View>
 
           <View style={estilos.seccion}>
-            <Text style={estilos.tituloSeccion}>Residentes registrados</Text>
+            <Text style={estilos.tituloSeccion}>Residentes registrados 🏠</Text>
             {registrados.data.length === 0 ? (
-              <EstadoVacio icono="users" mensaje="Todavía no hay residentes registrados." />
+              <EstadoVacio emoji="🏘️" mensaje="Todavía no hay residentes registrados." />
             ) : (
               registrados.data.map((residente) => (
                 <View key={residente.id} style={estilos.tarjeta}>

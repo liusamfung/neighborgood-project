@@ -56,6 +56,8 @@ export type PaseGuardia = {
   nombre_visitante: string;
   /** Unidad con su sector, por ejemplo "Torre A · Dpto 302". */
   unidad: string;
+  /** Residente que creó el pase; solo viene en la respuesta de `validar-pase`. */
+  autorizo?: string;
   ingreso_en: string | null;
   salida_en: string | null;
 };

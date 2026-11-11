@@ -57,7 +57,7 @@ export default function Encuestas() {
           />
         }
       >
-        <Text style={estilos.titulo}>Encuestas</Text>
+        <Text style={estilos.titulo}>Encuestas 🗳️</Text>
         <Boton
           icono="plus"
           texto="Crear encuesta"
@@ -85,7 +85,7 @@ export default function Encuestas() {
           </View>
         ) : visibles.length === 0 ? (
           <EstadoVacio
-            icono="check-square"
+            emoji="🗳️"
             mensaje={enHistorial ? 'No hay encuestas cerradas.' : 'No hay encuestas abiertas.'}
           />
         ) : (

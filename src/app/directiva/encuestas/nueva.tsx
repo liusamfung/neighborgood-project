@@ -7,7 +7,8 @@
  * mockup no traía (DISENO.md, corrección 5 de P14; RF12).
  * Cómo funciona: el borrador vive en el estado de la pantalla. Al publicar se valida con
  * `validarBorrador` (errores en español junto a cada campo) y se envía con `useCrearEncuesta`, que llama
- * a la función SQL `crear_encuesta`: se guarda todo o nada. Si sale bien, avisa y vuelve a la lista.
+ * a la función SQL `crear_encuesta`: se guarda todo o nada. Si sale bien, muestra la franja "Encuesta
+ * publicada" (`useMensaje`) y vuelve a la lista: el formulario se descarta.
  * Se usa con: `directiva/_layout.tsx` (pantalla apilada), `directiva/(tabs)/encuestas.tsx` (enlace
  * "Crear encuesta") y los componentes `CampoTexto`, `ChipsSeleccion`, `CampoFecha`, `Interruptor`,
  * `Boton` y `TarjetaPregunta`.
@@ -18,7 +19,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -34,12 +34,14 @@ import { CampoFecha } from '@/componentes/formulario/CampoFecha';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
 import { Interruptor } from '@/componentes/formulario/Interruptor';
+import { useMensaje } from '@/contexto/MensajeContext';
 import { useCategorias, useSectores } from '@/hooks/useCatalogos';
 import { useCrearEncuesta } from '@/hooks/useCrearEncuesta';
 import { mensajeDeErrorEncuesta } from '@/repositorios/encuestas';
 import { colores, espacios, tamanos, tipografia } from '@/tema';
 import type { BorradorEncuesta, BorradorPregunta } from '@/tipos/encuesta';
 import { nuevaPregunta, nuevoBorrador, validarBorrador } from '@/utilidades/borradorEncuesta';
+import { volverA } from '@/utilidades/navegacion';
 
 /** P14 · Crear encuesta (RF8, RF13, RF14). */
 export default function NuevaEncuesta() {
@@ -47,6 +49,7 @@ export default function NuevaEncuesta() {
   const categorias = useCategorias();
   const sectores = useSectores();
   const crear = useCrearEncuesta();
+  const { mostrarMensaje } = useMensaje();
 
   // El borrador se crea una sola vez: la función inicial de useState no se vuelve a ejecutar.
   const [borrador, setBorrador] = useState<BorradorEncuesta>(() => nuevoBorrador());
@@ -76,9 +79,10 @@ export default function NuevaEncuesta() {
     if (!valido) return;
     crear.mutate(borrador, {
       onSuccess: () => {
-        Alert.alert('Encuesta publicada', 'Los residentes ya pueden verla.', [
-          { text: 'Aceptar', onPress: () => router.back() },
-        ]);
+        // La franja confirma y la pantalla vuelve a la lista: el formulario se descarta, así no se
+        // puede publicar dos veces la misma encuesta. (`Alert.alert` no dibuja nada en web.)
+        mostrarMensaje('✅ Encuesta publicada. Los residentes ya pueden verla.');
+        volverA(router, '/directiva/encuestas');
       },
       onError: (error) => setErrorEnvio(mensajeDeErrorEncuesta(error)),
     });
@@ -202,7 +206,13 @@ export default function NuevaEncuesta() {
         />
 
         {errorEnvio ? <Text style={estilos.error}>{errorEnvio}</Text> : null}
-        <Boton texto="Publicar encuesta" alPresionar={publicar} cargando={crear.isPending} />
+        {/* Tras publicar, el botón sigue bloqueado mientras la pantalla se cierra. */}
+        <Boton
+          icono="send"
+          texto="Publicar encuesta"
+          alPresionar={publicar}
+          cargando={crear.isPending || crear.isSuccess}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

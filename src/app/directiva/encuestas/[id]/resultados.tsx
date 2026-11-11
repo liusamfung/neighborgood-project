@@ -4,7 +4,8 @@
  * Qué hace: muestra la encuesta, cuántas unidades votaron y el conteo por opción con barras. La
  * directiva ve los resultados siempre, aunque la encuesta siga abierta y no sea "en vivo".
  * Cómo funciona: el conteo lo hace la función SQL `resultados_encuesta`, que no revela quién votó.
- * Deslizar hacia abajo vuelve a consultar para ver los votos nuevos.
+ * Mientras la encuesta sigue abierta el conteo se actualiza solo cada 10 segundos (RF12); deslizar
+ * hacia abajo lo actualiza al momento.
  * Se usa con: `src/hooks/useEncuestas.ts`, `ResultadosEncuesta`, `Insignia`, `Boton`, el tema y
  * `directiva/_layout.tsx`, que la declara como pantalla apilada. Se llega desde la pestaña Encuestas.
  */
@@ -30,8 +31,10 @@ import { fechaYHora } from '@/utilidades/fechas';
 export default function Resultados() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const consulta = useEncuesta(id);
-  const resultados = useResultadosEncuesta(id, true);
   const ahora = useAhora();
+  // La encuesta sigue abierta mientras no llegue `cierra_en`: hasta entonces el conteo se actualiza solo.
+  const abierta = consulta.data ? new Date(consulta.data.cierra_en).getTime() > ahora : false;
+  const resultados = useResultadosEncuesta(id, true, abierta);
 
   /** Vuelve a pedir la encuesta y su conteo. */
   function recargar() {

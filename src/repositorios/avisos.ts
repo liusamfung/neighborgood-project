@@ -10,11 +10,13 @@
  * sube primero y, si después `crear_aviso` falla, se borra para no dejar archivos sueltos. La función
  * corre con los permisos del usuario, así que RLS decide quién puede publicar (solo la directiva).
  * Se usa con: `src/hooks/useCrearAviso.ts` y la pantalla `src/app/directiva/avisos/nuevo.tsx`.
- * Depende de: `src/lib/supabase.ts`, `src/tipos/aviso.ts`, `expo-file-system` (lee el archivo local) y de
+ * Depende de: `src/lib/supabase.ts`, `src/tipos/aviso.ts`, `expo-file-system` (lee el archivo local; en web
+ * se usa `fetch`) y de
  * la migración `supabase/migrations/20261110000002_crear_aviso.sql`.
  */
 import type { PostgrestError } from '@supabase/supabase-js';
 import { File } from 'expo-file-system';
+import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 import type { BorradorAviso, ImagenElegida } from '@/tipos/aviso';
@@ -35,7 +37,12 @@ class ErrorImagen extends Error {}
 export async function subirImagenAviso(imagen: ImagenElegida): Promise<string> {
   const ruta = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${imagen.extension}`;
   try {
-    const bytes = await new File(imagen.uri).arrayBuffer();
+    // En el teléfono la imagen es un archivo local; en web es una dirección `blob:` del navegador,
+    // que `expo-file-system` no sabe leer y se descarga con `fetch`.
+    const bytes =
+      Platform.OS === 'web'
+        ? await (await fetch(imagen.uri)).arrayBuffer()
+        : await new File(imagen.uri).arrayBuffer();
     const { error } = await supabase.storage
       .from(BUCKET_AVISOS)
       .upload(ruta, bytes, { contentType: imagen.mimeType });
@@ -117,6 +124,8 @@ export type AvisoListado = {
   /** true = todo el condominio; false = solo algunos sectores (RF13). */
   para_todos: boolean;
   categorias_aviso: { nombre: string };
+  /** Sectores destino cuando `para_todos` es false (RF13); vacío si es para todo el condominio. */
+  aviso_sectores: { sectores: { nombre: string } }[];
 };
 
 /**
@@ -130,7 +139,7 @@ export async function listarAvisos(): Promise<AvisoListado[]> {
   const { data, error } = await supabase
     .from('avisos')
     .select(
-      'id, titulo, descripcion, imagen_path, vigente_desde, vigente_hasta, categoria_id, para_todos, categorias_aviso(nombre)',
+      'id, titulo, descripcion, imagen_path, vigente_desde, vigente_hasta, categoria_id, para_todos, categorias_aviso(nombre), aviso_sectores(sectores(nombre))',
     )
     .order('vigente_desde', { ascending: false });
   if (error) throw error;

@@ -4,8 +4,8 @@
  *
  * Qué hace: recibe el código leído del QR (el id del pase) y una acción.
  * - `ingreso`: si el pase es de hoy y está vigente, lo marca `usado` y guarda `ingreso_en` y
- *   `guardia_id` (RF19, RF20); responde "Pase válido" con el visitante y la unidad (RF18) y avisa al
- *   residente por push (RF21). Si no, responde por qué: "Pase no válido o vencido", "Pase ya usado" o
+ *   `guardia_id` (RF19, RF20); responde "Pase válido" con el visitante, la unidad y quién autorizó
+ *   (RF18) y avisa al residente por push (RF21). Si no, responde por qué: "Pase no válido o vencido", "Pase ya usado" o
  *   "Pase anulado" (RF22).
  * - `salida`: guarda `salida_en` de un pase que ya ingresó (RF20).
  * Cómo funciona: el estado "vencido" no se guarda, se calcula aquí: un pase vale solo el día de la
@@ -34,6 +34,8 @@ export type PaseLeido = {
   ingreso_en: string | null
   salida_en: string | null
   unidades: { codigo: string; sectores: { nombre: string } | null } | null
+  /** Residente que creó el pase (FK → perfiles.id por `residente_id`): es quien autorizó la visita. */
+  residente: { nombre: string; apellido: string } | null
 }
 
 /** Qué hacer con un pase: seguir con la escritura o rechazar con un código y un mensaje. */
@@ -111,6 +113,7 @@ function resumen(pase: PaseLeido, cambios: Partial<PaseLeido> = {}) {
     id: p.id,
     nombre_visitante: p.nombre_visitante,
     unidad: textoUnidad(p),
+    autorizo: p.residente ? `${p.residente.nombre} ${p.residente.apellido}`.trim() : '',
     fecha_visita: p.fecha_visita,
     estado: p.estado,
     ingreso_en: p.ingreso_en,
@@ -161,7 +164,8 @@ export async function manejar(req: Request, ctx: ContextoConAdmin): Promise<Resp
   const { data, error } = await ctx.supabaseAdmin
     .from('pases_visita')
     .select(
-      'id, residente_id, nombre_visitante, fecha_visita, estado, ingreso_en, salida_en, unidades(codigo, sectores(nombre))',
+      // `pases_visita` apunta dos veces a `perfiles` (residente y guardia): se nombra la llave del residente.
+      'id, residente_id, nombre_visitante, fecha_visita, estado, ingreso_en, salida_en, unidades(codigo, sectores(nombre)), residente:perfiles!pases_visita_residente_id_fkey(nombre, apellido)',
     )
     .eq('id', codigo)
     .maybeSingle()

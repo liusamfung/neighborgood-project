@@ -8,6 +8,7 @@
  * escribir `residentes_habilitados` y cambiar `activo` en perfiles ajenos (trigger `proteger_perfil`).
  * El alta habilita el registro del residente (RF1): el trigger `trg_auth_users_crear_perfil` usa esa
  * fila para crear su perfil.
+ * También entrega la unidad del usuario con sesión (`obtenerUnidad`), que muestran Inicio y Perfil.
  * Se usa con: `src/hooks/useResidentes.ts` (las pantallas no lo llaman directamente).
  * Depende de: `src/lib/supabase.ts` y de las tablas `unidades`, `sectores`, `residentes_habilitados`
  * y `perfiles`.
@@ -61,6 +62,28 @@ export async function listarUnidades(): Promise<UnidadConSector[]> {
     .order('codigo');
   if (error) throw error;
   return data;
+}
+
+/**
+ * Trae una unidad con el nombre de su sector, para mostrar dónde vive el residente con sesión
+ * ("Torre A · A-101") en Inicio, Perfil y la pantalla de votar.
+ *
+ * @param unidadId FK → unidades.id (valor de `perfiles.unidad_id`).
+ * @returns la unidad, o `null` si no existe.
+ */
+export async function obtenerUnidad(unidadId: string): Promise<UnidadConSector | null> {
+  const { data, error } = await supabase
+    .from('unidades')
+    .select('id, codigo, sectores(nombre)')
+    .eq('id', unidadId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/** Texto de una unidad con su sector, por ejemplo "Torre A · A-101". */
+export function textoDeUnidad(unidad: { codigo: string; sectores: { nombre: string } }): string {
+  return `${unidad.sectores.nombre} · ${unidad.codigo}`;
 }
 
 /** Lista las altas que aún nadie usó para registrarse, de la más reciente a la más antigua. */

@@ -1,24 +1,24 @@
 /**
- * Ruta `/residente/visitas` (rol Residente): pantalla P6 · Visitas y pase QR. RF15, RF16, RF17, RF21, RF22.
+ * Ruta `/residente/visitas` (rol Residente): pantalla P6 · Visitas y pase QR. RF15, RF16, RF17, RF22.
  *
  * Qué hace: el residente crea un pase indicando el nombre del visitante, la fecha y la hora estimada
  * (RF15; corrección 2 de DISENO.md). Cada pase vigente muestra su código QR (RF16), que se puede
  * compartir (RF17) o anular (RF22). La lista muestra el estado de cada pase: vigente, usado, anulado
  * o vencido, y la hora de ingreso y de salida cuando existen.
  * Cómo funciona: el pase lo crea la Edge Function `crear-pase`; la app solo dibuja como QR el id que
- * devuelve. Mientras la pantalla está abierta escucha por Realtime los cambios de sus pases: cuando el
- * guardia valida el ingreso aparece el aviso "Tu visita ingresó" (RF21) y la lista se refresca.
- * Se usa con: `src/hooks/usePases.ts`, `src/repositorios/pases.ts` (tipos, Realtime y mensajes),
- * `compartirPase`, `confirmar`, `CampoTexto`, `CampoFecha`, `Boton`, `Insignia`, `useSesion` y el tema.
+ * devuelve. Al crear un pase el formulario se limpia, aparece la franja de confirmación y el QR nuevo
+ * queda a la vista. El aviso "Tu visita ingresó" (RF21) no vive aquí sino en `residente/_layout.tsx`,
+ * para que llegue en cualquier pantalla del residente.
+ * Se usa con: `src/hooks/usePases.ts`, `src/hooks/useAhora.ts`, `src/repositorios/pases.ts` (tipos y
+ * mensajes), `compartirPase`, `confirmar`, `useMensaje`, `useSesion`, los componentes `CampoTexto`,
+ * `CampoFecha`, `Boton`, `Insignia`, `IconoCuadro` y `EstadoVacio`, y el tema.
  */
-import { IconoCuadro } from '@/componentes/IconoCuadro';
-import { EstadoVacio } from '@/componentes/EstadoVacio';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -28,14 +28,17 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EstadoVacio } from '@/componentes/EstadoVacio';
 import { Boton } from '@/componentes/formulario/Boton';
 import { CampoFecha } from '@/componentes/formulario/CampoFecha';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
+import { IconoCuadro } from '@/componentes/IconoCuadro';
 import { Insignia } from '@/componentes/Insignia';
+import { useMensaje } from '@/contexto/MensajeContext';
 import { useSesion } from '@/contexto/SesionContext';
+import { useAhora } from '@/hooks/useAhora';
 import { useAnularPase, useCrearPase, useMisPases } from '@/hooks/usePases';
 import {
-  escucharMisPases,
   estadoVisible,
   mensajeDeErrorPase,
   type EstadoVisible,
@@ -44,14 +47,7 @@ import {
 import { chipsPase, colores, espacios, radios, sombras, tipografia } from '@/tema';
 import { compartirPase } from '@/utilidades/compartirPase';
 import { confirmar } from '@/utilidades/confirmar';
-import {
-  diaEnLima,
-  diaLegible,
-  horaEnLima,
-  horaLegible,
-  hoyEnLima,
-  soloHora,
-} from '@/utilidades/fechas';
+import { diaEnLima, diaLegible, horaEnLima, horaLegible, soloHora } from '@/utilidades/fechas';
 
 // Texto y color de la insignia de cada estado; "vencido" usa el gris de "usado".
 const ESTADOS: Record<EstadoVisible, { texto: string; color: { fondo: string; texto: string } }> = {
@@ -71,7 +67,8 @@ function dentroDeUnaHora(): Date {
 /** P6 · Visitas del residente: crear pases y ver, compartir o anular su código QR. */
 export default function Visitas() {
   const { perfil } = useSesion();
-  const queryClient = useQueryClient();
+  const { mostrarMensaje } = useMensaje();
+  const ahora = useAhora();
   const pases = useMisPases(perfil?.id);
   const crear = useCrearPase();
   const anular = useAnularPase();
@@ -81,36 +78,28 @@ export default function Visitas() {
   const [error, setError] = useState<string | null>(null);
   // Id del pase cuyo QR está a la vista (uno a la vez).
   const [abierto, setAbierto] = useState<string | null>(null);
-  // Aviso de RF21: nombre del visitante que acaba de ingresar.
-  const [ingreso, setIngreso] = useState<string | null>(null);
   // Referencia al QR visible, para pedirle su imagen al compartir.
   const refQr = useRef<{ toDataURL: (listo: (base64: string) => void) => void } | null>(null);
 
-  // RF21 (app abierta): escucha los cambios de mis pases y deja de escuchar al salir de la pantalla.
-  const residenteId = perfil?.id;
-  useEffect(() => {
-    if (!residenteId) return;
-    return escucharMisPases(residenteId, (pase) => {
-      if (pase.estado === 'usado' && !pase.salida_en) setIngreso(pase.nombre_visitante);
-      queryClient.invalidateQueries({ queryKey: ['pases'] });
-    });
-  }, [residenteId, queryClient]);
+  // "Hoy" en Lima: decide si un pase vigente ya venció (RNF3).
+  const hoy = diaEnLima(new Date(ahora));
 
-  const hoy = hoyEnLima();
-
-  /** Valida el formulario y crea el pase; al terminar deja su QR a la vista. */
+  /** Valida el formulario y crea el pase; al terminar lo limpia y deja el QR nuevo a la vista. */
   function crearPase() {
     setError(null);
-    if (nombre.trim().length < 2) return setError('Escribe el nombre del visitante.');
+    const visitante = nombre.trim();
+    if (visitante.length < 2) return setError('Escribe el nombre del visitante.');
     const fechaVisita = diaEnLima(llegada);
     if (fechaVisita < hoy) return setError('La fecha de la visita no puede ser un día pasado.');
     crear.mutate(
-      { nombreVisitante: nombre, fechaVisita, horaEstimada: horaEnLima(llegada) },
+      { nombreVisitante: visitante, fechaVisita, horaEstimada: horaEnLima(llegada) },
       {
         onSuccess: (pase) => {
+          // El formulario vuelve a quedar vacío: así no se crea dos veces el mismo pase.
           setNombre('');
           setLlegada(dentroDeUnaHora());
           setAbierto(pase.id);
+          mostrarMensaje(`🎟️ Pase creado para ${visitante}`);
         },
         onError: (e) => setError(mensajeDeErrorPase(e)),
       },
@@ -126,7 +115,10 @@ export default function Visitas() {
       () => {
         setError(null);
         anular.mutate(pase.id, {
-          onSuccess: () => setAbierto(null),
+          onSuccess: () => {
+            setAbierto(null);
+            mostrarMensaje(`🚫 Pase de ${pase.nombre_visitante} anulado`);
+          },
           onError: (e) => setError(mensajeDeErrorPase(e)),
         });
       },
@@ -157,18 +149,13 @@ export default function Visitas() {
             />
           }
         >
-          <Text style={estilos.titulo}>Visitas</Text>
-
-          {ingreso ? (
-            <Text accessibilityRole="alert" style={estilos.aviso}>
-              Tu visita {ingreso} ingresó al condominio.
-            </Text>
-          ) : null}
+          <Text style={estilos.titulo}>Visitas 🎟️</Text>
 
           <View style={estilos.tarjeta}>
             <Text style={estilos.subtitulo}>Nuevo pase</Text>
             <CampoTexto
               etiqueta="Nombre del visitante"
+              placeholder="Por ejemplo: Carlos Pérez"
               value={nombre}
               onChangeText={setNombre}
               autoCapitalize="words"
@@ -178,10 +165,10 @@ export default function Visitas() {
               valor={llegada}
               alCambiar={setLlegada}
             />
-            <Text style={estilos.detalle}>El pase vale solo ese día, hasta las 23:59.</Text>
+            <Text style={estilos.detalle}>El pase vale solo ese día, hasta las 11:59 p. m.</Text>
             <Boton
               icono="plus"
-              texto="Crear pase"
+              texto="Generar pase"
               alPresionar={crearPase}
               cargando={crear.isPending}
             />
@@ -204,22 +191,35 @@ export default function Visitas() {
               <Boton variante="secundario" texto="Reintentar" alPresionar={() => pases.refetch()} />
             </>
           ) : pases.data.length === 0 ? (
-            <EstadoVacio icono="grid" mensaje="Todavía no has creado pases de visita." />
+            <EstadoVacio emoji="🎟️" mensaje="Todavía no has creado pases de visita." />
           ) : (
             pases.data.map((pase) => {
               const estado = estadoVisible(pase, hoy);
-              const verQr = abierto === pase.id && estado === 'vigente';
+              const vigente = estado === 'vigente';
+              const verQr = vigente && abierto === pase.id;
               return (
                 <View key={pase.id} style={estilos.tarjeta}>
-                  <View style={estilos.fila}>
-                    <IconoCuadro icono="user" tamano={40} />
-                    <Text style={[estilos.nombre, estilos.flexible]}>{pase.nombre_visitante}</Text>
+                  {/* Un pase vigente se abre y se cierra al tocar su cabecera. */}
+                  <Pressable
+                    accessibilityRole={vigente ? 'button' : undefined}
+                    accessibilityState={vigente ? { expanded: verQr } : undefined}
+                    disabled={!vigente}
+                    onPress={() => setAbierto(verQr ? null : pase.id)}
+                    style={estilos.fila}
+                  >
+                    <IconoCuadro icono={vigente ? 'grid' : 'user'} tamano={40} />
+                    <View style={estilos.flexible}>
+                      <Text style={estilos.nombre}>
+                        {verQr ? `Pase de ${pase.nombre_visitante}` : pase.nombre_visitante}
+                      </Text>
+                      <Text style={estilos.detalle}>
+                        {diaLegible(pase.fecha_visita)}
+                        {pase.hora_estimada ? ` · ${horaLegible(pase.hora_estimada)}` : ''}
+                      </Text>
+                    </View>
                     <Insignia texto={ESTADOS[estado].texto} color={ESTADOS[estado].color} />
-                  </View>
-                  <Text style={estilos.detalle}>
-                    {diaLegible(pase.fecha_visita)}
-                    {pase.hora_estimada ? ` · ${horaLegible(pase.hora_estimada)}` : ''}
-                  </Text>
+                  </Pressable>
+
                   {pase.ingreso_en ? (
                     <Text style={estilos.detalle}>
                       Ingresó a las {soloHora(pase.ingreso_en)}
@@ -227,12 +227,12 @@ export default function Visitas() {
                     </Text>
                   ) : null}
 
-                  {estado === 'vigente' ? (
+                  {vigente && !verQr ? (
                     <Boton
                       variante="secundario"
                       icono="grid"
-                      texto={verQr ? 'Ocultar código QR' : 'Ver código QR'}
-                      alPresionar={() => setAbierto(verQr ? null : pase.id)}
+                      texto="Ver código QR"
+                      alPresionar={() => setAbierto(pase.id)}
                     />
                   ) : null}
 
@@ -248,17 +248,26 @@ export default function Visitas() {
                           }}
                         />
                       </View>
-                      <Boton
-                        icono="share-2"
-                        texto="Compartir pase"
-                        alPresionar={() => compartir(pase)}
-                      />
-                      <Boton
-                        variante="peligro"
-                        texto="Anular pase"
-                        alPresionar={() => confirmarAnulacion(pase)}
-                        cargando={anular.isPending}
-                      />
+                      <Text style={[estilos.detalle, estilos.centrado]}>
+                        Válido solo el {diaLegible(pase.fecha_visita)}, hasta las 11:59 p. m.
+                      </Text>
+                      <View style={estilos.botones}>
+                        <View style={estilos.flexible}>
+                          <Boton
+                            icono="share-2"
+                            texto="Compartir"
+                            alPresionar={() => compartir(pase)}
+                          />
+                        </View>
+                        <View style={estilos.flexible}>
+                          <Boton
+                            variante="peligro"
+                            texto="Anular pase"
+                            alPresionar={() => confirmarAnulacion(pase)}
+                            cargando={anular.isPending}
+                          />
+                        </View>
+                      </View>
                     </>
                   ) : null}
                 </View>
@@ -280,23 +289,25 @@ const estilos = StyleSheet.create({
   tarjeta: {
     ...sombras.tarjeta,
     padding: 16,
-    gap: 10,
+    gap: 12,
     backgroundColor: colores.superficie,
     borderWidth: 1,
     borderColor: colores.borde,
     borderRadius: radios.tarjeta,
   },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nombre: { ...tipografia.subtitulo, color: colores.texto },
+  fila: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  nombre: { ...tipografia.subtitulo, fontSize: 17, color: colores.texto },
   detalle: { ...tipografia.cuerpo, color: colores.textoSecundario },
-  qr: { alignSelf: 'center', padding: 16, backgroundColor: '#FFFFFF', borderRadius: radios.campo },
-  aviso: {
-    ...tipografia.subtitulo,
-    padding: 12,
-    color: colores.principal,
-    backgroundColor: colores.suave,
-    borderRadius: radios.campo,
-    overflow: 'hidden',
+  centrado: { textAlign: 'center' },
+  qr: {
+    alignSelf: 'center',
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
   },
+  // Compartir y Anular van lado a lado, cada uno con la mitad del ancho (mockup P6).
+  botones: { flexDirection: 'row', gap: 10 },
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
 });

@@ -7,7 +7,8 @@
  * Cómo funciona: el borrador vive en el estado de la pantalla. Al publicar se valida con
  * `validarBorrador` (errores en español junto a cada campo) y se envía con `useCrearAviso`: sube la imagen
  * (si hay) y llama a la función SQL `crear_aviso`, que guarda el aviso y sus sectores o nada. Si sale bien,
- * avisa y vuelve a la lista. La pantalla no promete notificaciones: eso es otro issue.
+ * muestra la franja "Aviso publicado" (`useMensaje`) y vuelve a la lista: el formulario se descarta.
+ * La pantalla no promete notificaciones: eso es otro issue.
  * Se usa con: `directiva/_layout.tsx` (pantalla apilada), `directiva/(tabs)/avisos.tsx` (enlace
  * "Crear aviso") y los componentes `CampoTexto`, `ChipsSeleccion`, `SelectorImagen`, `CampoFecha` y `Boton`.
  * Depende de: `src/hooks/useCatalogos.ts`, `src/hooks/useCrearAviso.ts`,
@@ -17,7 +18,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -31,12 +31,14 @@ import { CampoFecha } from '@/componentes/formulario/CampoFecha';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
 import { SelectorImagen } from '@/componentes/formulario/SelectorImagen';
+import { useMensaje } from '@/contexto/MensajeContext';
 import { useCategorias, useSectores } from '@/hooks/useCatalogos';
 import { useCrearAviso } from '@/hooks/useCrearAviso';
 import { mensajeDeErrorAviso } from '@/repositorios/avisos';
 import { colores, espacios, tipografia } from '@/tema';
 import type { BorradorAviso } from '@/tipos/aviso';
 import { nuevoBorrador, validarBorrador } from '@/utilidades/borradorAviso';
+import { volverA } from '@/utilidades/navegacion';
 
 /** P13 · Crear aviso (RF7, RF13). */
 export default function NuevoAviso() {
@@ -44,6 +46,7 @@ export default function NuevoAviso() {
   const categorias = useCategorias();
   const sectores = useSectores();
   const crear = useCrearAviso();
+  const { mostrarMensaje } = useMensaje();
 
   // El borrador se crea una sola vez: la función inicial de useState no se vuelve a ejecutar.
   const [borrador, setBorrador] = useState<BorradorAviso>(() => nuevoBorrador());
@@ -66,9 +69,10 @@ export default function NuevoAviso() {
     if (!valido) return;
     crear.mutate(borrador, {
       onSuccess: () => {
-        Alert.alert('Aviso publicado', 'Los residentes destinatarios ya pueden verlo.', [
-          { text: 'Aceptar', onPress: () => router.back() },
-        ]);
+        // La franja confirma y la pantalla vuelve a la lista: el formulario se descarta, así no se
+        // puede publicar dos veces el mismo aviso. (`Alert.alert` no dibuja nada en web.)
+        mostrarMensaje('✅ Aviso publicado. Los residentes destinatarios ya pueden verlo.');
+        volverA(router, '/directiva/avisos');
       },
       onError: (error) => setErrorEnvio(mensajeDeErrorAviso(error)),
     });
@@ -161,7 +165,13 @@ export default function NuevoAviso() {
         />
 
         {errorEnvio ? <Text style={estilos.error}>{errorEnvio}</Text> : null}
-        <Boton texto="Publicar aviso" alPresionar={publicar} cargando={crear.isPending} />
+        {/* Tras publicar, el botón sigue bloqueado mientras la pantalla se cierra. */}
+        <Boton
+          icono="send"
+          texto="Publicar aviso"
+          alPresionar={publicar}
+          cargando={crear.isPending || crear.isSuccess}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

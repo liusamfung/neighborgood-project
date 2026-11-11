@@ -8,6 +8,8 @@
  * (un botón que abre el calendario o la rueda de horas). En Android, que no tiene un selector
  * insertable así, dos botones abren los cuadros de diálogo con `DateTimePickerAndroid.open`.
  * Al cambiar solo el día se conserva la hora, y al cambiar solo la hora se conserva el día.
+ * En web (solo para revisar pantallas en desarrollo) ninguno de los dos existe: se usa el campo
+ * `datetime-local` del navegador, que elige día y hora juntos.
  * Se usa con: `src/app/directiva/encuestas/nueva.tsx`.
  * Depende de: `@react-native-community/datetimepicker` (módulo nativo: exige reconstruir la
  * development build) y de `src/tema`.
@@ -52,6 +54,18 @@ const formatoDia = (fecha: Date) =>
 const formatoHora = (fecha: Date) =>
   fecha.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 
+/**
+ * Fecha y hora en el formato que pide el campo `datetime-local` del navegador ("2026-11-10T20:30"),
+ * en la hora local del equipo.
+ */
+function textoLocal(fecha: Date): string {
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}` +
+    `T${dos(fecha.getHours())}:${dos(fecha.getMinutes())}`
+  );
+}
+
 /** Campo "día + hora" con el selector nativo de cada plataforma. */
 export function CampoFecha({ etiqueta, valor, alCambiar, error }: Props) {
   /** Android: abre el diálogo del día o de la hora y combina lo elegido con el valor actual. */
@@ -68,7 +82,20 @@ export function CampoFecha({ etiqueta, valor, alCambiar, error }: Props) {
     <View style={estilos.contenedor}>
       <Text style={estilos.etiqueta}>{etiqueta}</Text>
       <View style={estilos.fila}>
-        {Platform.OS === 'ios' ? (
+        {Platform.OS === 'web' ? (
+          // Web: selector de fecha y hora del propio navegador.
+          <input
+            aria-label={etiqueta}
+            type="datetime-local"
+            value={textoLocal(valor)}
+            onChange={(evento) => {
+              const elegido = new Date(evento.target.value);
+              // Si el usuario borra el campo, el navegador manda un texto vacío: se ignora.
+              if (!Number.isNaN(elegido.getTime())) alCambiar(elegido);
+            }}
+            style={estiloWeb}
+          />
+        ) : Platform.OS === 'ios' ? (
           <>
             <DateTimePicker
               accessibilityLabel={`${etiqueta}: día`}
@@ -110,6 +137,18 @@ export function CampoFecha({ etiqueta, valor, alCambiar, error }: Props) {
     </View>
   );
 }
+
+// Estilo del campo en web: es un elemento HTML, por eso usa CSS y no `StyleSheet`.
+const estiloWeb = {
+  minHeight: tamanos.areaTactilMinima,
+  padding: '0 12px',
+  fontFamily: tipografia.cuerpo.fontFamily,
+  fontSize: 14,
+  color: colores.texto,
+  backgroundColor: colores.superficie,
+  border: `1px solid ${colores.bordeCampo}`,
+  borderRadius: radios.campo,
+} as const;
 
 const estilos = StyleSheet.create({
   contenedor: { gap: 6 },

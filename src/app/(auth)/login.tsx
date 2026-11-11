@@ -60,8 +60,12 @@ export default function Login() {
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         <View style={estilos.cabecera}>
+          {/* El emoji es decorativo: el lector de pantalla lee solo el nombre de la app. */}
+          <Text accessibilityElementsHidden importantForAccessibility="no" style={estilos.emoji}>
+            🏘️
+          </Text>
           <Text style={estilos.marca}>NeighborGood</Text>
-          <Text style={estilos.lema}>Tu condominio, más cerca</Text>
+          <Text style={estilos.lema}>Tu condominio, más cerca 👋</Text>
         </View>
 
         <View style={estilos.formulario}>
@@ -124,6 +128,7 @@ const estilos = StyleSheet.create({
     gap: 32,
   },
   cabecera: { alignItems: 'center', gap: 4 },
+  emoji: { fontSize: 56 },
   marca: { ...tipografia.titulo, fontSize: 32, color: colores.principal },
   lema: { ...tipografia.cuerpo, color: colores.textoSecundario },
   formulario: { gap: 16 },

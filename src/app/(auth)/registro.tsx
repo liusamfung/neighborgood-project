@@ -86,7 +86,7 @@ export default function Registro() {
   if (faltaConfirmar) {
     return (
       <View style={[estilos.pantalla, estilos.contenido]}>
-        <Text style={estilos.titulo}>Revisa tu correo</Text>
+        <Text style={estilos.titulo}>📬 Revisa tu correo</Text>
         <Text style={estilos.texto}>
           Te enviamos un mensaje a {correo.trim().toLowerCase()} para confirmar tu cuenta. Después
           de confirmarla, inicia sesión.
@@ -105,7 +105,7 @@ export default function Registro() {
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         <Text style={estilos.nota}>
-          Usa el correo que la directiva de tu condominio dio de alta. Tu nombre y tu unidad ya
+          🏡 Usa el correo que la directiva de tu condominio dio de alta. Tu nombre y tu unidad ya
           están registrados con ese correo.
         </Text>
 
@@ -149,7 +149,12 @@ export default function Registro() {
             </Text>
           ) : null}
 
-          <Boton texto="Crear cuenta" alPresionar={crearCuenta} cargando={enviando} />
+          <Boton
+            icono="user-plus"
+            texto="Crear cuenta"
+            alPresionar={crearCuenta}
+            cargando={enviando}
+          />
         </View>
 
         <Text style={[estilos.texto, estilos.centrado]}>
