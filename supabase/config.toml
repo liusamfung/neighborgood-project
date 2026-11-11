@@ -423,3 +423,10 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/quien-soy/deno.json"
 entrypoint = "./functions/quien-soy/index.ts"
+
+# RF15: el residente crea su pase de visita. Inserta con la service_role (la inyecta Supabase).
+[functions.crear-pase]
+enabled = true
+verify_jwt = true
+import_map = "./functions/crear-pase/deno.json"
+entrypoint = "./functions/crear-pase/index.ts"
