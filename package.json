@@ -54,6 +54,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "expo lint",
+    "test:contactos": "node --test herramientas/pruebas/contactos.test.cjs",
     "db:start": "supabase start -x imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
