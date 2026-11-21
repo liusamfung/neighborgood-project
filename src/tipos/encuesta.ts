@@ -40,3 +40,19 @@ export type BorradorEncuesta = {
   cierraEn: Date;
   preguntas: BorradorPregunta[];
 };
+
+/** Prioridad de una encuesta: `alta` = obligatoria (RF14), `normal` = opcional. */
+export type PrioridadEncuesta = Database['public']['Enums']['prioridad_encuesta'];
+
+/** Fila de la lista de encuestas abiertas que ve el residente en la pantalla P4 (RF11, RF14). */
+export type EncuestaListada = {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  /** `alta` se muestra con la insignia "Obligatoria" (RF14). */
+  prioridad: PrioridadEncuesta;
+  abre_en: string;
+  cierra_en: string;
+  /** Nombre de la categoría, resuelto por la relación `categorias_aviso`. */
+  categoria: { id: string; nombre: string } | null;
+};

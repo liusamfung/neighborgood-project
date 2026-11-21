@@ -1,20 +1,52 @@
 /**
- * Repositorio de encuestas: publicar una encuesta nueva (RF8, RF13, RF14).
+ * Repositorio de encuestas: publicar una encuesta nueva (RF8, RF13, RF14) y listar las abiertas para el
+ * residente, con las obligatorias primero (RF11, RF14).
  *
  * Qué hace: convierte el borrador de la pantalla P14 en la llamada a la función SQL `crear_encuesta`,
  * que guarda la encuesta, sus sectores, preguntas y opciones en una sola transacción: o queda todo o
  * no queda nada. También traduce los errores de la base a mensajes en español.
  * Cómo funciona: la función corre con los permisos del usuario, así que RLS decide quién puede
  * publicar (solo la directiva). El orden de preguntas y opciones es el del arreglo que se envía.
- * Se usa con: `src/hooks/useCrearEncuesta.ts` y la pantalla `src/app/directiva/encuestas/nueva.tsx`.
+ * Se usa con: `src/hooks/useCrearEncuesta.ts` y la pantalla `src/app/directiva/encuestas/nueva.tsx`;
+ * `listarEncuestasAbiertas`, con `src/hooks/useEncuestasAbiertas.ts` y la pantalla P4 del residente.
  * Depende de: `src/lib/supabase.ts`, `src/tipos/encuesta.ts`, `src/utilidades/borradorEncuesta.ts` y de
  * la migración `supabase/migrations/20261110000001_crear_encuesta.sql`.
  */
 import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
-import type { BorradorEncuesta } from '@/tipos/encuesta';
+import type { BorradorEncuesta, EncuestaListada } from '@/tipos/encuesta';
 import { opcionesConTexto } from '@/utilidades/borradorEncuesta';
+
+// Columnas de la lista de encuestas del residente (P4); la categoría llega por su relación.
+const COLUMNAS_LISTADO =
+  'id, titulo, descripcion, prioridad, abre_en, cierra_en, categoria:categorias_aviso (id, nombre)';
+
+/**
+ * Lista las encuestas abiertas que el usuario puede ver, primero las obligatorias (RF11, RF14).
+ *
+ * @param categoriaId filtra por una categoría (RF10); `null` o ausente trae todas.
+ * @returns las encuestas que todavía no cierran. Cuáles ve cada uno lo decide la política RLS
+ * "encuestas: lectura": el residente solo ve las ya abiertas de su sector o para todos. Las de
+ * prioridad `alta` (obligatorias) van primero y, dentro de cada grupo, las que cierran antes.
+ * Lanza el error de Supabase si la consulta falla.
+ */
+export async function listarEncuestasAbiertas(
+  categoriaId?: string | null,
+): Promise<EncuestaListada[]> {
+  let consulta = supabase
+    .from('encuestas')
+    .select(COLUMNAS_LISTADO)
+    .gt('cierra_en', new Date().toISOString()) // solo las que siguen abiertas
+    .order('cierra_en', { ascending: true });
+  if (categoriaId) consulta = consulta.eq('categoria_id', categoriaId);
+  const { data, error } = await consulta;
+  if (error) throw error;
+  // Las obligatorias primero; `sort` es estable, así que se conserva el orden por cierre.
+  return [...data].sort(
+    (a, b) => Number(b.prioridad === 'alta') - Number(a.prioridad === 'alta'),
+  );
+}
 
 /**
  * Publica una encuesta con la directiva como autora.
