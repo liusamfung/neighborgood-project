@@ -3,23 +3,37 @@
  *
  * Qué hace: lista los avisos que el residente puede ver (RF11) y permite filtrarlos por categoría
  * (RF10) con una fila de chips: "Todas" o una categoría; al elegir una, la lista muestra solo los
- * avisos de esa categoría (criterio de aceptación del issue #20). Quién ve qué lo decide RLS en la
- * base: solo avisos vigentes, del sector del residente o marcados para todos.
+ * avisos de esa categoría (criterio de aceptación del issue #20). Encima van las encuestas abiertas:
+ * las de prioridad alta llevan la insignia "Obligatoria" y salen primero (RF14, issue #24); al
+ * tocar una se abre su pantalla de voto. Quién ve qué lo decide RLS en la base: solo avisos y
+ * encuestas ya vigentes, del sector del residente o marcados para todos.
  * Cómo funciona: `useCategorias` llena los chips y `useAvisos(categoriaId)` trae la lista; el filtro
  * corre en la base y cada categoría guarda su propia caché. Estados: cargando (spinner), error
  * (mensaje y "Reintentar") y vacío (distinto si hay filtro o no).
  * Se usa con: la barra inferior de `(tabs)/_layout.tsx`, `ChipsSeleccion` y el tema (`src/tema`).
  * Depende de: `src/hooks/useAvisos.ts`, `src/hooks/useCatalogos.ts` y `src/tipos/aviso.ts`.
  */
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
+import { Insignia } from '@/componentes/Insignia';
 import { useAvisos } from '@/hooks/useAvisos';
 import { useCategorias } from '@/hooks/useCatalogos';
-import { colores, espacios, radios, tipografia } from '@/tema';
+import { useEncuestasAbiertas } from '@/hooks/useEncuestasAbiertas';
+import { chipsEncuesta, colores, espacios, radios, tipografia } from '@/tema';
 import type { AvisoListado } from '@/tipos/aviso';
+import type { EncuestaListada } from '@/tipos/encuesta';
 
 /** Fecha corta en español para la tarjeta, por ejemplo "10 nov". */
 function fechaCorta(iso: string): string {
@@ -44,15 +58,49 @@ function TarjetaAviso({ aviso }: { aviso: AvisoListado }) {
   );
 }
 
-/** P4 · Avisos del residente con filtro por categoría (RF10, RF11). */
+/**
+ * Tarjeta de una encuesta abierta: insignia "Obligatoria" si es de prioridad alta (RF14), título y
+ * fecha de cierre. Es un botón: al tocarla abre la encuesta para votar.
+ */
+function TarjetaEncuesta({
+  encuesta,
+  alPresionar,
+}: {
+  encuesta: EncuestaListada;
+  alPresionar: () => void;
+}) {
+  const obligatoria = encuesta.prioridad === 'alta';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${obligatoria ? 'Encuesta obligatoria' : 'Encuesta'}: ${encuesta.titulo}`}
+      onPress={alPresionar}
+      style={[estilos.tarjeta, obligatoria && estilos.tarjetaObligatoria]}
+    >
+      <View style={estilos.filaSuperior}>
+        {obligatoria ? (
+          <Insignia texto="Obligatoria" colores={chipsEncuesta.obligatoria} />
+        ) : (
+          <Text style={estilos.fecha}>Encuesta</Text>
+        )}
+        <Text style={estilos.fecha}>Cierra el {fechaCorta(encuesta.cierra_en)}</Text>
+      </View>
+      <Text style={estilos.titulo}>{encuesta.titulo}</Text>
+    </Pressable>
+  );
+}
+
+/** P4 · Avisos del residente con filtro por categoría (RF10, RF11) y encuestas abiertas (RF14). */
 export default function Avisos() {
   // null = "Todas"; un id = solo esa categoría (RF10).
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
+  const router = useRouter();
   const categorias = useCategorias();
   const avisos = useAvisos(categoriaId);
+  const encuestas = useEncuestasAbiertas(categoriaId);
 
-  const cargando = categorias.isPending || avisos.isPending;
-  const conError = categorias.isError || avisos.isError;
+  const cargando = categorias.isPending || avisos.isPending || encuestas.isPending;
+  const conError = categorias.isError || avisos.isError || encuestas.isError;
 
   return (
     <View style={estilos.pantalla}>
@@ -81,6 +129,7 @@ export default function Avisos() {
             alPresionar={() => {
               categorias.refetch();
               avisos.refetch();
+              encuestas.refetch();
             }}
           />
         </View>
@@ -90,12 +139,34 @@ export default function Avisos() {
           keyExtractor={(aviso) => aviso.id}
           renderItem={({ item }) => <TarjetaAviso aviso={item} />}
           contentContainerStyle={estilos.lista}
+          ListHeaderComponent={
+            // Las encuestas abiertas van arriba de los avisos; si no hay, la sección no aparece.
+            encuestas.data && encuestas.data.length > 0 ? (
+              <View style={estilos.seccion}>
+                <Text style={estilos.subencabezado}>Encuestas abiertas</Text>
+                {encuestas.data.map((encuesta) => (
+                  <TarjetaEncuesta
+                    key={encuesta.id}
+                    encuesta={encuesta}
+                    alPresionar={() =>
+                      router.push({
+                        pathname: '/residente/encuesta/[id]',
+                        params: { id: encuesta.id },
+                      })
+                    }
+                  />
+                ))}
+                <Text style={estilos.subencabezado}>Avisos</Text>
+              </View>
+            ) : undefined
+          }
           refreshControl={
             // Jalar hacia abajo vuelve a consultar (patrón estándar de listas en móvil).
             <RefreshControl
               refreshing={avisos.isRefetching}
               onRefresh={() => {
                 avisos.refetch();
+                encuestas.refetch();
               }}
               colors={[colores.principal]}
               tintColor={colores.principal}
@@ -125,6 +196,10 @@ const estilos = StyleSheet.create({
     gap: 12,
   },
   encabezado: { ...tipografia.titulo, color: colores.texto },
+  seccion: { gap: espacios.entreTarjetas },
+  subencabezado: { ...tipografia.subtitulo, color: colores.texto },
+  // La obligatoria se destaca con el borde ámbar del acento, además de la insignia.
+  tarjetaObligatoria: { borderColor: colores.acento },
   lista: { gap: espacios.entreTarjetas, paddingBottom: 48, flexGrow: 1 },
   tarjeta: {
     backgroundColor: colores.superficie,

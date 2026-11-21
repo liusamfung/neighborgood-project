@@ -59,3 +59,8 @@ export const etiquetasAlerta = {
   en_camino: 'En camino',
   atendida: 'Atendida',
 } as const;
+
+/** Colores de la insignia de una encuesta (RF14): ámbar para "Obligatoria", como el acento del tema. */
+export const chipsEncuesta = {
+  obligatoria: { fondo: '#FEF3C7', texto: '#92400E' },
+} as const satisfies Record<string, Chip>;
