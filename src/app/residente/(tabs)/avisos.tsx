@@ -10,6 +10,8 @@
  * Cómo funciona: `useCategorias` llena los chips y `useAvisos(categoriaId)` trae la lista; el filtro
  * corre en la base y cada categoría guarda su propia caché. Estados: cargando (spinner), error
  * (mensaje y "Reintentar") y vacío (distinto si hay filtro o no).
+ * Las pestañas no tienen encabezado (`headerShown: false`), así que la pantalla deja libre el alto de
+ * la barra de estado del teléfono con `useSafeAreaInsets`; sin eso, el título queda debajo de la hora.
  * Se usa con: la barra inferior de `(tabs)/_layout.tsx`, `ChipsSeleccion` y el tema (`src/tema`).
  * Depende de: `src/hooks/useAvisos.ts`, `src/hooks/useCatalogos.ts` y `src/tipos/aviso.ts`.
  */
@@ -24,6 +26,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
@@ -95,6 +98,8 @@ export default function Avisos() {
   // null = "Todas"; un id = solo esa categoría (RF10).
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const router = useRouter();
+  // Alto de la barra de estado (hora, batería) para que el título no quede debajo de ella.
+  const { top } = useSafeAreaInsets();
   const categorias = useCategorias();
   const avisos = useAvisos(categoriaId);
   const encuestas = useEncuestasAbiertas(categoriaId);
@@ -103,7 +108,7 @@ export default function Avisos() {
   const conError = categorias.isError || avisos.isError || encuestas.isError;
 
   return (
-    <View style={estilos.pantalla}>
+    <View style={[estilos.pantalla, { paddingTop: top + espacios.margenLateral }]}>
       <Text style={estilos.encabezado}>Avisos</Text>
 
       {categorias.data ? (
@@ -192,7 +197,6 @@ const estilos = StyleSheet.create({
     flex: 1,
     backgroundColor: colores.fondo,
     paddingHorizontal: espacios.margenLateral,
-    paddingTop: espacios.margenLateral,
     gap: 12,
   },
   encabezado: { ...tipografia.titulo, color: colores.texto },
