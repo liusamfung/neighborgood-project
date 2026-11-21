@@ -2,12 +2,15 @@
  * TarjetaPase: una fila de la lista "Mis pases" con el invitado, el día y la hora, y el estado del pase.
  *
  * Qué hace: muestra el nombre del invitado, "mar, 10 nov · 6:30 p. m." y una insignia con el estado
- * (Vigente, Usado o Anulado) con los colores del sistema de diseño.
+ * (Vigente, Usado o Anulado) con los colores del sistema de diseño. Si el pase sigue vigente, debajo
+ * va el botón "Compartir" que manda la imagen del QR (RF17); un pase usado o anulado ya no se comparte.
  * Se usa con: `src/app/residente/(tabs)/visitas.tsx`. Más adelante abrirá el código QR del pase (RF16).
- * Depende de: `src/tipos/pase.ts`, `src/utilidades/formatosPase.ts` y `src/tema` (`chipsPase`).
+ * Depende de: `src/tipos/pase.ts`, `src/utilidades/formatosPase.ts`, `src/tema` (`chipsPase`) y
+ * `BotonCompartirPase`.
  */
 import { StyleSheet, Text, View } from 'react-native';
 
+import { BotonCompartirPase } from '@/componentes/visitas/BotonCompartirPase';
 import { chipsPase, colores, radios, tipografia } from '@/tema';
 import type { EstadoPase, Pase } from '@/tipos/pase';
 import { formatearFecha, formatearHora } from '@/utilidades/formatosPase';
@@ -19,29 +22,34 @@ const etiquetasPase: Record<EstadoPase, string> = {
   anulado: 'Anulado',
 };
 
-/** Tarjeta de un pase: nombre y horario a la izquierda, estado a la derecha. */
+/**
+ * Tarjeta de un pase: nombre y horario a la izquierda, estado a la derecha y, si está vigente,
+ * el botón "Compartir" debajo (RF17).
+ */
 export function TarjetaPase({ pase }: { pase: Pase }) {
   const chip = chipsPase[pase.estado];
   return (
     <View style={estilos.tarjeta}>
-      <View style={estilos.textos}>
-        <Text style={estilos.nombre}>{pase.nombre_visitante}</Text>
-        <Text style={estilos.horario}>
-          {formatearFecha(pase.fecha_visita)} · {formatearHora(pase.hora_estimada)}
-        </Text>
+      <View style={estilos.fila}>
+        <View style={estilos.textos}>
+          <Text style={estilos.nombre}>{pase.nombre_visitante}</Text>
+          <Text style={estilos.horario}>
+            {formatearFecha(pase.fecha_visita)} · {formatearHora(pase.hora_estimada)}
+          </Text>
+        </View>
+        <View style={[estilos.chip, { backgroundColor: chip.fondo }]}>
+          <Text style={[estilos.textoChip, { color: chip.texto }]}>
+            {etiquetasPase[pase.estado]}
+          </Text>
+        </View>
       </View>
-      <View style={[estilos.chip, { backgroundColor: chip.fondo }]}>
-        <Text style={[estilos.textoChip, { color: chip.texto }]}>{etiquetasPase[pase.estado]}</Text>
-      </View>
+      {pase.estado === 'vigente' ? <BotonCompartirPase pase={pase} /> : null}
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
   tarjeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 12,
     padding: 16,
     backgroundColor: colores.superficie,
@@ -49,6 +57,7 @@ const estilos = StyleSheet.create({
     borderColor: colores.borde,
     borderRadius: radios.tarjeta,
   },
+  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   textos: { flex: 1, gap: 2 },
   nombre: { ...tipografia.subtitulo, color: colores.texto },
   horario: { ...tipografia.cuerpo, color: colores.textoSecundario },
