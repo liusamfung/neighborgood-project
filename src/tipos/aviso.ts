@@ -34,3 +34,17 @@ export type BorradorAviso = {
   /** Imagen adjunta opcional (RF7). */
   imagen: ImagenElegida | null;
 };
+
+/** Fila de la lista de avisos que ve el residente en la pantalla P4 (RF10, RF11). */
+export type AvisoListado = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  /** Ruta de la imagen en Storage, o `null` si el aviso no lleva imagen. */
+  imagen_path: string | null;
+  vigente_desde: string;
+  vigente_hasta: string;
+  creado_en: string;
+  /** Nombre de la categoría, resuelto por la relación `categorias_aviso`. */
+  categoria: { id: string; nombre: string } | null;
+};
