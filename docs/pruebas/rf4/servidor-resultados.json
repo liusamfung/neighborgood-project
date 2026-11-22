@@ -1,0 +1,32 @@
+[
+  {
+    "prueba": "persistencia_y_reutilizacion",
+    "resultado": "OK",
+    "total": 3,
+    "contactos_sinteticos": [
+      {
+        "nombre": "Prueba RF4 C",
+        "orden": 2
+      },
+      {
+        "nombre": "Prueba RF4 B",
+        "orden": 3
+      }
+    ],
+    "contactos_originales_conservados": 1
+  },
+  {
+    "prueba": "rechazo_cuarta_posicion",
+    "resultado": "OK",
+    "codigo": "23514"
+  },
+  {
+    "prueba": "rechazo_posicion_duplicada",
+    "resultado": "OK",
+    "codigo": "23505"
+  },
+  {
+    "prueba": "sin_sesion_no_lee_contactos",
+    "resultado": "OK"
+  }
+]

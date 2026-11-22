@@ -11,7 +11,7 @@ export const MAXIMO_CONTACTOS = 3;
 /**
  * Prepara el número para la aplicación de teléfono: conserva + y dígitos y retira separadores.
  * Rechaza datos antiguos inválidos y secuencias de control; nunca interpreta el campo como URL.
- * La usan TarjetaContacto (enlace web) y el servicio de llamadas (Android/iOS).
+ * La usan TarjetaContacto para habilitar Llamar y el servicio del marcador del dispositivo.
  */
 export function enlaceTelefono(telefono: string): `tel:${string}` | null {
   const valor = telefono.trim();

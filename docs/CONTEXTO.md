@@ -7,7 +7,13 @@ Resumen para entender el proyecto de una sola lectura. Los detalles viven en los
 
 Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real), el **inicio de sesión con correo y contraseña** y la **estructura de Edge Functions** con una función de ejemplo (`quien-soy`, issue #6) las pantallas **Crear encuesta** (RF8, RF13, RF14, issue #18) y **Crear aviso** (RF7, RF13, issue #17) de la directiva, y la pantalla **Visitas** del residente con la Edge Function `crear-pase` (RF15, issue #25); el resto de las funcionalidades sigue pendiente.
 
+RF4 incorpora la administración de hasta tres contactos propios en Perfil, con formulario,
+confirmación de eliminación y apertura del marcador del dispositivo. Sigue la separación
+pantalla → hook → repositorio y conserva RLS como protección del servidor. La evidencia
+y los límites de validación de esta implementación están en [RF4.md](RF4.md).
+
 ## 2. Roles
+
 | Rol | Qué hace |
 |---|---|
 | **Residente** | Recibe avisos, vota encuestas (un voto por unidad), crea pases de visita con QR, activa alertas de pánico, reporta incidencias y administra hasta 3 contactos de emergencia. |
