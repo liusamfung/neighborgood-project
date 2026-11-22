@@ -17,6 +17,9 @@ const MAXIMO_NOMBRE = 100;
 /** Milisegundos que dura una hora; se usa para proponer la llegada una hora después de ahora. */
 const UNA_HORA = 60 * 60 * 1000;
 
+/** Margen para comparar la hora de llegada con la actual: el formulario no guarda segundos. */
+const UN_MINUTO = 60 * 1000;
+
 /** Número con dos cifras: 5 → "05". */
 const dosCifras = (n: number) => String(n).padStart(2, '0');
 
@@ -48,7 +51,8 @@ export type ErroresBorrador = {
 };
 
 /**
- * Revisa el borrador (reglas de RF15).
+ * Revisa el borrador (reglas de RF15): nombre obligatorio y llegada que no esté en el pasado (ni un día
+ * anterior ni, si es hoy, una hora que ya pasó).
  *
  * @param borrador lo que llenó el residente.
  * @param ahora momento de referencia para saber qué día es hoy; se puede pasar en pruebas.
@@ -68,6 +72,10 @@ export function validarBorrador(
   // Las fechas YYYY-MM-DD se comparan como texto. Hoy sí se admite: el pase vale hasta las 11:59 p. m.
   if (aFechaIso(borrador.llegada) < aFechaIso(ahora)) {
     errores.llegada = 'La fecha de la visita no puede ser anterior a hoy.';
+  } else if (borrador.llegada.getTime() < ahora.getTime() - UN_MINUTO) {
+    // Para hoy, la hora estimada tampoco puede haber pasado: un pase de hoy "a las 6 p. m." creado a
+    // las 10 p. m. no tiene sentido. Se da un minuto de margen por los segundos que tarda en llenarse.
+    errores.llegada = 'La hora de llegada ya pasó. Elige una hora posterior a la actual.';
   }
 
   return { errores, valido: Object.keys(errores).length === 0 };
