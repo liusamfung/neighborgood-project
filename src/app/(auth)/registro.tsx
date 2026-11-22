@@ -4,10 +4,11 @@
  * Qué hace: pide correo y contraseña (dos veces), los valida y llama a `registrarse`. No pide nombre ni
  * unidad: esos datos los registró la directiva al dar de alta el correo (RF5) y el trigger de la base
  * los copia al perfil.
- * Cómo funciona: si el correo está habilitado, el trigger crea el perfil de residente y la navegación
- * abre la pantalla de su rol. Si no lo está, no hay perfil: `SesionContext` cierra la sesión y deja en
- * `rechazo` el mensaje "Tu correo no está habilitado. Contacta a la directiva", que se muestra aquí y
- * en el login. Si el proyecto exige confirmar el correo, se avisa al usuario y no se abre sesión.
+ * Cómo funciona: `registrarse` pregunta primero a la base si el correo está habilitado; si no lo está,
+ * el registro se rechaza aquí mismo con "Tu correo no está habilitado. Contacta a la directiva" y no se
+ * crea ninguna cuenta. Si está habilitado se crea la cuenta: como el proyecto exige confirmar el correo,
+ * se muestra "Revisa tu correo" y, al confirmarlo, el trigger crea el perfil de residente. Si el proyecto
+ * no exigiera confirmación, la sesión se abre y la navegación lleva a la pantalla del residente.
  * Se usa con: `src/repositorios/sesion.ts` (`registrarse`, `mensajeDeError`),
  * `src/contexto/SesionContext.tsx` (`rechazo`), los componentes `Boton` y `CampoTexto`, el tema
  * (`src/tema`) y `(auth)/_layout.tsx` (barra superior con flecha de volver).
