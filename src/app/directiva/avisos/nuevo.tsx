@@ -30,6 +30,8 @@ import { Boton } from '@/componentes/formulario/Boton';
 import { CampoFecha } from '@/componentes/formulario/CampoFecha';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
+import { DestinoPublicacion } from '@/componentes/formulario/DestinoPublicacion';
+import { errorDestino, type ModoDestino } from '@/utilidades/destinoPublicacion';
 import { SelectorImagen } from '@/componentes/formulario/SelectorImagen';
 import { useCategorias, useSectores } from '@/hooks/useCatalogos';
 import { useCrearAviso } from '@/hooks/useCrearAviso';
@@ -50,6 +52,12 @@ export default function NuevoAviso() {
   // Los errores de validación solo se muestran después del primer intento de publicar.
   const [intentado, setIntentado] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
+  const [modoDestino, setModoDestino] = useState<ModoDestino>('todos');
+  const errorDestinatarios = errorDestino(
+    modoDestino,
+    borrador.sectorIds,
+    (sectores.data ?? []).map((s) => s.id),
+  );
 
   const { errores, valido } = validarBorrador(borrador);
   const mostrar = intentado ? errores : {};
@@ -63,7 +71,7 @@ export default function NuevoAviso() {
   function publicar() {
     setIntentado(true);
     setErrorEnvio(null);
-    if (!valido) return;
+    if (!valido || errorDestinatarios || crear.isPending) return;
     crear.mutate(borrador, {
       onSuccess: () => {
         Alert.alert('Aviso publicado', 'Los residentes destinatarios ya pueden verlo.', [
@@ -139,13 +147,15 @@ export default function NuevoAviso() {
           alCambiar={(imagen) => cambiar({ imagen })}
         />
 
-        <ChipsSeleccion
-          etiqueta="Dirigido a"
-          opciones={sectores.data.map((s) => ({ id: s.id, texto: s.nombre }))}
-          seleccionados={borrador.sectorIds}
-          alCambiar={(sectorIds) => cambiar({ sectorIds })}
-          multiple
-          textoVacio="Todo el condominio"
+        <DestinoPublicacion
+          modo={modoDestino}
+          ids={borrador.sectorIds}
+          sectores={sectores.data}
+          alCambiar={(modo, sectorIds) => {
+            setModoDestino(modo);
+            cambiar({ sectorIds });
+          }}
+          error={intentado ? errorDestinatarios : null}
         />
 
         <CampoFecha
