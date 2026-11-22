@@ -29,7 +29,11 @@ export function DestinoPublicacion({
           { id: 'sectores', texto: 'Elegir sectores' },
         ]}
         seleccionados={[modo]}
-        alCambiar={([valor]) => alCambiar(valor === 'todos' ? 'todos' : 'sectores', [])}
+        alCambiar={([valor]) => {
+          // Tocar el modo ya activo no debe borrar los sectores elegidos.
+          const siguiente = valor === 'todos' ? 'todos' : 'sectores';
+          if (siguiente !== modo) alCambiar(siguiente, []);
+        }}
       />
       {modo === 'sectores' ? (
         <ChipsSeleccion
