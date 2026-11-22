@@ -15,6 +15,8 @@ export default function DirectivaLayout() {
       <Stack.Screen name="avisos/nuevo" options={{ title: 'Crear aviso' }} />
       <Stack.Screen name="encuestas/nueva" options={{ title: 'Crear encuesta' }} />
       <Stack.Screen name="encuestas/[id]/resultados" options={{ title: 'Resultados' }} />
+      <Stack.Screen name="alertas" options={{ title: 'Atención de alertas' }} />
+      <Stack.Screen name="alerta/[id]" options={{ title: 'Detalle de alerta' }} />
     </Stack>
   );
 }
