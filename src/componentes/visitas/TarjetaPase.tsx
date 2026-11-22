@@ -3,14 +3,16 @@
  *
  * Qué hace: muestra el nombre del invitado, "mar, 10 nov · 6:30 p. m." y una insignia con el estado
  * (Vigente, Usado o Anulado) con los colores del sistema de diseño. Si el pase sigue vigente, debajo
- * va el botón "Compartir" que manda la imagen del QR (RF17). Un pase usado, anulado o de un día que
- * ya pasó no se comparte: el guardia lo rechazaría (el pase vale solo el día de la visita, RNF3).
+ * van los botones "Compartir", que manda la imagen del QR (RF17), y "Anular" (RF22). Un pase usado,
+ * anulado o de un día que ya pasó no muestra botones: el guardia lo rechazaría igual (el pase vale solo
+ * el día de la visita, RNF3).
  * Se usa con: `src/app/residente/(tabs)/visitas.tsx`. Más adelante abrirá el código QR del pase (RF16).
  * Depende de: `src/tipos/pase.ts`, `src/utilidades/formatosPase.ts`, `src/tema` (`chipsPase`),
- * `aFechaIso` de `src/utilidades/borradorPase.ts` y `BotonCompartirPase`.
+ * `aFechaIso` de `src/utilidades/borradorPase.ts`, `BotonCompartirPase` y `BotonAnularPase`.
  */
 import { StyleSheet, Text, View } from 'react-native';
 
+import { BotonAnularPase } from '@/componentes/visitas/BotonAnularPase';
 import { BotonCompartirPase } from '@/componentes/visitas/BotonCompartirPase';
 import { chipsPase, colores, radios, tipografia } from '@/tema';
 import type { EstadoPase, Pase } from '@/tipos/pase';
@@ -26,7 +28,7 @@ const etiquetasPase: Record<EstadoPase, string> = {
 
 /**
  * Tarjeta de un pase: nombre y horario a la izquierda, estado a la derecha y, si está vigente,
- * el botón "Compartir" debajo (RF17).
+ * los botones "Compartir" (RF17) y "Anular" (RF22) debajo.
  */
 export function TarjetaPase({ pase }: { pase: Pase }) {
   const chip = chipsPase[pase.estado];
@@ -48,7 +50,17 @@ export function TarjetaPase({ pase }: { pase: Pase }) {
           </Text>
         </View>
       </View>
-      {compartible ? <BotonCompartirPase pase={pase} /> : null}
+      {compartible ? (
+        // Compartir (RF17) y Anular (RF22) van lado a lado, cada uno con la mitad del ancho.
+        <View style={estilos.acciones}>
+          <View style={estilos.accion}>
+            <BotonCompartirPase pase={pase} />
+          </View>
+          <View style={estilos.accion}>
+            <BotonAnularPase pase={pase} />
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -68,4 +80,6 @@ const estilos = StyleSheet.create({
   horario: { ...tipografia.cuerpo, color: colores.textoSecundario },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radios.chip },
   textoChip: { ...tipografia.cuerpo, fontFamily: tipografia.subtitulo.fontFamily },
+  acciones: { flexDirection: 'row', gap: 10 },
+  accion: { flex: 1 },
 });
