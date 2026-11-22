@@ -1,10 +1,36 @@
 /**
  * Ruta `/directiva` (rol Directiva): pantalla P12 · Panel del mockup.
- * Provisional: hoy muestra un marcador con `PantallaMarcador`. Implementará RF28, RF31 (Sprint 5).
- * Se usa con: `src/componentes/PantallaMarcador.tsx` y la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña.
+ * RF31: muestra GraficaIncidencias con hook/repositorio/vista SQL. RF28 conserva su alcance.
+ * El contenido desplazable permite consultar doce meses con letra grande. Conserva la salida de sesión.
  */
-import { PantallaMarcador } from '@/componentes/PantallaMarcador';
+import { useState } from 'react';
+import { ScrollView, Text } from 'react-native';
+import { Boton } from '@/componentes/formulario/Boton';
+import { GraficaIncidencias } from '@/componentes/incidencias/GraficaIncidencias';
+import { useSesion } from '@/contexto/SesionContext';
+import { colores, tipografia } from '@/tema';
 
+/** Panel del rol directiva: lectura del reporte y controles de sesión. */
 export default function Panel() {
-  return <PantallaMarcador id="P12" titulo="Panel" requisitos="RF28, RF31" />;
+  const { perfil, cerrarSesion } = useSesion();
+  const [error, setError] = useState('');
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colores.fondo }}
+      contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 48 }}
+    >
+      <Text style={tipografia.subtitulo}>Hola, {perfil?.nombre}</Text>
+      <GraficaIncidencias />
+      {error ? <Text accessibilityRole="alert">{error}</Text> : null}
+      <Boton
+        texto="Cerrar sesión"
+        variante="secundario"
+        alPresionar={() => {
+          void cerrarSesion().catch(() =>
+            setError('No pudimos cerrar la sesión. Intenta nuevamente.'),
+          );
+        }}
+      />
+    </ScrollView>
+  );
 }

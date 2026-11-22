@@ -95,3 +95,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - Correo simulado de alerta con la ubicación (RF26).
 - Inicio de sesión por celular/SMS.
 - Mapas: la ubicación de la alerta es la unidad.
+
+## Preparación RF31 — 22/11/2026 (pendiente de integración)
+
+El PR RF31 usa barras con componentes nativos View/Text y texto accesible para la gráfica mensual, sin librería adicional. Consulta la vista existente que agrupa por mes de Lima y respeta RLS. La elección resuelve la librería gráfica pendiente de RF31 sin modificar dependencias. Falta aceptación conjunta; ver `docs/RF31.md`. Conservar el enlace de atención de alertas de RF27 al resolver los cambios coincidentes del Panel.
