@@ -87,7 +87,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 5. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
-- **Supabase gratuito pausa el proyecto tras 7 días sin actividad.** Antes de cada demo hay que entrar al panel, o programar un ping semanal con GitHub Actions.
+- **Supabase gratuito pausa el proyecto tras 7 días sin actividad de base de datos** (pasó el 21 nov. 2026). Mitigación: el workflow `latido-supabase.yml` llama cada 3 días a `public.latido()` (migración 9); necesita los secretos `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. Un ping a Auth no cuenta como actividad.
 - **Push con la app cerrada** depende de las políticas de cada fabricante; probar en dispositivos reales desde temprano.
 - **Push en iOS** exige una cuenta de Apple Developer (de pago) para APNs. La plataforma objetivo es multiplataforma; en Android las push usan FCM sin costo. Decidir antes del Sprint 5 cómo se demostrará en iOS.
 
