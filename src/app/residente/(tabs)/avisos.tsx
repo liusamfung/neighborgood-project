@@ -73,23 +73,33 @@ function TarjetaEncuesta({
   alPresionar: () => void;
 }) {
   const obligatoria = encuesta.prioridad === 'alta';
+  const router = useRouter();
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${obligatoria ? 'Encuesta obligatoria' : 'Encuesta'}: ${encuesta.titulo}`}
-      onPress={alPresionar}
-      style={[estilos.tarjeta, obligatoria && estilos.tarjetaObligatoria]}
-    >
-      <View style={estilos.filaSuperior}>
-        {obligatoria ? (
-          <Insignia texto="Obligatoria" colores={chipsEncuesta.obligatoria} />
-        ) : (
-          <Text style={estilos.fecha}>Encuesta</Text>
-        )}
-        <Text style={estilos.fecha}>Cierra el {fechaCorta(encuesta.cierra_en)}</Text>
-      </View>
-      <Text style={estilos.titulo}>{encuesta.titulo}</Text>
-    </Pressable>
+    <View style={{ gap: 8 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${obligatoria ? 'Encuesta obligatoria' : 'Encuesta'}: ${encuesta.titulo}`}
+        onPress={alPresionar}
+        style={[estilos.tarjeta, obligatoria && estilos.tarjetaObligatoria]}
+      >
+        <View style={estilos.filaSuperior}>
+          {obligatoria ? (
+            <Insignia texto="Obligatoria" colores={chipsEncuesta.obligatoria} />
+          ) : (
+            <Text style={estilos.fecha}>Encuesta</Text>
+          )}
+          <Text style={estilos.fecha}>Cierra el {fechaCorta(encuesta.cierra_en)}</Text>
+        </View>
+        <Text style={estilos.titulo}>{encuesta.titulo}</Text>
+      </Pressable>
+      <Boton
+        texto="Ver resultados"
+        variante="secundario"
+        alPresionar={() =>
+          router.push({ pathname: '/residente/resultados/[id]', params: { id: encuesta.id } })
+        }
+      />
+    </View>
   );
 }
 
@@ -110,6 +120,11 @@ export default function Avisos() {
   return (
     <View style={[estilos.pantalla, { paddingTop: top + espacios.margenLateral }]}>
       <Text style={estilos.encabezado}>Avisos</Text>
+      <Boton
+        texto="Resultados de encuestas"
+        variante="secundario"
+        alPresionar={() => router.push('/residente/resultados')}
+      />
 
       {categorias.data ? (
         <ChipsSeleccion
@@ -224,6 +239,12 @@ const estilos = StyleSheet.create({
   fecha: { ...tipografia.cuerpo, fontSize: 12, color: colores.textoSecundario },
   titulo: { ...tipografia.subtitulo, color: colores.texto },
   descripcion: { ...tipografia.cuerpo, color: colores.textoSecundario },
-  centrado: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, paddingVertical: 32 },
+  centrado: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 32,
+  },
   detalle: { ...tipografia.cuerpo, color: colores.textoSecundario, textAlign: 'center' },
 });

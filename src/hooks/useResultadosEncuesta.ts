@@ -3,7 +3,7 @@
  * La pantalla de resultados no conoce Supabase. El repositorio autoriza la lectura por RPC.
  * Una consulta periódica de respaldo recupera eventos perdidos sin depender de votos individuales.
  */
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
@@ -11,8 +11,21 @@ import { AppState } from 'react-native';
 import { useSesion } from '@/contexto/SesionContext';
 import {
   escucharResultadosEncuesta,
+  listarEncuestasResultados,
   obtenerResultadosEncuesta,
 } from '@/repositorios/resultadosEncuesta';
+
+/** Selección paginada de encuestas del residente; separa datos entre cuentas. */
+export function useEncuestasResultados() {
+  const { perfil } = useSesion();
+  return useInfiniteQuery({
+    queryKey: ['encuestas', 'selector-resultados', perfil?.id],
+    enabled: Boolean(perfil?.id),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => listarEncuestasResultados(pageParam),
+    getNextPageParam: (filas, paginas) => (filas.length === 20 ? paginas.length : undefined),
+  });
+}
 
 /** Cierra el canal al salir o bloquear la app; la reconexión vuelve a pedir datos autorizados. */
 export function useResultadosEncuesta(id: string) {

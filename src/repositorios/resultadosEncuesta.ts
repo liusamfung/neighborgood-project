@@ -5,6 +5,18 @@
  */
 import { supabase } from '@/lib/supabase';
 
+/** Páginas para elegir resultados, incluidas encuestas finalizadas visibles por RLS. */
+export async function listarEncuestasResultados(pagina: number) {
+  const { data, error } = await supabase
+    .from('encuestas')
+    .select('id,titulo,cierra_en,resultados_en_vivo')
+    .order('cierra_en', { ascending: false })
+    .order('id')
+    .range(pagina * 20, pagina * 20 + 19);
+  if (error) throw error;
+  return data;
+}
+
 /** Consulta metadatos y pide al servidor autorización para mostrar los agregados. */
 export async function obtenerResultadosEncuesta(id: string) {
   const { data: encuesta, error: errorEncuesta } = await supabase
