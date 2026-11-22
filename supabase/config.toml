@@ -430,3 +430,10 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/crear-pase/deno.json"
 entrypoint = "./functions/crear-pase/index.ts"
+
+# RF30: solo webhook del servidor. index.ts exige INCIDENCIAS_WEBHOOK_SECRET antes de usar admin.
+[functions.notificar-incidencia]
+enabled = true
+verify_jwt = false
+import_map = "./functions/notificar-incidencia/deno.json"
+entrypoint = "./functions/notificar-incidencia/index.ts"

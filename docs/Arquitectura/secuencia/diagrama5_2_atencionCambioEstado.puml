@@ -28,16 +28,18 @@ ADM -> APPA : actualizar estado a "En atención" o "Resuelto" (RF30)
 APPA -> DB : registrar el nuevo estado (RF30)
 activate DB
 DB --> APPA : estado actualizado
-DB -> EF : disparar función por webhook \n de base de datos (RF30)
+DB -> DB : encolar evento con reportante y estado\nen la misma transacción (RF30)
+DB -> EF : webhook INSERT de incidencia_notificaciones (RF30)
 deactivate DB
 activate EF
-EF -> DB : obtener token del residente \nque reportó (RF30)
+EF -> DB : reservar evento pendiente y obtener tokens\nsolo del reportante persistido (RF30)
 activate DB
 DB --> EF : token del residente
 deactivate DB
 EF -> PUSH : enviar \n notificación de \n cambio de estado (RF30)
 activate PUSH
 PUSH --> APPR : notificación push al residente (RF30)
+EF -> DB : guardar tickets; consultar recibos después\nsin reenviar eventos inciertos (RF30)
 deactivate PUSH
 deactivate EF
 APPR --> RES : aviso del nuevo estado de su incidencia (RF30)

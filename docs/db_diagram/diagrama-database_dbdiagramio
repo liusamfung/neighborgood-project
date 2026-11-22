@@ -433,4 +433,20 @@ TableGroup E_alertas {
 TableGroup F_incidencias {
   incidencias
   incidencia_fotos
+  incidencia_notificaciones
+}
+
+// RF30: propuesta de cola técnica privada; aplicar solo tras revisión de Liu.
+// El trigger encola y notificar-incidencia reserva/procesa el evento. Sin acceso de la app.
+Table incidencia_notificaciones {
+  id uuid [pk]
+  incidencia_id uuid [not null, ref: > incidencias.id] // FK → incidencias.id (borrado en cascada en SQL)
+  reportado_por uuid [not null, ref: > perfiles.id] // FK → perfiles.id (borrado en cascada en SQL)
+  estado estado_incidencia [not null]
+  cambio_en timestamptz [not null]
+  estado_envio text [not null, note: 'pendiente, enviando, aceptado, parcial, sin_destino, fallido, incierto']
+  intentado_en timestamptz
+  resultados jsonb [not null, note: 'IDs de dispositivo y tickets/recibos; sin tokens push']
+  error_codigo text
+  indexes { (incidencia_id, cambio_en, estado) [unique] }
 }
