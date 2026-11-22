@@ -110,6 +110,11 @@ export default function Avisos() {
   return (
     <View style={[estilos.pantalla, { paddingTop: top + espacios.margenLateral }]}>
       <Text style={estilos.encabezado}>Avisos</Text>
+      <Boton
+        texto="Ver historial"
+        variante="secundario"
+        alPresionar={() => router.push('/residente/historial')}
+      />
 
       {categorias.data ? (
         <ChipsSeleccion
@@ -224,6 +229,12 @@ const estilos = StyleSheet.create({
   fecha: { ...tipografia.cuerpo, fontSize: 12, color: colores.textoSecundario },
   titulo: { ...tipografia.subtitulo, color: colores.texto },
   descripcion: { ...tipografia.cuerpo, color: colores.textoSecundario },
-  centrado: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, paddingVertical: 32 },
+  centrado: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 32,
+  },
   detalle: { ...tipografia.cuerpo, color: colores.textoSecundario, textAlign: 'center' },
 });
