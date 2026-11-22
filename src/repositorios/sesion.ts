@@ -9,7 +9,12 @@
  * Depende de: `src/lib/supabase.ts`, de las políticas de `registros_sesion` (migración 5) y del trigger
  * `trg_auth_users_crear_perfil` (migración 3), que crea el perfil del residente habilitado.
  */
-import { isAuthApiError, isAuthRetryableFetchError, type Session } from '@supabase/supabase-js';
+import {
+  isAuthApiError,
+  isAuthRetryableFetchError,
+  type PostgrestError,
+  type Session,
+} from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 
@@ -54,6 +59,31 @@ export async function iniciarSesion(correo: string, contrasena: string): Promise
   if (errorRegistro) console.warn('No se registró el inicio de sesión', errorRegistro.message);
 }
 
+/** Error propio del registro: el correo no está dado de alta por la directiva (ver `registrarse`). */
+export class CorreoNoHabilitadoError extends Error {
+  constructor() {
+    super('El correo no está habilitado');
+    this.name = 'CorreoNoHabilitadoError';
+  }
+}
+
+/**
+ * Pregunta a la base si un correo puede registrarse (función SQL `correo_habilitado`, migración 9):
+ * tiene un alta de la directiva sin usar y su unidad está habilitada.
+ *
+ * La función todavía no figura en `src/tipos/base_de_datos.ts` (se regenera con `npm run db:tipos`
+ * después de aplicar la migración); mientras tanto se llama con su firma escrita a mano.
+ */
+async function correoHabilitado(correo: string): Promise<boolean> {
+  const rpc = supabase.rpc.bind(supabase) as unknown as (
+    funcion: 'correo_habilitado',
+    argumentos: { p_correo: string },
+  ) => PromiseLike<{ data: boolean | null; error: PostgrestError | null }>;
+  const { data, error } = await rpc('correo_habilitado', { p_correo: correo });
+  if (error) throw error;
+  return data === true;
+}
+
 /** Error propio del registro: el correo ya tiene una cuenta (ver `registrarse`). */
 export class CorreoYaRegistradoError extends Error {
   constructor() {
@@ -65,21 +95,26 @@ export class CorreoYaRegistradoError extends Error {
 /**
  * Crea la cuenta de un residente con correo y contraseña (RF1).
  *
- * Cómo funciona: solo crea el usuario en Supabase Auth. El perfil no lo crea la app: lo crea el trigger
- * `trg_auth_users_crear_perfil` (migración 3) si el correo está en `residentes_habilitados`, con el
- * nombre y la unidad que registró la directiva. Si el correo no está habilitado no hay perfil, y
- * `SesionContext` cierra la sesión con "Tu correo no está habilitado. Contacta a la directiva".
+ * Cómo funciona: primero pregunta a la base si el correo está habilitado (`correo_habilitado`). Si no
+ * lo está, rechaza el registro sin crear la cuenta (criterio de aceptación de RF1): el proyecto exige
+ * confirmar el correo, y sin esta comprobación Supabase crearía la cuenta de cualquier correo y la
+ * app solo podría rechazarlo después, al iniciar sesión. Si está habilitado, crea el usuario en
+ * Supabase Auth. El perfil no lo crea la app: lo crea el trigger `trg_auth_users_crear_perfil`
+ * (migración 3) cuando el correo queda confirmado, con el nombre y la unidad que registró la directiva.
  *
  * @param correo correo ya normalizado (minúsculas y sin espacios), igual que en `residentes_habilitados`.
  * @param contrasena contraseña elegida por el usuario (nunca se guarda ni se muestra).
  * @returns `'sesion_iniciada'` si Supabase abrió la sesión al crear la cuenta (el contexto carga el
  * perfil y la navegación cambia sola), o `'falta_confirmar'` si el proyecto exige confirmar el correo
- * antes de entrar. Lanza `CorreoYaRegistradoError` o el error de Supabase si falla.
+ * antes de entrar. Lanza `CorreoNoHabilitadoError`, `CorreoYaRegistradoError` o el error de Supabase
+ * si falla.
  */
 export async function registrarse(
   correo: string,
   contrasena: string,
 ): Promise<'sesion_iniciada' | 'falta_confirmar'> {
+  if (!(await correoHabilitado(correo))) throw new CorreoNoHabilitadoError();
+
   const { data, error } = await supabase.auth.signUp({ email: correo, password: contrasena });
   if (error) throw error;
 
@@ -105,6 +140,9 @@ export async function registrarse(
  * @returns un mensaje corto; los errores no previstos usan un mensaje genérico.
  */
 export function mensajeDeError(error: unknown): string {
+  if (error instanceof CorreoNoHabilitadoError) {
+    return 'Tu correo no está habilitado. Contacta a la directiva.';
+  }
   if (error instanceof CorreoYaRegistradoError) {
     return 'Ese correo ya tiene una cuenta. Inicia sesión.';
   }
