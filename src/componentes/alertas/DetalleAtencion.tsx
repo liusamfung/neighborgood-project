@@ -29,12 +29,15 @@ function Detalle({ id }: { id: string }) {
   const [confirmar, setConfirmar] = useState<'en_camino' | 'atendida' | null>(null);
   const bloqueo = useRef(false);
   const datos = consulta.data;
-  const accion =
-    datos?.alerta.estado === 'activa'
-      ? 'en_camino'
-      : datos?.alerta.estado === 'en_camino'
-        ? 'atendida'
-        : null;
+  const acciones: ('en_camino' | 'atendida')[] = [];
+  // El modelo admite más de una persona en camino; cada una conserva su respuesta en la bitácora.
+  if (
+    datos &&
+    datos.alerta.estado !== 'atendida' &&
+    !datos.atenciones.some((a) => a.usuario_id === perfil?.id && a.estado === 'en_camino')
+  )
+    acciones.push('en_camino');
+  if (datos?.alerta.estado === 'en_camino') acciones.push('atendida');
   const personal = perfil?.rol === 'guardia' || perfil?.rol === 'directiva';
   /** Una sola petición; si falla se recupera el estado antes de ofrecer otra respuesta. */
   async function enviar() {
@@ -84,7 +87,7 @@ function Detalle({ id }: { id: string }) {
               {a.usuario_id === perfil?.id ? ' · Tú' : ' · Personal autorizado'}
             </Text>
           ))}
-          {personal && accion ? (
+          {personal && acciones.length ? (
             confirmar ? (
               <View style={{ gap: 12 }}>
                 <Text>
@@ -95,7 +98,7 @@ function Detalle({ id }: { id: string }) {
                 <Boton
                   texto="Confirmar respuesta"
                   cargando={responder.isPending}
-                  deshabilitado={consulta.isFetching || confirmar !== accion}
+                  deshabilitado={consulta.isFetching || !acciones.includes(confirmar)}
                   alPresionar={() => {
                     void enviar();
                   }}
@@ -108,14 +111,19 @@ function Detalle({ id }: { id: string }) {
                 />
               </View>
             ) : (
-              <Boton
-                texto={accion === 'en_camino' ? 'Estoy en camino' : 'Marcar como atendida'}
-                deshabilitado={consulta.isFetching || responder.isPending}
-                alPresionar={() => {
-                  responder.reset();
-                  setConfirmar(accion);
-                }}
-              />
+              <View style={{ gap: 12 }}>
+                {acciones.map((accion) => (
+                  <Boton
+                    key={accion}
+                    texto={accion === 'en_camino' ? 'Estoy en camino' : 'Marcar como atendida'}
+                    deshabilitado={consulta.isFetching || responder.isPending}
+                    alPresionar={() => {
+                      responder.reset();
+                      setConfirmar(accion);
+                    }}
+                  />
+                ))}
+              </View>
             )
           ) : null}
         </>
