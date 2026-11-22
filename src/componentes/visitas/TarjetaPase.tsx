@@ -2,7 +2,7 @@
  * TarjetaPase: una fila de la lista "Mis pases" con el invitado, el día y la hora, y el estado del pase.
  *
  * Qué hace: muestra el nombre del invitado, "mar, 10 nov · 6:30 p. m." y una insignia con el estado
- * (Vigente, Usado o Anulado) con los colores del sistema de diseño. Si el pase sigue vigente, debajo
+ * (Vigente, Usado, Anulado o Vencido) con los colores del sistema de diseño. Si el pase sigue vigente, debajo
  * van los botones "Compartir", que manda la imagen del QR (RF17), y "Anular" (RF22). Un pase usado,
  * anulado o de un día que ya pasó no muestra botones: el guardia lo rechazaría igual (el pase vale solo
  * el día de la visita, RNF3).
@@ -19,11 +19,18 @@ import type { EstadoPase, Pase } from '@/tipos/pase';
 import { aFechaIso } from '@/utilidades/borradorPase';
 import { formatearFecha, formatearHora } from '@/utilidades/formatosPase';
 
+/**
+ * Estado que ve el residente: los tres de la base más `vencido`, que no se guarda sino que se calcula
+ * (regla 3 de CLAUDE.md): un pase vigente de un día que ya pasó está vencido (RNF3).
+ */
+type EstadoVisible = EstadoPase | 'vencido';
+
 /** Texto que ve el residente para cada estado del pase (RF22). */
-const etiquetasPase: Record<EstadoPase, string> = {
+const etiquetasPase: Record<EstadoVisible, string> = {
   vigente: 'Vigente',
   usado: 'Usado',
   anulado: 'Anulado',
+  vencido: 'Vencido',
 };
 
 /**
@@ -31,10 +38,13 @@ const etiquetasPase: Record<EstadoPase, string> = {
  * los botones "Compartir" (RF17) y "Anular" (RF22) debajo.
  */
 export function TarjetaPase({ pase }: { pase: Pase }) {
-  const chip = chipsPase[pase.estado];
-  // Solo se comparte un pase vigente de hoy o de un día futuro. Las fechas YYYY-MM-DD se comparan
-  // como texto, con el mismo "hoy" que usa la validación al crear el pase (`aFechaIso`).
-  const compartible = pase.estado === 'vigente' && pase.fecha_visita >= aFechaIso(new Date());
+  // Las fechas YYYY-MM-DD se comparan como texto, con el mismo "hoy" que usa la validación al crear el
+  // pase (`aFechaIso`). Un pase vigente de un día anterior se muestra vencido, con el gris de "Usado".
+  const vencido = pase.estado === 'vigente' && pase.fecha_visita < aFechaIso(new Date());
+  const estado: EstadoVisible = vencido ? 'vencido' : pase.estado;
+  const chip = vencido ? chipsPase.usado : chipsPase[pase.estado];
+  // Solo se comparte o anula un pase vigente de hoy o de un día futuro.
+  const compartible = estado === 'vigente';
   return (
     <View style={estilos.tarjeta}>
       <View style={estilos.fila}>
@@ -45,9 +55,7 @@ export function TarjetaPase({ pase }: { pase: Pase }) {
           </Text>
         </View>
         <View style={[estilos.chip, { backgroundColor: chip.fondo }]}>
-          <Text style={[estilos.textoChip, { color: chip.texto }]}>
-            {etiquetasPase[pase.estado]}
-          </Text>
+          <Text style={[estilos.textoChip, { color: chip.texto }]}>{etiquetasPase[estado]}</Text>
         </View>
       </View>
       {compartible ? (
