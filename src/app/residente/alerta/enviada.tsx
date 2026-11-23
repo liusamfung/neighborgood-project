@@ -112,7 +112,9 @@ export default function AlertaEnviada() {
 
       {/* Empuja el botón al final de la pantalla. */}
       <View style={estilos.espacio} />
-      <Boton texto="Volver al inicio" alPresionar={() => router.replace('/residente')} />
+      {/* `dismissTo` cierra esta pantalla y vuelve a las pestañas que ya están debajo. `replace` crearía una
+          segunda copia de las pestañas, con su propio aviso de ingreso (RF21) y un aviso repetido. */}
+      <Boton texto="Volver al inicio" alPresionar={() => router.dismissTo('/residente')} />
     </ScrollView>
   );
 }
