@@ -11,7 +11,8 @@ export function mesActualLima(ahora = new Date()) {
     year: 'numeric',
     month: '2-digit',
   }).formatToParts(ahora);
-  return `${p.find((v) => v.type === 'year')!.value}-${p.find((v) => v.type === 'month')!.value}`;
+  // Algunos Intl devuelven enero como "1" incluso pidiendo 2-digit; la clave SQL exige YYYY-MM.
+  return `${p.find((v) => v.type === 'year')!.value}-${p.find((v) => v.type === 'month')!.value.padStart(2, '0')}`;
 }
 /** Seis o doce meses ordenados, incluido el actual. */
 export function mesesReporte(ultimo: string, cantidad: 6 | 12) {
