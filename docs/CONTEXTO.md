@@ -12,6 +12,10 @@ confirmación de eliminación y apertura del marcador del dispositivo. Sigue la 
 pantalla → hook → repositorio y conserva RLS como protección del servidor. La evidencia
 y los límites de validación de esta implementación están en [RF4.md](RF4.md).
 
+RF9 incorpora la votación por unidad en P5 con la RPC existente, validación de respuestas,
+confirmación y caché por sesión. La guía y los límites de validación de esta implementación
+están en [RF9.md](RF9.md).
+
 ## 2. Roles
 
 | Rol | Qué hace |
