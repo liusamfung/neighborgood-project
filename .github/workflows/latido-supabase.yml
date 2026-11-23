@@ -1,0 +1,47 @@
+# Latido de Supabase (RNF2, disponibilidad).
+#
+# Qué hace: cada 3 días llama a la función public.latido() del proyecto real (migración 9), una consulta
+# mínima en Postgres que cuenta como actividad de base de datos. Así el plan gratuito no pausa el proyecto
+# por inactividad (pasó el 21 nov. 2026 y la app no pudo conectar hasta que se restauró a mano).
+# Un ping a /auth/v1/health no basta: Supabase mide actividad de la base, no de Auth.
+#
+# Cómo funciona: usa la llave pública (rol anon), que solo puede ejecutar latido() y no lee ninguna tabla.
+# La URL y la llave se guardan como secretos del repositorio (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL              https://<ref>.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  sb_publishable_... (la misma llave pública de la app)
+# Si el latido falla (proyecto pausado, URL o llave mal), el job falla y GitHub avisa por correo.
+# También se puede correr a mano: Actions → "Latido de Supabase" → Run workflow.
+#
+# Se relaciona con: supabase/migrations/20261122000001_latido.sql y docs/pruebas/RNF.md (RNF2).
+name: Latido de Supabase
+
+on:
+  schedule:
+    # Cada 3 días a las 10:17 a. m. de Lima (15:17 UTC). El minuto evita la hora en punto, que GitHub retrasa.
+    - cron: '17 15 */3 * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  latido:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Llamar a public.latido()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::Faltan los secretos SUPABASE_URL o SUPABASE_PUBLISHABLE_KEY"
+            exit 1
+          fi
+          # La llave pública va solo en el header apikey: PostgREST usa entonces el rol anon.
+          respuesta=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/latido" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "Respuesta de latido(): $respuesta"
+          [ "$respuesta" = "1" ] || { echo "::error::Respuesta inesperada"; exit 1; }
