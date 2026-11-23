@@ -1,16 +1,18 @@
 /**
  * Ruta `/directiva/avisos` (rol Directiva): Avisos publicados (sin mockup, ver docs/design/DISENO.md).
- * Provisional: hoy muestra un marcador con `PantallaMarcador`. Implementará RF7, RF11 (Sprint 4).
- * Se usa con: `src/componentes/PantallaMarcador.tsx` y la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña.
+ * RF11: historial con filtros y acceso a la publicación RF7, mediante HistorialPublicaciones.
+ * La barra inferior registra esta ruta. RLS determina el contenido disponible.
  */
-import { PantallaMarcador } from '@/componentes/PantallaMarcador';
+import { HistorialPublicaciones } from '@/componentes/publicaciones/HistorialPublicaciones';
 
+/** La directiva conserva la creación y consulta sus avisos anteriores y vigentes. */
 export default function Avisos() {
   return (
-    <PantallaMarcador
+    <HistorialPublicaciones
       titulo="Avisos publicados"
-      requisitos="RF7, RF11"
-      enlace={{ texto: 'Crear aviso', href: '/directiva/avisos/nuevo' }}
+      tipoFijo="avisos"
+      crearHref="/directiva/avisos/nuevo"
+      conCerrarSesion
     />
   );
 }
