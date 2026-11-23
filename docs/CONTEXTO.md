@@ -7,7 +7,13 @@ Resumen para entender el proyecto de una sola lectura. Los detalles viven en los
 
 Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real), el **inicio de sesión con correo y contraseña** y la **estructura de Edge Functions** con una función de ejemplo (`quien-soy`, issue #6) las pantallas **Crear encuesta** (RF8, RF13, RF14, issue #18) y **Crear aviso** (RF7, RF13, issue #17) de la directiva, y la pantalla **Visitas** del residente con la Edge Function `crear-pase` (RF15, issue #25); el resto de las funcionalidades sigue pendiente.
 
+RF4 incorpora la administración de hasta tres contactos propios en Perfil, con formulario,
+confirmación de eliminación y apertura del marcador del dispositivo. Sigue la separación
+pantalla → hook → repositorio y conserva RLS como protección del servidor. La evidencia
+y los límites de validación de esta implementación están en [RF4.md](RF4.md).
+
 ## 2. Roles
+
 | Rol | Qué hace |
 |---|---|
 | **Residente** | Recibe avisos, vota encuestas (un voto por unidad), crea pases de visita con QR, activa alertas de pánico, reporta incidencias y administra hasta 3 contactos de emergencia. |
@@ -55,7 +61,7 @@ Fuente de verdad: `docs/db_diagram/diagrama-database_dbdiagramio` (DBML para dbd
 | F. Incidencias | `incidencias`, `incidencia_fotos` |
 
 Reglas del modelo que importan al programar:
-- **Cómo está implementado** (`supabase/migrations/`): los helpers de RLS viven en el esquema `privado` (no expuesto por la API) como funciones `SECURITY DEFINER`; la app solo habla con `public`. Cuatro funciones RPC: `crear_aviso` (guarda el aviso y sus sectores en una transacción; la imagen opcional se sube antes al bucket privado `avisos` y la función solo guarda su ruta) y `crear_encuesta` (guarda la encuesta con sus sectores, preguntas y opciones en una transacción); las dos corren con los permisos de quien las llama, así que RLS sigue aplicando, `emitir_voto` (vota por la unidad en una transacción) y `resultados_encuesta` (conteos, según `resultados_en_vivo`). Los pases los crean y validan Edge Functions (service role): `crear-pase` (RF15) ya existe; deduce el residente y la unidad del token, rechaza fechas anteriores a hoy en Lima y deja que Postgres fije el estado `vigente` y el UUID v4. La validación al escanear llega con RF18.
+- **Cómo está implementado** (`supabase/migrations/`): los helpers de RLS viven en el esquema `privado` (no expuesto por la API) como funciones `SECURITY DEFINER`; la app solo habla con `public`. Cuatro funciones RPC: `crear_aviso` (guarda el aviso y sus sectores en una transacción; la imagen opcional se sube antes al bucket privado `avisos` y la función solo guarda su ruta) y `crear_encuesta` (guarda la encuesta con sus sectores, preguntas y opciones en una transacción); las dos corren con los permisos de quien las llama, así que RLS sigue aplicando, `emitir_voto` (vota por la unidad en una transacción) y `resultados_encuesta` (conteos, según `resultados_en_vivo`). Los pases los crean y validan Edge Functions (service role): `crear-pase` (RF15) ya existe; deduce el residente y la unidad del token, rechaza fechas anteriores a hoy en Lima y deja que Postgres fije el estado `vigente` y el UUID v4. `validar-pase` (RF18) revisa el pase que escanea el guardia: calcula "vencido" con el día de Lima y responde el motivo si lo rechaza; si es válido lo marca `usado` con `ingreso_en` y `guardia_id` (RF19), con `accion: salida` guarda `salida_en` (RF20) y avisa al residente por Expo Push (RF21). `pases_visita` también está en Realtime para el aviso con la app abierta.
 - **Registro "suave":** un trigger sobre `auth.users` crea el `perfil` solo si el correo confirmado está en `residentes_habilitados`. Si no, no hay perfil: RLS no deja ver nada y la app cierra la sesión con "Tu correo no está habilitado". La directiva y los guardias se crean a mano.
 - **Alertas:** la app solo informa unidad, tipo y emisor; el estado, el sector y la hora los fijan triggers. El personal responde insertando en `alerta_atenciones` y un trigger actualiza `alertas.estado`.
 - `perfiles.rol` ∈ `directiva | residente | guardia`; un residente siempre tiene `unidad_id`.
@@ -87,7 +93,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 5. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 
 ## 10. Riesgos
-- **Supabase gratuito pausa el proyecto tras 7 días sin actividad.** Antes de cada demo hay que entrar al panel, o programar un ping semanal con GitHub Actions.
+- **Supabase gratuito pausa el proyecto tras 7 días sin actividad de base de datos** (pasó el 21 nov. 2026). Mitigación: el workflow `latido-supabase.yml` llama cada 3 días a `public.latido()` (migración 9); necesita los secretos `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. Un ping a Auth no cuenta como actividad.
 - **Push con la app cerrada** depende de las políticas de cada fabricante; probar en dispositivos reales desde temprano.
 - **Push en iOS** exige una cuenta de Apple Developer (de pago) para APNs. La plataforma objetivo es multiplataforma; en Android las push usan FCM sin costo. Decidir antes del Sprint 5 cómo se demostrará en iOS.
 
