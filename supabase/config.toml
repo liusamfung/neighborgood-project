@@ -424,6 +424,13 @@ verify_jwt = true
 import_map = "./functions/quien-soy/deno.json"
 entrypoint = "./functions/quien-soy/index.ts"
 
+# RF18: el guardia escanea el QR y la función responde si la visita puede ingresar. Lee con la service_role.
+[functions.validar-pase]
+enabled = true
+verify_jwt = true
+import_map = "./functions/validar-pase/deno.json"
+entrypoint = "./functions/validar-pase/index.ts"
+
 # RF15: el residente crea su pase de visita. Inserta con la service_role (la inyecta Supabase).
 [functions.crear-pase]
 enabled = true
