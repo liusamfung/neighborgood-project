@@ -9,8 +9,9 @@ create extension if not exists pgtap with schema extensions;
 select * from no_plan();
 
 -- ───────────── Tablas, tipos y objetos ─────────────
-select is((select count(*)::int from pg_tables where schemaname = 'public'), 21,
-  'El esquema public tiene las 21 tablas del modelo');
+select is((select count(*)::int from pg_tables where schemaname = 'public'
+  and tablename <> 'incidencia_notificaciones'), 21,
+  'Se conservan las 21 tablas de dominio, además de la cola técnica RF30');
 
 select is((select count(*)::int from pg_type t join pg_namespace n on n.oid = t.typnamespace
             where n.nspname = 'public' and t.typtype = 'e'), 9,
@@ -26,6 +27,8 @@ select has_function('public', 'crear_encuesta',
 select has_function('public', 'crear_aviso',
   array['text', 'text', 'uuid', 'timestamp with time zone', 'timestamp with time zone', 'uuid[]', 'text'],
   'Existe la función crear_aviso');
+select has_function('public', 'crear_incidencia', array['uuid', 'text', 'text', 'text[]'],
+  'Existe la función crear_incidencia');
 
 select is((select count(*)::int from storage.buckets where id in ('avisos', 'incidencias') and not public), 2,
   'Los buckets avisos e incidencias existen y son privados');
@@ -44,8 +47,15 @@ select ok((select relrowsecurity from pg_class where oid = 'storage.objects'::re
 select is_empty($$
   select t.tablename from pg_tables t
    where t.schemaname = 'public'
+     and t.tablename <> 'incidencia_notificaciones'
      and not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = t.tablename)
 $$, 'Toda tabla de public tiene al menos una política');
+
+-- La cola privada se deniega deliberadamente sin políticas ni GRANT de cliente.
+select is((select count(*)::int from pg_policies where schemaname='public' and tablename='incidencia_notificaciones'), 0,
+  'La cola RF30 no expone políticas de cliente');
+select ok(not has_table_privilege('authenticated','public.incidencia_notificaciones','select,insert,update,delete'),
+  'El cliente autenticado no accede a la cola privada RF30');
 
 -- ───────────── Permisos ─────────────
 select is((select count(*)::int from pg_class c

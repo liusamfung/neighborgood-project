@@ -58,11 +58,12 @@
     "test:contactos": "node --test herramientas/pruebas/contactos.test.cjs",
     "test:votacion": "node --test herramientas/pruebas/votacion.test.cjs",
     "test:alerta": "node --test herramientas/pruebas/alertaEmergencia.test.cjs",
+    "test:reporte": "node --test herramientas/pruebas/reporteIncidencia.test.cjs",
     "db:start": "supabase start -x imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:tipos": "supabase gen types typescript --local > src/tipos/base_de_datos.ts && prettier --write src/tipos/base_de_datos.ts",
-    "fn:probar": "deno test --allow-env --config supabase/functions/quien-soy/deno.json \"supabase/functions/**/*_test.ts\"",
+    "fn:probar": "deno test --allow-env --config supabase/functions/deno.json \"supabase/functions/**/*_test.ts\"",
     "fn:formato": "deno fmt --no-semicolons --single-quote --line-width 110 supabase/functions",
     "fn:desplegar": "supabase functions deploy --use-api"
   },

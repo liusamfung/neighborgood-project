@@ -472,6 +472,58 @@ export type Database = {
           },
         ];
       };
+      incidencia_notificaciones: {
+        Row: {
+          cambio_en: string;
+          error_codigo: string | null;
+          estado: Database['public']['Enums']['estado_incidencia'];
+          estado_envio: string;
+          id: string;
+          incidencia_id: string;
+          intentado_en: string | null;
+          reportado_por: string;
+          resultados: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          cambio_en: string;
+          error_codigo?: string | null;
+          estado: Database['public']['Enums']['estado_incidencia'];
+          estado_envio?: string;
+          id?: string;
+          incidencia_id: string;
+          intentado_en?: string | null;
+          reportado_por: string;
+          resultados?: NonNullable<Json>;
+        };
+        Update: {
+          cambio_en?: string;
+          error_codigo?: string | null;
+          estado?: Database['public']['Enums']['estado_incidencia'];
+          estado_envio?: string;
+          id?: string;
+          incidencia_id?: string;
+          intentado_en?: string | null;
+          reportado_por?: string;
+          resultados?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'incidencia_notificaciones_incidencia_id_fkey';
+            columns: ['incidencia_id'];
+            isOneToOne: false;
+            referencedRelation: 'incidencias';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incidencia_notificaciones_reportado_por_fkey';
+            columns: ['reportado_por'];
+            isOneToOne: false;
+            referencedRelation: 'perfiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       incidencias: {
         Row: {
           actualizada_en: string;
@@ -862,6 +914,7 @@ export type Database = {
       };
     };
     Functions: {
+      correo_habilitado: { Args: { p_correo: string }; Returns: boolean };
       crear_aviso: {
         Args: {
           p_categoria_id: string;
@@ -888,7 +941,12 @@ export type Database = {
         };
         Returns: string;
       };
+      crear_incidencia: {
+        Args: { p_descripcion: string; p_fotos: string[]; p_id: string; p_ubicacion: string };
+        Returns: string;
+      };
       emitir_voto: { Args: { p_encuesta_id: string; p_opciones: Json }; Returns: string };
+      latido: { Args: Record<PropertyKey, never>; Returns: number };
       resultados_encuesta: {
         Args: { p_encuesta_id: string };
         Returns: {
