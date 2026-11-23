@@ -3,20 +3,40 @@
  */
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Boton } from '@/componentes/formulario/Boton';
 import { useSesion } from '@/contexto/SesionContext';
 import { useListaAlertas } from '@/hooks/useAlertas';
 import { ESTADO_ALERTA } from './DetalleAtencion';
 import { colores, tipografia } from '@/tema';
 
+/** Datos que recibe la lista. */
+type Props = {
+  /**
+   * true cuando la lista es una pestaña de la barra inferior (la del guardia), que no tiene cabecera
+   * propia: entonces se deja el alto de la barra de estado (hora, batería, isla dinámica) para que el
+   * título no quede debajo de ella. Las pantallas apiladas (directiva y residente) ya traen cabecera.
+   */
+  esPestana?: boolean;
+};
+
 /** Mantiene historial accesible y permite recuperar errores o cargar más sin inventar alertas. */
-export function ListaAtencion() {
+export function ListaAtencion({ esPestana = false }: Props) {
   const consulta = useListaAlertas();
   const { perfil } = useSesion();
   const router = useRouter();
+  const { top } = useSafeAreaInsets();
   const filas = [...new Map(consulta.data?.pages.flat().map((f) => [f.id, f]) ?? []).values()];
   return (
-    <View style={{ flex: 1, padding: 24, gap: 12, backgroundColor: colores.fondo }}>
+    <View
+      style={{
+        flex: 1,
+        padding: 24,
+        paddingTop: esPestana ? top + 24 : 24,
+        gap: 12,
+        backgroundColor: colores.fondo,
+      }}
+    >
       <Text style={tipografia.titulo}>
         {perfil?.rol === 'residente' ? 'Mis alertas y respuestas' : 'Atención de alertas'}
       </Text>
