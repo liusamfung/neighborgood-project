@@ -1,13 +1,13 @@
 /**
- * Pruebas del manejador de `validar-pase` (RF18, RF19): el pase válido que queda usado y cada motivo de
- * rechazo. Usan un contexto falso, sin red ni base de datos: el perfil del guardia sale de
+ * Pruebas del manejador de `validar-pase` (RF18, RF19, RF20): el pase válido que queda usado, la salida de
+ * la visita y cada motivo de rechazo. Usan un contexto falso, sin red ni base de datos: el perfil del guardia sale de
  * `_compartido/contexto_falso.ts` y el pase leído y la escritura, del cliente administrador falso de este
  * archivo. Se ejecutan con `npm run fn:probar`.
  */
 import { assertEquals } from '@std/assert'
 import { crearContextoFalso, perfilDeEjemplo } from '../_compartido/contexto_falso.ts'
 import type { ContextoConAdmin } from '../_compartido/perfil.ts'
-import { decidirIngreso, manejar, type PaseLeido } from './manejador.ts'
+import { decidirIngreso, decidirSalida, manejar, type PaseLeido } from './manejador.ts'
 
 const guardia = { id: '90000000-0000-0000-0000-000000000031', email: 'guardia1@neighborgood.test' }
 const CODIGO = '7c1f6a52-3c1e-4d6b-9a5e-0d2f6b8e9a10'
@@ -37,7 +37,8 @@ type Escritura = { cambios: unknown; filtros: [string, unknown][] }
  */
 function contexto(
   opciones: {
-    lectura?: { data: PaseLeido | null; error: { message: string } | null }
+    // `unknown`: la salida lee otras columnas (`ingreso_en`, `salida_en`) que el ingreso.
+    lectura?: { data: PaseLeido | Record<string, unknown> | null; error: { message: string } | null }
     escritura?: { data: { id: string }[] | null; error: { message: string } | null }
     rol?: 'guardia' | 'residente' | 'directiva'
     escrituras?: Escritura[]
@@ -46,11 +47,16 @@ function contexto(
   const lectura = opciones.lectura ?? { data: paseDeEjemplo(), error: null }
   const escritura = opciones.escritura ?? { data: [{ id: CODIGO }], error: null }
   // Imita las cadenas `from().select().eq().maybeSingle()` (leer) y `from().update().eq().eq().select()`
-  // (escribir) que usa la función. `select` termina la escritura solo si antes hubo un `update`.
+  // (escribir; la salida suma `.is()`) que usa la función. `select` termina la escritura solo si antes hubo
+  // un `update`.
   let actual: Escritura | null = null
   const consulta = {
     select: () => (actual ? Promise.resolve(escritura) : consulta),
     eq: (columna: string, valor: unknown) => {
+      actual?.filtros.push([columna, valor])
+      return consulta
+    },
+    is: (columna: string, valor: unknown) => {
       actual?.filtros.push([columna, valor])
       return consulta
     },
@@ -183,4 +189,76 @@ Deno.test('decidirIngreso: usado o anulado de otro día se informa por su estado
     codigo: 'pase_usado',
     mensaje: 'Pase ya usado',
   })
+})
+
+// ───────────── RF20: salida de la visita ─────────────
+
+/** Un pase que ingresó a las 15:00 de Lima y todavía no sale. */
+const paseIngresado = {
+  id: CODIGO,
+  nombre_visitante: 'Carlos Pérez',
+  estado: 'usado',
+  ingreso_en: '2026-11-10T20:00:00.000Z',
+  salida_en: null,
+}
+// Una hora después del ingreso.
+const unaHoraDespues = new Date('2026-11-10T21:00:00Z')
+
+Deno.test('RF20: registra la salida de una visita que ya ingresó', async () => {
+  const escrituras: Escritura[] = []
+  const respuesta = await manejar(
+    peticion({ codigo: CODIGO, accion: 'salida' }),
+    contexto({ lectura: { data: paseIngresado, error: null }, escrituras }),
+    unaHoraDespues,
+  )
+  assertEquals(respuesta.status, 200)
+  assertEquals(await respuesta.json(), {
+    resultado: 'salida_registrada',
+    pase: { id: CODIGO, nombre_visitante: 'Carlos Pérez', salida_en: '2026-11-10T21:00:00.000Z' },
+  })
+  // Solo se escribe `salida_en`, y solo si sigue vacía (dos toques a la vez no la registran dos veces).
+  assertEquals(escrituras, [{
+    cambios: { salida_en: '2026-11-10T21:00:00.000Z' },
+    filtros: [['id', CODIGO], ['estado', 'usado'], ['salida_en', null]],
+  }])
+})
+
+Deno.test('RF20: no registra la salida de una visita que no ingresó', async () => {
+  const lectura = { data: { ...paseIngresado, estado: 'vigente', ingreso_en: null }, error: null }
+  const respuesta = await manejar(
+    peticion({ codigo: CODIGO, accion: 'salida' }),
+    contexto({ lectura }),
+    ahora,
+  )
+  assertEquals(respuesta.status, 409)
+  assertEquals((await respuesta.json()).codigo, 'sin_ingreso')
+})
+
+Deno.test('RF20: no registra dos veces la misma salida', async () => {
+  const lectura = { data: { ...paseIngresado, salida_en: '2026-11-10T20:30:00.000Z' }, error: null }
+  const respuesta = await manejar(
+    peticion({ codigo: CODIGO, accion: 'salida' }),
+    contexto({ lectura }),
+    ahora,
+  )
+  assertEquals(respuesta.status, 409)
+  assertEquals((await respuesta.json()).codigo, 'salida_registrada')
+
+  // También si otro guardia la registró entre la lectura y la escritura.
+  const carrera = await manejar(
+    peticion({ codigo: CODIGO, accion: 'salida' }),
+    contexto({ lectura: { data: paseIngresado, error: null }, escritura: { data: [], error: null } }),
+    unaHoraDespues,
+  )
+  assertEquals(carrera.status, 409)
+})
+
+Deno.test('una acción desconocida responde 400', async () => {
+  const respuesta = await manejar(peticion({ codigo: CODIGO, accion: 'borrar' }), contexto(), ahora)
+  assertEquals(respuesta.status, 400)
+})
+
+Deno.test('decidirSalida: un código que no existe es "Pase no válido o vencido"', () => {
+  const decision = decidirSalida(null)
+  assertEquals(decision.ok, false)
 })

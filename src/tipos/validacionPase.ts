@@ -1,12 +1,15 @@
 /**
- * Tipos de la validación de un pase en la garita (RF18, RF19): lo que responde la Edge Function
- * `validar-pase`.
+ * Tipos de la garita (RF18 a RF20): lo que responde la Edge Function `validar-pase` y las visitas de hoy.
  *
- * Qué hace: describe el pase válido tal como lo ve el guardia (sin ids internos del residente). No contiene
- * lógica. La forma debe coincidir con `PaseValidado` de `supabase/functions/validar-pase/manejador.ts`.
- * Se usa con: `src/repositorios/validacionPases.ts`, `src/hooks/useValidarPase.ts`,
- * `src/componentes/visitas/ResultadoEscaneo.tsx` y la pantalla `src/app/guardia/(tabs)/escaner.tsx`.
+ * Qué hace: describe el pase válido tal como lo ve el guardia (sin ids internos del residente), la salida
+ * registrada y cada visita de la lista "Visitas de hoy". No contiene lógica. `PaseValidado` y
+ * `SalidaRegistrada` deben coincidir con los de `supabase/functions/validar-pase/manejador.ts`.
+ * Se usa con: `src/repositorios/validacionPases.ts`, los hooks `useValidarPase`, `useVisitasDeHoy` y
+ * `useRegistrarSalida`, los componentes `ResultadoEscaneo` y `TarjetaVisita` y las pantallas
+ * `src/app/guardia/(tabs)/escaner.tsx` y `src/app/guardia/visitas.tsx`.
+ * Depende de: `src/tipos/base_de_datos.ts` (generado con `npm run db:tipos`).
  */
+import type { Tables } from '@/tipos/base_de_datos';
 
 /** Pase que el guardia puede dejar ingresar: quién viene, a qué unidad y quién lo autorizó. */
 export type PaseValidado = {
@@ -32,4 +35,24 @@ export type PaseValidado = {
 export type RespuestaValidacion = {
   resultado: 'ingreso_registrado';
   pase: PaseValidado;
+};
+
+/** Respuesta de `validar-pase` al registrar la salida de una visita (RF20). */
+export type SalidaRegistrada = {
+  id: string;
+  nombre_visitante: string;
+  /** Hora exacta de la salida (ISO 8601). */
+  salida_en: string;
+};
+
+/**
+ * Una visita de hoy como la ve el guardia en "Visitas de hoy" (RF20): el pase con su unidad y sector.
+ * RLS solo deja al guardia leer los pases del día en Lima.
+ */
+export type VisitaDeHoy = Pick<
+  Tables<'pases_visita'>,
+  'id' | 'nombre_visitante' | 'hora_estimada' | 'estado' | 'ingreso_en' | 'salida_en'
+> & {
+  /** Unidad del pase (FK → unidades.id) con el nombre de su sector. */
+  unidades: { codigo: string; sectores: { nombre: string } | null } | null;
 };

@@ -1,20 +1,23 @@
 /**
- * Ruta `/guardia/escaner` (rol Guardia): pantalla P11 · Escáner QR del mockup (RF18, RF19).
+ * Ruta `/guardia/escaner` (rol Guardia): pantalla P11 · Escáner QR del mockup (RF18, RF19, RF20).
  *
  * Qué hace: el guardia apunta la cámara al QR del pase que muestra la visita. Si el pase está vigente y es
  * de hoy, ve "Pase válido" con el visitante, la unidad y quién autorizó, y el pase queda usado con la
  * hora del ingreso (RF19, diagrama 3.3), por eso no hace falta el botón "Marcar pase como usado" del
- * mockup. Si no, ve el motivo: "Pase no válido o vencido", "Pase ya usado" o "Pase anulado" (RF22). Si el QR no se lee, puede escribir el código a mano.
+ * mockup. Si no, ve el motivo: "Pase no válido o vencido", "Pase ya usado" o "Pase anulado" (RF22).
+ * Si el QR no se lee, puede escribir el código a mano. Abajo, "Visitas de hoy y salidas" abre la lista
+ * donde se registra la salida (RF20).
  * Cómo funciona: la decisión la toma la Edge Function `validar-pase` (con la hora de Lima del servidor);
  * la pantalla solo manda el texto leído. La cámara lee el mismo QR muchas veces por segundo: un candado
  * (`ocupado`) deja pasar solo la primera lectura hasta que el guardia toca "Escanear otro pase". Al llegar
  * el resultado el teléfono vibra distinto si es válido o rechazado, para que el guardia lo sienta sin leer.
  * Se usa con: la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña.
  * Depende de: `expo-camera` (permiso y lector de QR), `expo-haptics`, `src/hooks/useValidarPase.ts`,
- * `ResultadoEscaneo`, `Boton`, `CampoTexto` y el tema.
+ * `ResultadoEscaneo`, `Boton`, `CampoTexto`, el tema y la ruta `src/app/guardia/visitas.tsx`.
  */
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -34,6 +37,7 @@ import { colores, espacios, radios, tipografia } from '@/tema';
 
 /** P11 · Escáner QR del guardia. */
 export default function Escaner() {
+  const router = useRouter();
   const [permiso, pedirPermiso] = useCameraPermissions();
   const validar = useValidarPase();
   const [resultado, setResultado] = useState<Resultado | null>(null);
@@ -150,6 +154,13 @@ export default function Escaner() {
             </View>
           </>
         )}
+
+        {/* RF20: la salida se registra desde la lista del día, no escaneando otra vez. */}
+        <Boton
+          variante="secundario"
+          texto="Visitas de hoy y salidas"
+          alPresionar={() => router.push('/guardia/visitas')}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
