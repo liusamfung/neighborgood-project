@@ -87,6 +87,7 @@ Reglas del modelo que importan al programar:
 - Máximo 3 fotos por incidencia (`orden` entre 1 y 3); el mínimo de 1 lo valida la app.
 - **Estados:** alertas `activa | en_camino | atendida`; incidencias `pendiente | en_atencion | resuelto`; pases `vigente | usado | anulado`.
 - `alertas.sector_id` lo llena un trigger a partir de la unidad, para filtrar Realtime por sector.
+- **Historial de alertas (RF28):** la directiva y el guardia lo abren con "Ver historial" de Atención de alertas. Lee `alertas` y `alerta_atenciones` directo, porque RLS ya les deja ver todas, y filtra por tipo y estado.
 - El reporte mensual de incidencias sale de una vista con `GROUP BY date_trunc('month', creada_en)`.
 - En las políticas RLS, usar funciones `SECURITY DEFINER` para evitar recursión.
 
