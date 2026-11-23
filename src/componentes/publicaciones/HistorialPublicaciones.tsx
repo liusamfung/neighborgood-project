@@ -8,6 +8,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BotonCerrarSesion } from '@/componentes/BotonCerrarSesion';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
 import { useSesion } from '@/contexto/SesionContext';
@@ -16,8 +17,17 @@ import { useHistorial } from '@/hooks/useHistorial';
 import { colores, espacios, radios, tipografia } from '@/tema';
 import type { PeriodoHistorial, PublicacionHistorial, TipoPublicacion } from '@/tipos/historial';
 
-/** Los layouts de directiva fijan el tipo; el historial del residente permite alternarlos. */
-type Props = { titulo: string; tipoFijo?: TipoPublicacion; crearHref?: Href };
+/**
+ * Los layouts de directiva fijan el tipo; el historial del residente permite alternarlos.
+ * `conCerrarSesion` muestra el enlace "Cerrar sesión" junto al título: lo usan las pestañas de la directiva,
+ * que no tienen otro modo de salir de la cuenta.
+ */
+type Props = {
+  titulo: string;
+  tipoFijo?: TipoPublicacion;
+  crearHref?: Href;
+  conCerrarSesion?: boolean;
+};
 
 /** Formato explícito de las fechas de publicación en la zona horaria del condominio. */
 function fecha(valor: string): string {
@@ -29,7 +39,7 @@ function fecha(valor: string): string {
 }
 
 /** Presenta filtros, páginas y recuperación de errores sin descartar resultados parciales. */
-export function HistorialPublicaciones({ titulo, tipoFijo, crearHref }: Props) {
+export function HistorialPublicaciones({ titulo, tipoFijo, crearHref, conCerrarSesion }: Props) {
   const router = useRouter();
   const { perfil } = useSesion();
   const usuarioId = perfil?.id;
@@ -109,9 +119,12 @@ export function HistorialPublicaciones({ titulo, tipoFijo, crearHref }: Props) {
 
   return (
     <View style={[estilos.pantalla, { paddingTop: tipoFijo ? insets.top + 20 : 20 }]}>
-      <Text accessibilityRole="header" style={estilos.titulo}>
-        {titulo}
-      </Text>
+      <View style={estilos.encabezado}>
+        <Text accessibilityRole="header" style={[estilos.titulo, estilos.tituloEncabezado]}>
+          {titulo}
+        </Text>
+        {conCerrarSesion ? <BotonCerrarSesion /> : null}
+      </View>
       {crearHref ? (
         <Boton
           texto={tipo === 'avisos' ? 'Crear aviso' : 'Crear encuesta'}
@@ -211,6 +224,14 @@ const estilos = StyleSheet.create({
     backgroundColor: colores.fondo,
   },
   titulo: { ...tipografia.titulo, color: colores.texto },
+  // Fila del título con, a la derecha, el enlace "Cerrar sesión" cuando la pantalla lo pide.
+  encabezado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  tituloEncabezado: { flexShrink: 1 },
   subtitulo: { ...tipografia.subtitulo, color: colores.texto },
   texto: { ...tipografia.cuerpo, color: colores.textoSecundario },
   estado: { ...tipografia.cuerpo, color: colores.principal },

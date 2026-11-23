@@ -22,6 +22,12 @@ el tipo de alerta y confirmar (P3, con Médica marcada como en el mockup) y la p
 Edge Function): la app solo envía emisor, unidad y tipo, y los triggers de la base fijan sector, estado
 `activa` y hora. Avisar a la guardia y a los vecinos es RF25 (issue #35), que sigue pendiente.
 
+Cerrar sesión: el componente `BotonCerrarSesion` (con confirmación) está en las pestañas reales del guardia
+(Alertas y Escáner) y de la directiva (Avisos y Encuestas); el residente la cierra desde Perfil. El marcador
+`PantallaMarcador` trae su propio botón, así que **la pantalla real que reemplace a un marcador debe incluir
+`BotonCerrarSesion`** (por ejemplo, el Panel y las Incidencias de la directiva) o ese rol no podrá salir de su
+cuenta ni cambiar de rol, algo necesario en la demostración final.
+
 ## 2. Roles
 
 | Rol | Qué hace |
