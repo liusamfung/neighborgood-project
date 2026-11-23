@@ -3,13 +3,15 @@
  *
  * Qué hace: `useEmitirAlerta` expone la mutación de TanStack Query sobre `emitirAlerta`, con sus estados
  * (`isPending`, `error`), y al crear la alerta marca como vencida la caché `['alertas']` para que las
- * listas de alertas se vuelvan a consultar. `useUbicacion` consulta una vez el nombre de la unidad y su
+ * listas de alertas se vuelvan a consultar; además pide el push a los vecinos del sector, la directiva y los
+ * guardias (RF25, `difundirAlerta`), sin esperarlo. `useUbicacion` consulta una vez el nombre de la unidad y su
  * sector y lo guarda en caché, así Inicio y "Enviar alerta" no lo piden dos veces.
  * Se usa con: `src/app/residente/(tabs)/index.tsx` y `src/app/residente/alerta/tipo.tsx`.
- * Depende de: `src/repositorios/emitirAlerta.ts` y de `QueryClientProvider` (`src/app/_layout.tsx`).
+ * Depende de: `src/repositorios/emitirAlerta.ts`, `src/repositorios/difusionAlertas.ts` y de `QueryClientProvider` (`src/app/_layout.tsx`).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { difundirAlerta } from '@/repositorios/difusionAlertas';
 import { emitirAlerta, obtenerUbicacion } from '@/repositorios/emitirAlerta';
 import type { TipoAlerta } from '@/tipos/alerta';
 
@@ -22,7 +24,11 @@ export function useEmitirAlerta() {
   return useMutation({
     mutationFn: ({ emisorId, unidadId, tipo }: DatosAlerta) =>
       emitirAlerta(emisorId, unidadId, tipo),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alertas'] }),
+    onSuccess: (alerta) => {
+      // Sin `await`: la pantalla "Alerta enviada" no espera al push, que es de mejor esfuerzo.
+      void difundirAlerta(alerta.id);
+      return queryClient.invalidateQueries({ queryKey: ['alertas'] });
+    },
   });
 }
 
