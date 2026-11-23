@@ -1,10 +1,13 @@
 /**
  * Ruta `/directiva/encuestas/[id]/resultados` (rol Directiva): pantalla P14b · Resultados de la encuesta del mockup.
- * Provisional: hoy muestra un marcador con `PantallaMarcador`. Implementará RF12 (Sprint 4).
- * Se usa con: `src/componentes/PantallaMarcador.tsx` y `directiva/_layout.tsx`, que la declara como pantalla apilada.
+ * RF12: presenta agregados autorizados mediante ResultadosEncuesta.
+ * El layout directiva registra esta ruta; la lista RF11 permite elegir una encuesta.
  */
-import { PantallaMarcador } from '@/componentes/PantallaMarcador';
+import { useLocalSearchParams } from 'expo-router';
+import { ResultadosEncuesta } from '@/componentes/encuestas/ResultadosEncuesta';
 
+/** Reutiliza la pantalla de resultados con el rol real de la sesión. */
 export default function Resultados() {
-  return <PantallaMarcador id="P14b" titulo="Resultados de la encuesta" requisitos="RF12" />;
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <ResultadosEncuesta id={id} />;
 }
