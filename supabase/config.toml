@@ -424,8 +424,8 @@ verify_jwt = true
 import_map = "./functions/quien-soy/deno.json"
 entrypoint = "./functions/quien-soy/index.ts"
 
-# RF18 y RF19: el guardia escanea el QR, la función responde si la visita puede ingresar y marca el pase
-# como usado. Lee y escribe con la service_role.
+# RF18 a RF20: el guardia escanea el QR, la función responde si la visita puede ingresar, marca el pase
+# como usado y registra la salida. Lee y escribe con la service_role.
 [functions.validar-pase]
 enabled = true
 verify_jwt = true

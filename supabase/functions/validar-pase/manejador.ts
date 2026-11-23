@@ -1,6 +1,11 @@
 /**
- * Lógica de la función `validar-pase` (RF18, RF19): decide si la visita del QR escaneado puede ingresar
- * y, si puede, marca el pase como usado.
+ * Lógica de la función `validar-pase` (RF18, RF19, RF20): decide si la visita del QR escaneado puede
+ * ingresar y, si puede, marca el pase como usado; también registra la salida de la visita.
+ *
+ * Acciones (campo `accion` del cuerpo; por defecto `ingreso`):
+ * - `ingreso`: lo que sigue en este comentario.
+ * - `salida` (RF20): guarda `salida_en` de un pase que ya ingresó y todavía no salió. La base exige que
+ *   `salida_en` no sea anterior a `ingreso_en` (restricción `ck_pases_estado_coherente`).
  *
  * Qué hace: comprueba que quien llama sea un guardia activo, busca el pase por su código y, si es válido,
  * lo pasa a `usado` con la hora de ingreso y el guardia (RF19; la base exige los dos para un pase usado).
@@ -51,6 +56,9 @@ export type PaseValidado = {
   ingreso_en: string
 }
 
+/** Lo que la app recibe al registrar una salida (RF20). */
+export type SalidaRegistrada = { id: string; nombre_visitante: string; salida_en: string }
+
 // Un código de QR válido es un UUID (lo genera Postgres con gen_random_uuid()); cualquier otro texto ni
 // se consulta en la base.
 const FORMATO_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -90,6 +98,35 @@ export function decidirIngreso(pase: PaseLeido | null, hoy: string): Decision {
   return { ok: true }
 }
 
+/**
+ * Decide si se puede registrar la salida de un pase (RF20): tiene que haber ingresado y no haber salido.
+ *
+ * @param pase el pase leído de la base (con `ingreso_en` y `salida_en`), o `null` si el código no existe.
+ * @returns `{ ok: true }` o el motivo del rechazo.
+ */
+export function decidirSalida(
+  pase: Pick<PaseLeido, 'estado'> & { ingreso_en: string | null; salida_en: string | null } | null,
+): Decision {
+  if (!pase) return NO_VALIDO
+  if (pase.estado !== 'usado' || !pase.ingreso_en) {
+    return {
+      ok: false,
+      estado: 409,
+      codigo: 'sin_ingreso',
+      mensaje: 'Esta visita todavía no registra su ingreso.',
+    }
+  }
+  if (pase.salida_en) {
+    return {
+      ok: false,
+      estado: 409,
+      codigo: 'salida_registrada',
+      mensaje: 'La salida de esta visita ya fue registrada.',
+    }
+  }
+  return { ok: true }
+}
+
 /** Texto de la unidad con su sector, por ejemplo "Torre A · 302". */
 function textoUnidad(pase: PaseLeido): string {
   if (!pase.unidades) return ''
@@ -118,10 +155,12 @@ export function resumir(pase: PaseLeido, ingresoEn: string): PaseValidado {
 /**
  * Atiende una llamada a `validar-pase`.
  *
- * @param req petición HTTP con el cuerpo JSON `{ codigo }`: el texto que leyó la cámara.
+ * @param req petición HTTP con el cuerpo JSON `{ codigo, accion? }`: el texto que leyó la cámara (o el
+ * `id` del pase, para la salida) y `ingreso` (por defecto) o `salida`.
  * @param ctx contexto de la función con el cliente del llamador, su identidad y el cliente administrador.
  * @param ahora momento de referencia: qué día es hoy en Lima y la hora del ingreso; se pasa en las pruebas.
- * @returns 200 con `{ resultado: 'ingreso_registrado', pase }`, o un error `{ codigo, mensaje }`: 401, 403 (no es
+ * @returns 200 con `{ resultado: 'ingreso_registrado', pase }` o `{ resultado: 'salida_registrada', pase }`,
+ * o un error `{ codigo, mensaje }`: 401, 403 (no es
  * guardia), 404 (no válido o vencido), 409 (usado o anulado) o 500.
  */
 export async function manejar(
@@ -134,11 +173,16 @@ export async function manejar(
   if (resultado.respuesta) return resultado.respuesta
 
   // 2. El código viene de la cámara: se trata como texto no confiable.
-  const cuerpo = (await req.json().catch(() => null)) as { codigo?: unknown } | null
+  const cuerpo = (await req.json().catch(() => null)) as { codigo?: unknown; accion?: unknown } | null
   const codigo = typeof cuerpo?.codigo === 'string' ? cuerpo.codigo.trim() : ''
+  const accion = cuerpo?.accion ?? 'ingreso'
+  if (accion !== 'ingreso' && accion !== 'salida') {
+    return respuestaError(400, 'accion_invalida', 'La acción debe ser ingreso o salida.')
+  }
   if (!FORMATO_UUID.test(codigo)) {
     return respuestaError(NO_VALIDO.estado, NO_VALIDO.codigo, NO_VALIDO.mensaje)
   }
+  if (accion === 'salida') return registrarSalida(ctx, codigo, ahora)
 
   // 3. Buscar el pase con la service_role (ver la cabecera: hace falta para dar el motivo correcto).
   const { data, error } = await ctx.supabaseAdmin
@@ -174,4 +218,59 @@ export async function manejar(
   if (!filas || filas.length === 0) return respuestaError(409, 'pase_usado', 'Pase ya usado')
 
   return Response.json({ resultado: 'ingreso_registrado', pase: resumir(paseValido, ingresoEn) })
+}
+
+/**
+ * Registra la salida de una visita que ya ingresó (RF20).
+ *
+ * @param ctx contexto con el cliente administrador (la app no puede escribir `salida_en`).
+ * @param paseId código del pase, ya comprobado como UUID.
+ * @param ahora hora de la salida.
+ * @returns 200 con `{ resultado: 'salida_registrada', pase }`, o 404, 409 o 500 con el motivo.
+ */
+async function registrarSalida(ctx: ContextoConAdmin, paseId: string, ahora: Date): Promise<Response> {
+  const { data, error } = await ctx.supabaseAdmin
+    .from('pases_visita')
+    .select('id, nombre_visitante, estado, ingreso_en, salida_en')
+    .eq('id', paseId)
+    .maybeSingle()
+  if (error) {
+    console.error('No se pudo leer el pase', error.message)
+    return respuestaError(500, 'error_interno', 'No pudimos registrar la salida. Inténtalo de nuevo.')
+  }
+  const pase = data as
+    | {
+      id: string
+      nombre_visitante: string
+      estado: PaseLeido['estado']
+      ingreso_en: string | null
+      salida_en: string | null
+    }
+    | null
+  const decision = decidirSalida(pase)
+  if (!decision.ok) return respuestaError(decision.estado, decision.codigo, decision.mensaje)
+
+  // `salida_en is null` en el `where`: si dos guardias tocan "Registrar salida" a la vez, solo vale una.
+  const salidaEn = ahora.toISOString()
+  const { data: filas, error: errorSalida } = await ctx.supabaseAdmin
+    .from('pases_visita')
+    .update({ salida_en: salidaEn })
+    .eq('id', paseId)
+    .eq('estado', 'usado')
+    .is('salida_en', null)
+    .select('id')
+  if (errorSalida) {
+    console.error('No se pudo registrar la salida', errorSalida.message)
+    return respuestaError(500, 'error_interno', 'No pudimos registrar la salida. Inténtalo de nuevo.')
+  }
+  if (!filas || filas.length === 0) {
+    return respuestaError(409, 'salida_registrada', 'La salida de esta visita ya fue registrada.')
+  }
+  // `decision.ok` garantiza que el pase existe.
+  const salida: SalidaRegistrada = {
+    id: paseId,
+    nombre_visitante: pase?.nombre_visitante ?? '',
+    salida_en: salidaEn,
+  }
+  return Response.json({ resultado: 'salida_registrada', pase: salida })
 }
