@@ -472,6 +472,58 @@ export type Database = {
           },
         ];
       };
+      incidencia_notificaciones: {
+        Row: {
+          cambio_en: string;
+          error_codigo: string | null;
+          estado: Database['public']['Enums']['estado_incidencia'];
+          estado_envio: string;
+          id: string;
+          incidencia_id: string;
+          intentado_en: string | null;
+          reportado_por: string;
+          resultados: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          cambio_en: string;
+          error_codigo?: string | null;
+          estado: Database['public']['Enums']['estado_incidencia'];
+          estado_envio?: string;
+          id?: string;
+          incidencia_id: string;
+          intentado_en?: string | null;
+          reportado_por: string;
+          resultados?: NonNullable<Json>;
+        };
+        Update: {
+          cambio_en?: string;
+          error_codigo?: string | null;
+          estado?: Database['public']['Enums']['estado_incidencia'];
+          estado_envio?: string;
+          id?: string;
+          incidencia_id?: string;
+          intentado_en?: string | null;
+          reportado_por?: string;
+          resultados?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'incidencia_notificaciones_incidencia_id_fkey';
+            columns: ['incidencia_id'];
+            isOneToOne: false;
+            referencedRelation: 'incidencias';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incidencia_notificaciones_reportado_por_fkey';
+            columns: ['reportado_por'];
+            isOneToOne: false;
+            referencedRelation: 'perfiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       incidencias: {
         Row: {
           actualizada_en: string;
