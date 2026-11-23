@@ -1,9 +1,9 @@
 /**
  * Edge Function `validar-pase`: el guardia escanea el QR de un pase y la función responde si la visita
- * puede ingresar (RF18).
+ * puede ingresar y, si puede, marca el pase como usado (RF18, RF19).
  *
- * Qué hace: recibe el código leído del QR (el `id` del pase) y contesta "Pase válido" con el visitante y
- * la unidad, o el motivo del rechazo ("Pase no válido o vencido", "Pase ya usado", "Pase anulado").
+ * Qué hace: recibe el código leído del QR (el `id` del pase), registra el ingreso y contesta "Pase
+ * válido" con el visitante y la unidad, o el motivo del rechazo ("Pase no válido o vencido", "Pase ya usado", "Pase anulado").
  * Cómo funciona: `withSupabase({ auth: 'user' })` (paquete oficial `@supabase/server`) exige un token de
  * usuario válido y entrega el contexto con el cliente del llamador y el cliente administrador
  * (`supabaseAdmin`, con la `service_role` que inyecta Supabase). La lógica vive en `manejador.ts` para
