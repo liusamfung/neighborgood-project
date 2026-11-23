@@ -12,6 +12,7 @@ export default function Encuestas() {
       titulo="Encuestas"
       tipoFijo="encuestas"
       crearHref="/directiva/encuestas/nueva"
+      conCerrarSesion
     />
   );
 }

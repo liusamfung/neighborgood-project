@@ -12,6 +12,7 @@ export default function Avisos() {
       titulo="Avisos publicados"
       tipoFijo="avisos"
       crearHref="/directiva/avisos/nuevo"
+      conCerrarSesion
     />
   );
 }

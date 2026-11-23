@@ -4,6 +4,7 @@
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BotonCerrarSesion } from '@/componentes/BotonCerrarSesion';
 import { Boton } from '@/componentes/formulario/Boton';
 import { useSesion } from '@/contexto/SesionContext';
 import { useListaAlertas } from '@/hooks/useAlertas';
@@ -16,6 +17,7 @@ type Props = {
    * true cuando la lista es una pestaña de la barra inferior (la del guardia), que no tiene cabecera
    * propia: entonces se deja el alto de la barra de estado (hora, batería, isla dinámica) para que el
    * título no quede debajo de ella. Las pantallas apiladas (directiva y residente) ya traen cabecera.
+   * Como esa pestaña tampoco tiene otro modo de salir de la cuenta, también muestra "Cerrar sesión".
    */
   esPestana?: boolean;
 };
@@ -37,9 +39,19 @@ export function ListaAtencion({ esPestana = false }: Props) {
         backgroundColor: colores.fondo,
       }}
     >
-      <Text style={tipografia.titulo}>
-        {perfil?.rol === 'residente' ? 'Mis alertas y respuestas' : 'Atención de alertas'}
-      </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
+        <Text style={[tipografia.titulo, { flexShrink: 1 }]}>
+          {perfil?.rol === 'residente' ? 'Mis alertas y respuestas' : 'Atención de alertas'}
+        </Text>
+        {esPestana ? <BotonCerrarSesion /> : null}
+      </View>
       {consulta.isPending ? <ActivityIndicator /> : null}
       {consulta.isError ? (
         <Text accessibilityRole="alert">No pudimos actualizar las alertas.</Text>

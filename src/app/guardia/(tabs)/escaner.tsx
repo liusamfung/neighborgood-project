@@ -11,6 +11,8 @@
  * la pantalla solo manda el texto leído. La cámara lee el mismo QR muchas veces por segundo: un candado
  * (`ocupado`) deja pasar solo la primera lectura hasta que el guardia toca "Escanear otro pase". Al llegar
  * el resultado el teléfono vibra distinto si es válido o rechazado, para que el guardia lo sienta sin leer.
+ * Como la pantalla no tiene cabecera propia, deja el alto de la barra de estado (hora, batería, isla
+ * dinámica) y muestra "Cerrar sesión" junto al título: es la forma que tiene el guardia de salir de su cuenta.
  * Se usa con: la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña.
  * Depende de: `expo-camera` (permiso y lector de QR), `expo-haptics`, `src/hooks/useValidarPase.ts`,
  * `ResultadoEscaneo`, `Boton`, `CampoTexto`, el tema y la ruta `src/app/guardia/visitas.tsx`.
@@ -28,7 +30,9 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BotonCerrarSesion } from '@/componentes/BotonCerrarSesion';
 import { Boton } from '@/componentes/formulario/Boton';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { ResultadoEscaneo, type Resultado } from '@/componentes/visitas/ResultadoEscaneo';
@@ -38,6 +42,8 @@ import { colores, espacios, radios, tipografia } from '@/tema';
 /** P11 · Escáner QR del guardia. */
 export default function Escaner() {
   const router = useRouter();
+  // Alto de la barra de estado, para que el título no quede debajo de la hora y la isla dinámica.
+  const { top } = useSafeAreaInsets();
   const [permiso, pedirPermiso] = useCameraPermissions();
   const validar = useValidarPase();
   const [resultado, setResultado] = useState<Resultado | null>(null);
@@ -127,8 +133,14 @@ export default function Escaner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={estilos.pantalla}
     >
-      <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <Text style={estilos.titulo}>Escáner de visitas</Text>
+      <ScrollView
+        contentContainerStyle={[estilos.contenido, { paddingTop: top + espacios.margenLateral }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={estilos.encabezado}>
+          <Text style={[estilos.titulo, estilos.tituloEncabezado]}>Escáner de visitas</Text>
+          <BotonCerrarSesion />
+        </View>
 
         {resultado ? (
           <ResultadoEscaneo resultado={resultado} alEscanearOtro={escanearOtro} />
@@ -174,6 +186,14 @@ const estilos = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
   contenido: { padding: espacios.margenLateral, gap: 16 },
   titulo: { ...tipografia.titulo, color: colores.texto },
+  // Fila del título con "Cerrar sesión" a la derecha; el título puede encogerse si el texto es grande.
+  encabezado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  tituloEncabezado: { flexShrink: 1 },
   subtitulo: { ...tipografia.subtitulo, color: colores.texto },
   texto: { ...tipografia.cuerpo, color: colores.texto },
   // Recuadro oscuro de la cámara; `overflow` recorta la imagen a las esquinas redondeadas.
