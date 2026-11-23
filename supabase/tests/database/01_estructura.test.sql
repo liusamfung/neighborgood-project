@@ -26,6 +26,8 @@ select has_function('public', 'crear_encuesta',
 select has_function('public', 'crear_aviso',
   array['text', 'text', 'uuid', 'timestamp with time zone', 'timestamp with time zone', 'uuid[]', 'text'],
   'Existe la función crear_aviso');
+select has_function('public', 'crear_incidencia', array['uuid', 'text', 'text', 'text[]'],
+  'Existe la función crear_incidencia');
 
 select is((select count(*)::int from storage.buckets where id in ('avisos', 'incidencias') and not public), 2,
   'Los buckets avisos e incidencias existen y son privados');
