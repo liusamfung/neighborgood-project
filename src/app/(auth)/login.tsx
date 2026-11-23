@@ -4,19 +4,28 @@
  * Qué hace: pide correo y contraseña, valida que no estén vacíos y llama a `iniciarSesion`. Muestra los
  * errores en español y, si la sesión se abrió pero el usuario no tiene perfil activo, el motivo que deja
  * el contexto (`rechazo`). Si todo sale bien, el contexto carga el perfil y la navegación abre la
- * pantalla de su rol (RF2, RF3, RF6). El registro (RF1) es otra pantalla.
+ * pantalla de su rol (RF2, RF3, RF6). El registro (RF1) es otra pantalla, y su enlace "Crear cuenta"
+ * mide al menos 44 px de alto (RNF8).
  * Se usa con: `src/repositorios/sesion.ts`, `src/contexto/SesionContext.tsx`, los componentes
  * `Boton` y `CampoTexto` y el tema (`src/tema`).
  */
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Boton } from '@/componentes/formulario/Boton';
 import { CampoTexto } from '@/componentes/formulario/CampoTexto';
 import { useSesion } from '@/contexto/SesionContext';
 import { iniciarSesion, mensajeDeError } from '@/repositorios/sesion';
-import { colores, espacios, tipografia } from '@/tema';
+import { colores, espacios, tamanos, tipografia } from '@/tema';
 
 /** P1 · Inicio de sesión con correo y contraseña (RF2). El registro (RF1) es otra pantalla. */
 export default function Login() {
@@ -98,12 +107,16 @@ export default function Login() {
         </View>
 
         <View style={estilos.pie}>
-          <Text style={estilos.texto}>
-            ¿Primera vez?{' '}
-            <Link href="/registro" style={estilos.enlace}>
-              Crear cuenta
+          {/* "Crear cuenta" es un botón de texto de al menos 44 px de alto (RNF8): dentro de un párrafo
+              su área táctil sería solo la altura de la letra. */}
+          <View style={estilos.filaRegistro}>
+            <Text style={estilos.texto}>¿Primera vez?</Text>
+            <Link href="/registro" asChild>
+              <Pressable accessibilityRole="link" style={estilos.areaEnlace}>
+                <Text style={estilos.enlace}>Crear cuenta</Text>
+              </Pressable>
             </Link>
-          </Text>
+          </View>
           <Text style={estilos.nota}>
             Solo pueden registrarse los correos habilitados por la directiva de tu condominio.
           </Text>
@@ -130,6 +143,8 @@ const estilos = StyleSheet.create({
   error: { ...tipografia.cuerpo, color: colores.peligroTexto },
   pie: { alignItems: 'center', gap: 8 },
   texto: { ...tipografia.cuerpo, color: colores.texto },
+  filaRegistro: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  areaEnlace: { minHeight: tamanos.areaTactilMinima, justifyContent: 'center', paddingHorizontal: 4 },
   enlace: { ...tipografia.subtitulo, color: colores.principal },
   nota: { ...tipografia.cuerpo, textAlign: 'center', color: colores.textoSecundario },
 });

@@ -12,13 +12,16 @@ export default function ResidenteLayout() {
   return (
     <Stack screenOptions={opcionesPila}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="alerta/tipo" options={{ title: 'Tipo de alerta' }} />
-      <Stack.Screen
-        name="alerta/enviada"
-        options={{ title: 'Alerta enviada', headerBackVisible: false }}
-      />
+      <Stack.Screen name="alerta/tipo" options={{ title: 'Enviar alerta' }} />
+      {/* Sin cabecera ni gesto de volver: desde "Alerta enviada" no se puede regresar a confirmar otra vez. */}
+      <Stack.Screen name="alerta/enviada" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="encuesta/[id]" options={{ title: 'Encuesta' }} />
+      <Stack.Screen name="historial" options={{ title: 'Historial' }} />
+      <Stack.Screen name="resultados/[id]" options={{ title: 'Resultados' }} />
+      <Stack.Screen name="resultados/index" options={{ title: 'Resultados de encuestas' }} />
       <Stack.Screen name="incidencias/nueva" options={{ title: 'Reportar incidencia' }} />
+      <Stack.Screen name="alerta/historial" options={{ title: 'Mis alertas' }} />
+      <Stack.Screen name="alerta/estado/[id]" options={{ title: 'Estado de alerta' }} />
     </Stack>
   );
 }

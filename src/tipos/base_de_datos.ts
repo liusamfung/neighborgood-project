@@ -862,6 +862,7 @@ export type Database = {
       };
     };
     Functions: {
+      correo_habilitado: { Args: { p_correo: string }; Returns: boolean };
       crear_aviso: {
         Args: {
           p_categoria_id: string;
@@ -888,7 +889,12 @@ export type Database = {
         };
         Returns: string;
       };
+      crear_incidencia: {
+        Args: { p_descripcion: string; p_fotos: string[]; p_id: string; p_ubicacion: string };
+        Returns: string;
+      };
       emitir_voto: { Args: { p_encuesta_id: string; p_opciones: Json }; Returns: string };
+      latido: { Args: Record<PropertyKey, never>; Returns: number };
       resultados_encuesta: {
         Args: { p_encuesta_id: string };
         Returns: {

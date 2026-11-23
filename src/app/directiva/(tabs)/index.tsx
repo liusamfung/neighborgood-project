@@ -1,36 +1,53 @@
 /**
  * Ruta `/directiva` (rol Directiva): pantalla P12 · Panel del mockup.
- * RF31: muestra GraficaIncidencias con hook/repositorio/vista SQL. RF28 conserva su alcance.
- * El contenido desplazable permite consultar doce meses con letra grande. Conserva la salida de sesión.
+ *
+ * Qué hace: muestra el saludo, dos accesos y la gráfica mensual de incidencias (RF31). Los accesos son
+ * "Atención de alertas" (`/directiva/alertas`, RF27) y "Residentes (alta y baja)" (`/directiva/residentes`,
+ * RF5); ninguna de las dos pantallas tiene pestaña propia. Al final está "Cerrar sesión" con confirmación.
+ * Cómo funciona: el contenido se desplaza para poder leer la gráfica de seis o doce meses con letra grande.
+ * Deja el alto de la barra de estado (hora, batería, isla dinámica) para que el primer enlace no quede
+ * debajo de ella, donde no se veía ni se podía tocar.
+ * Se usa con: la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña.
+ * Depende de: `src/componentes/incidencias/GraficaIncidencias.tsx` (RF31), `BotonCerrarSesion` y `useSesion`.
  */
-import { useState } from 'react';
-import { ScrollView, Text } from 'react-native';
-import { Boton } from '@/componentes/formulario/Boton';
+import { Link } from 'expo-router';
+import { ScrollView, StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { BotonCerrarSesion } from '@/componentes/BotonCerrarSesion';
 import { GraficaIncidencias } from '@/componentes/incidencias/GraficaIncidencias';
 import { useSesion } from '@/contexto/SesionContext';
-import { colores, tipografia } from '@/tema';
+import { colores, tamanos, tipografia } from '@/tema';
 
-/** Panel del rol directiva: lectura del reporte y controles de sesión. */
+/** P12 · Panel de la directiva: accesos a alertas y residentes, y la gráfica mensual de incidencias. */
 export default function Panel() {
-  const { perfil, cerrarSesion } = useSesion();
-  const [error, setError] = useState('');
+  const { perfil } = useSesion();
+  const { top } = useSafeAreaInsets();
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: colores.fondo }}
-      contentContainerStyle={{ padding: 24, gap: 24, paddingBottom: 48 }}
+      style={estilos.pantalla}
+      contentContainerStyle={[estilos.contenido, { paddingTop: top + 12 }]}
     >
       <Text style={tipografia.subtitulo}>Hola, {perfil?.nombre}</Text>
+      <Link href="/directiva/alertas" style={estilos.enlace}>
+        Atención de alertas
+      </Link>
+      <Link href="/directiva/residentes" style={estilos.enlace}>
+        Residentes (alta y baja)
+      </Link>
       <GraficaIncidencias />
-      {error ? <Text accessibilityRole="alert">{error}</Text> : null}
-      <Boton
-        texto="Cerrar sesión"
-        variante="secundario"
-        alPresionar={() => {
-          void cerrarSesion().catch(() =>
-            setError('No pudimos cerrar la sesión. Intenta nuevamente.'),
-          );
-        }}
-      />
+      <BotonCerrarSesion />
     </ScrollView>
   );
 }
+
+// Los enlaces usan el color y la tipografía del tema y miden al menos el área táctil mínima (RNF8).
+const estilos = StyleSheet.create({
+  pantalla: { flex: 1, backgroundColor: colores.fondo },
+  contenido: { paddingHorizontal: 24, gap: 16, paddingBottom: 48 },
+  enlace: {
+    ...tipografia.subtitulo,
+    minHeight: tamanos.areaTactilMinima,
+    color: colores.principal,
+  },
+});
