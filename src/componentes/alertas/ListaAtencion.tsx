@@ -1,5 +1,6 @@
 /** RF27: acceso paginado a las alertas reales, compartido por personal y emisor.
  * Usa useListaAlertas bajo RLS y navega a la ruta protegida correspondiente a cada rol.
+ * Al personal le ofrece además "Ver historial" (RF28, `HistorialAlertas`), con filtros por tipo y estado.
  */
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
@@ -55,6 +56,19 @@ export function ListaAtencion({ esPestana = false }: Props) {
       {consulta.isPending ? <ActivityIndicator /> : null}
       {consulta.isError ? (
         <Text accessibilityRole="alert">No pudimos actualizar las alertas.</Text>
+      ) : null}
+      {perfil?.rol === 'guardia' || perfil?.rol === 'directiva' ? (
+        <Boton
+          texto="Ver historial"
+          variante="secundario"
+          alPresionar={() =>
+            router.push(
+              perfil.rol === 'guardia'
+                ? '/guardia/historial-alertas'
+                : '/directiva/historial-alertas',
+            )
+          }
+        />
       ) : null}
       <Boton
         texto={consulta.isError ? 'Reintentar' : 'Actualizar'}
