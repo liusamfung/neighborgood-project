@@ -67,7 +67,10 @@ test('la hora usa Lima, dice "Hoy" solo si es el mismo día y no se rompe con fe
 test('los errores se explican en español y no filtran detalles de SQL', () => {
   assert.match(mensajeErrorAlerta({ code: '42501', message: 'new row violates RLS' }), /permiso/);
   assert.match(mensajeErrorAlerta({ code: 'PGRST301' }), /permiso/);
-  assert.match(mensajeErrorAlerta({ code: '23503', message: 'unidad' }), /unidad no está registrada/);
+  assert.match(
+    mensajeErrorAlerta({ code: '23503', message: 'unidad' }),
+    /unidad no está registrada/,
+  );
   const generico = mensajeErrorAlerta(new TypeError('Network request failed'));
   assert.match(generico, /conexión/);
   assert.match(generico, /guardia/);
