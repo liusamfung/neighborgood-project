@@ -122,3 +122,7 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 ## Preparación RF30 — 22/11/2026 (pendiente de integración)
 
 El PR de RF30 propone una cola técnica `incidencia_notificaciones`, privada y con RLS sin acceso del cliente. El trigger de cambio de estado inserta el evento en la misma transacción. Un Database Webhook de INSERT en esa cola llama a la Edge Function `notificar-incidencia`, autenticada con un secreto de servidor. La reserva del evento impide reenviar push por duplicar el webhook. La app abierta usa Realtime y la cerrada depende de Expo Push/FCM/APNs (B5/#7). Se mantiene el mismo backend y separación de capas. No se ha aplicado esta migración ni desplegado la función: requiere revisión de Liu y aceptación conjunta. Ver `docs/RF30.md` para despliegue, recibos y recuperación de resultados inciertos. Los tipos generados y el diccionario XLSX se deben regenerar/reconciliar después de aprobar y aplicar el esquema, sin editarlos a mano.
+
+## Preparación RF31 — 22/11/2026 (pendiente de integración)
+
+El PR RF31 usa barras con componentes nativos View/Text y texto accesible para la gráfica mensual, sin librería adicional. Consulta la vista existente que agrupa por mes de Lima y respeta RLS. La elección resuelve la librería gráfica pendiente de RF31 sin modificar dependencias. Falta aceptación conjunta; ver `docs/RF31.md`. Conservar el enlace de atención de alertas de RF27 al resolver los cambios coincidentes del Panel.
