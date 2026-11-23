@@ -121,6 +121,11 @@ export default function Avisos() {
     <View style={[estilos.pantalla, { paddingTop: top + espacios.margenLateral }]}>
       <Text style={estilos.encabezado}>Avisos</Text>
       <Boton
+        texto="Ver historial"
+        variante="secundario"
+        alPresionar={() => router.push('/residente/historial')}
+      />
+      <Boton
         texto="Resultados de encuestas"
         variante="secundario"
         alPresionar={() => router.push('/residente/resultados')}
