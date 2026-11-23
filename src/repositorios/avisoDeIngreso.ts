@@ -26,8 +26,13 @@ export function escucharIngresos(
   residenteId: string,
   alIngresar: (ingreso: Ingreso) => void,
 ): () => void {
+  // Nombre único por suscripción: `supabase.channel(nombre)` devuelve el canal que ya exista con ese
+  // nombre, y agregarle un `on()` a un canal ya suscrito lanza "cannot add postgres_changes callbacks
+  // after subscribe()". Quitar un canal es asíncrono, así que si el efecto se vuelve a ejecutar (otra
+  // instancia de las pestañas, un refresco en desarrollo) el canal viejo aún existe. Es la misma solución
+  // que usa `resultadosEncuesta.ts` (RF12).
   const canal = supabase
-    .channel(`ingresos-${residenteId}`)
+    .channel(`ingresos-${residenteId}-${Math.random().toString(36).slice(2)}`)
     .on(
       'postgres_changes',
       {

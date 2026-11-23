@@ -16,6 +16,12 @@ RF9 incorpora la votación por unidad en P5 con la RPC existente, validación de
 confirmación y caché por sesión. La guía y los límites de validación de esta implementación
 están en [RF9.md](RF9.md).
 
+RF23 incorpora el botón de pánico: la pantalla Inicio (P2) con la tarjeta roja, la pantalla para elegir
+el tipo de alerta y confirmar (P3, con Médica marcada como en el mockup) y la pantalla Alerta enviada
+(P3b, con la vibración y el sonido de RF24). La alerta se crea con un insert directo que permite RLS (sin
+Edge Function): la app solo envía emisor, unidad y tipo, y los triggers de la base fijan sector, estado
+`activa` y hora. Avisar a la guardia y a los vecinos es RF25 (issue #35), que sigue pendiente.
+
 ## 2. Roles
 
 | Rol | Qué hace |
