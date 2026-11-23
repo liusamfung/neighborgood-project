@@ -19,6 +19,8 @@ export default function ResidenteLayout() {
       />
       <Stack.Screen name="encuesta/[id]" options={{ title: 'Encuesta' }} />
       <Stack.Screen name="historial" options={{ title: 'Historial' }} />
+      <Stack.Screen name="resultados/[id]" options={{ title: 'Resultados' }} />
+      <Stack.Screen name="resultados/index" options={{ title: 'Resultados de encuestas' }} />
       <Stack.Screen name="incidencias/nueva" options={{ title: 'Reportar incidencia' }} />
     </Stack>
   );
