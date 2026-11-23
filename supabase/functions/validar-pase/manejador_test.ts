@@ -1,8 +1,9 @@
 /**
- * Pruebas del manejador de `validar-pase` (RF18, RF19, RF20): el pase válido que queda usado, la salida de
- * la visita y cada motivo de rechazo. Usan un contexto falso, sin red ni base de datos: el perfil del guardia sale de
- * `_compartido/contexto_falso.ts` y el pase leído y la escritura, del cliente administrador falso de este
- * archivo. Se ejecutan con `npm run fn:probar`.
+ * Pruebas del manejador de `validar-pase` (RF18 a RF21): el pase válido que queda usado, el aviso al
+ * residente, la salida de la visita y cada motivo de rechazo. Usan un contexto falso, sin red ni base de
+ * datos: el perfil del guardia sale de `_compartido/contexto_falso.ts`; el pase leído, la escritura y los
+ * tokens de `dispositivos`, del cliente administrador falso de este archivo; y Expo Push, de un `fetch`
+ * falso. Se ejecutan con `npm run fn:probar`.
  */
 import { assertEquals } from '@std/assert'
 import { crearContextoFalso, perfilDeEjemplo } from '../_compartido/contexto_falso.ts'
@@ -18,6 +19,7 @@ const ahora = new Date('2026-11-10T20:00:00Z')
 function paseDeEjemplo(cambios: Partial<PaseLeido> = {}): PaseLeido {
   return {
     id: CODIGO,
+    residente_id: '90000000-0000-0000-0000-000000000011',
     nombre_visitante: 'Carlos Pérez',
     fecha_visita: '2026-11-10',
     hora_estimada: '18:30:00',
@@ -42,6 +44,10 @@ function contexto(
     escritura?: { data: { id: string }[] | null; error: { message: string } | null }
     rol?: 'guardia' | 'residente' | 'directiva'
     escrituras?: Escritura[]
+    /** Tokens de Expo que tiene el residente en `dispositivos` (RF21); por defecto ninguno. */
+    tokens?: string[]
+    /** Recoge el `usuario_id` por el que se buscaron los dispositivos. */
+    buscados?: unknown[]
   } = {},
 ): ContextoConAdmin {
   const lectura = opciones.lectura ?? { data: paseDeEjemplo(), error: null }
@@ -71,7 +77,17 @@ function contexto(
     usuario: guardia,
     respuesta: { data: perfilDeEjemplo({ id: guardia.id, rol: opciones.rol ?? 'guardia' }), error: null },
   })
-  return { ...base, supabaseAdmin: { from: () => consulta } } as unknown as ContextoConAdmin
+  // Imita `from('dispositivos').select().eq()` del aviso de ingreso (RF21).
+  const dispositivos = {
+    select: () => dispositivos,
+    eq: (_columna: string, valor: unknown) => {
+      opciones.buscados?.push(valor)
+      const data = (opciones.tokens ?? []).map((t) => ({ expo_push_token: t }))
+      return Promise.resolve({ data, error: null })
+    },
+  }
+  const supabaseAdmin = { from: (tabla: string) => (tabla === 'dispositivos' ? dispositivos : consulta) }
+  return { ...base, supabaseAdmin } as unknown as ContextoConAdmin
 }
 
 /** Petición con el cuerpo JSON indicado; por defecto, el código del pase de ejemplo. */
@@ -261,4 +277,49 @@ Deno.test('una acción desconocida responde 400', async () => {
 Deno.test('decidirSalida: un código que no existe es "Pase no válido o vencido"', () => {
   const decision = decidirSalida(null)
   assertEquals(decision.ok, false)
+})
+
+// ───────────── RF21: aviso al residente ─────────────
+
+/** `fetch` falso de Expo Push: guarda el cuerpo de cada envío y contesta con el estado indicado. */
+function expoFalso(envios: unknown[], estado = 200): typeof fetch {
+  return ((_url: string, init?: RequestInit) => {
+    envios.push(JSON.parse(String(init?.body)))
+    return Promise.resolve(new Response('{}', { status: estado }))
+  }) as typeof fetch
+}
+
+Deno.test('RF21: al registrar el ingreso avisa por push al residente que creó el pase', async () => {
+  const envios: unknown[] = []
+  const buscados: unknown[] = []
+  const ctx = contexto({ tokens: ['ExponentPushToken[rosa]'], buscados })
+  const respuesta = await manejar(peticion(), ctx, ahora, expoFalso(envios))
+  assertEquals(respuesta.status, 200)
+  assertEquals(buscados, ['90000000-0000-0000-0000-000000000011'])
+  assertEquals(envios, [[{
+    to: 'ExponentPushToken[rosa]',
+    title: 'Tu visita ingresó',
+    body: 'Carlos Pérez acaba de ingresar al condominio.',
+    data: { tipo: 'ingreso_visita', pase_id: CODIGO },
+    sound: 'default',
+  }]])
+})
+
+Deno.test('RF21: si Expo falla, el ingreso igual queda registrado', async () => {
+  const ctx = contexto({ tokens: ['ExponentPushToken[rosa]'] })
+  const respuesta = await manejar(peticion(), ctx, ahora, expoFalso([], 500))
+  assertEquals(respuesta.status, 200)
+  assertEquals((await respuesta.json()).resultado, 'ingreso_registrado')
+})
+
+Deno.test('RF21: un pase rechazado no avisa a nadie', async () => {
+  const envios: unknown[] = []
+  const lectura = { data: paseDeEjemplo({ estado: 'anulado' }), error: null }
+  await manejar(
+    peticion(),
+    contexto({ lectura, tokens: ['ExponentPushToken[rosa]'] }),
+    ahora,
+    expoFalso(envios),
+  )
+  assertEquals(envios, [])
 })

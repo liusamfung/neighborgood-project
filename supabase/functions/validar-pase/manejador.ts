@@ -1,6 +1,6 @@
 /**
- * Lógica de la función `validar-pase` (RF18, RF19, RF20): decide si la visita del QR escaneado puede
- * ingresar y, si puede, marca el pase como usado; también registra la salida de la visita.
+ * Lógica de la función `validar-pase` (RF18 a RF21): decide si la visita del QR escaneado puede ingresar y,
+ * si puede, marca el pase como usado y avisa al residente; también registra la salida de la visita.
  *
  * Acciones (campo `accion` del cuerpo; por defecto `ingreso`):
  * - `ingreso`: lo que sigue en este comentario.
@@ -19,16 +19,22 @@
  * un pase de ayer o anulado se vería igual que un código inexistente) y la app no puede cambiar el estado.
  * La escritura lleva `estado = 'vigente'` en el `where`: si dos guardias escanean el mismo QR a la vez,
  * solo el primero lo marca y el segundo recibe "Pase ya usado".
+ * Aviso al residente (RF21): con el ingreso registrado, manda un push a los teléfonos del residente que
+ * creó el pase (tabla `dispositivos`). Es de mejor esfuerzo: si no tiene teléfonos registrados o Expo
+ * falla, el ingreso sigue valiendo. Con la app abierta, el residente se entera además por Realtime.
  * Se usa con: `index.ts` (la conecta a `withSupabase`) y `manejador_test.ts`. Depende de
- * `_compartido/perfil.ts` (`exigirPerfil`), `_compartido/fechas.ts` y `_compartido/respuestas.ts`.
+ * `_compartido/perfil.ts` (`exigirPerfil`), `_compartido/fechas.ts`, `_compartido/respuestas.ts` y
+ * `_compartido/push.ts`.
  */
 import { hoyLima } from '../_compartido/fechas.ts'
 import { type ContextoConAdmin, exigirPerfil } from '../_compartido/perfil.ts'
+import { enviarPush } from '../_compartido/push.ts'
 import { respuestaError } from '../_compartido/respuestas.ts'
 
 /** Columnas de `pases_visita` que lee la función, con la unidad, su sector y el residente que lo creó. */
 export type PaseLeido = {
   id: string
+  residente_id: string // FK → perfiles.id · a quién se le avisa del ingreso (RF21)
   nombre_visitante: string
   fecha_visita: string
   hora_estimada: string | null
@@ -66,7 +72,7 @@ const FORMATO_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 // Columnas que se leen. `pases_visita` apunta dos veces a `perfiles` (residente y guardia), por eso se
 // nombra la llave del residente.
 export const COLUMNAS_PASE =
-  'id, nombre_visitante, fecha_visita, hora_estimada, estado, unidades(codigo, sectores(nombre)), ' +
+  'id, residente_id, nombre_visitante, fecha_visita, hora_estimada, estado, unidades(codigo, sectores(nombre)), ' +
   'residente:perfiles!pases_visita_residente_id_fkey(nombre, apellido)'
 
 /** Rechazo de un código inexistente o de un pase que no es de hoy (texto del criterio de RF18). */
@@ -153,20 +159,48 @@ export function resumir(pase: PaseLeido, ingresoEn: string): PaseValidado {
 }
 
 /**
+ * Avisa al residente que su visita ingresó (RF21): busca sus tokens en `dispositivos` y manda el push.
+ * Nunca lanza error: si la lectura o el envío fallan, solo queda en el registro de la función.
+ *
+ * @param ctx contexto con el cliente administrador (los tokens de otro usuario no se ven con RLS).
+ * @param pase el pase que acaba de ingresar.
+ * @param pedir función `fetch` para Expo Push; las pruebas pasan una falsa.
+ */
+async function notificarIngreso(ctx: ContextoConAdmin, pase: PaseLeido, pedir: typeof fetch): Promise<void> {
+  try {
+    const { data, error } = await ctx.supabaseAdmin
+      .from('dispositivos')
+      .select('expo_push_token')
+      .eq('usuario_id', pase.residente_id)
+    if (error) return console.error('No se pudieron leer los dispositivos', error.message)
+    const tokens = (data ?? []).map((d: { expo_push_token: string }) => d.expo_push_token)
+    await enviarPush(tokens, {
+      titulo: 'Tu visita ingresó',
+      cuerpo: `${pase.nombre_visitante} acaba de ingresar al condominio.`,
+      datos: { tipo: 'ingreso_visita', pase_id: pase.id },
+    }, pedir)
+  } catch (error) {
+    console.error('No se pudo avisar el ingreso', (error as Error).message)
+  }
+}
+
+/**
  * Atiende una llamada a `validar-pase`.
  *
  * @param req petición HTTP con el cuerpo JSON `{ codigo, accion? }`: el texto que leyó la cámara (o el
  * `id` del pase, para la salida) y `ingreso` (por defecto) o `salida`.
  * @param ctx contexto de la función con el cliente del llamador, su identidad y el cliente administrador.
  * @param ahora momento de referencia: qué día es hoy en Lima y la hora del ingreso; se pasa en las pruebas.
+ * @param pedir función `fetch` para el push del ingreso (RF21); las pruebas pasan una falsa.
  * @returns 200 con `{ resultado: 'ingreso_registrado', pase }` o `{ resultado: 'salida_registrada', pase }`,
- * o un error `{ codigo, mensaje }`: 401, 403 (no es
- * guardia), 404 (no válido o vencido), 409 (usado o anulado) o 500.
+ * o un error `{ codigo, mensaje }`: 400, 401, 403 (no es guardia), 404 (no válido o vencido), 409 (usado,
+ * anulado o salida repetida) o 500.
  */
 export async function manejar(
   req: Request,
   ctx: ContextoConAdmin,
   ahora: Date = new Date(),
+  pedir: typeof fetch = fetch,
 ): Promise<Response> {
   // 1. Solo un guardia activo valida pases (residente y directiva reciben 403).
   const resultado = await exigirPerfil(ctx, { roles: ['guardia'] })
@@ -217,6 +251,8 @@ export async function manejar(
   // Ninguna fila: otro escaneo lo marcó entre la lectura y esta escritura (o el residente lo anuló).
   if (!filas || filas.length === 0) return respuestaError(409, 'pase_usado', 'Pase ya usado')
 
+  // 6. Avisar al residente (RF21). Se espera el envío para que la función no termine antes de mandarlo.
+  await notificarIngreso(ctx, paseValido, pedir)
   return Response.json({ resultado: 'ingreso_registrado', pase: resumir(paseValido, ingresoEn) })
 }
 
