@@ -4,6 +4,8 @@
  * Qué hace: saluda al residente por su nombre, muestra su ubicación (sector y unidad, por ejemplo
  * "Torre A · 302") y pone a la vista la tarjeta roja del botón de pánico. Tocar "Enviar alerta de
  * emergencia" abre P3 (`/residente/alerta/tipo`): es el primer toque de los tres que pide RNF4.
+ * Debajo de la tarjeta hay un enlace a "Mis alertas y respuestas" (`/residente/alerta/historial`, RF27),
+ * para ver el estado de las alertas que envió y cómo respondió el personal.
  * Alcance: por decisión de Liu, esta versión solo lleva saludo, unidad y botón de pánico; las tarjetas del
  * mockup con el último aviso, la encuesta abierta y el pase de hoy no son parte de ningún requisito y quedan
  * para después.
@@ -11,14 +13,14 @@
  * Depende de: `useSesion` (nombre y unidad del perfil), `useUbicacion` (`src/hooks/useEmitirAlerta.ts`),
  * `TarjetaPanico` y `textoUbicacion` (`src/utilidades/alertaEmergencia.ts`).
  */
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TarjetaPanico } from '@/componentes/alertas/TarjetaPanico';
 import { useSesion } from '@/contexto/SesionContext';
 import { useUbicacion } from '@/hooks/useEmitirAlerta';
-import { colores, espacios, tipografia } from '@/tema';
+import { colores, espacios, tamanos, tipografia } from '@/tema';
 import { textoUbicacion } from '@/utilidades/alertaEmergencia';
 
 /** P2 · Inicio del residente: saludo, ubicación y botón de pánico. */
@@ -37,6 +39,9 @@ export default function Inicio() {
       <View style={estilos.panico}>
         <TarjetaPanico alPresionar={() => router.push('/residente/alerta/tipo')} />
       </View>
+      <Link href="/residente/alerta/historial" style={estilos.enlace}>
+        Mis alertas y respuestas
+      </Link>
     </View>
   );
 }
@@ -47,4 +52,13 @@ const estilos = StyleSheet.create({
   saludo: { ...tipografia.titulo, fontSize: 28, color: colores.texto },
   unidad: { ...tipografia.subtitulo, color: colores.textoSecundario },
   panico: { marginTop: 20 },
+  // Enlace de texto centrado, con el alto mínimo de un área táctil (RNF8).
+  enlace: {
+    ...tipografia.subtitulo,
+    marginTop: 12,
+    paddingVertical: 14,
+    minHeight: tamanos.areaTactilMinima,
+    textAlign: 'center',
+    color: colores.principal,
+  },
 });
