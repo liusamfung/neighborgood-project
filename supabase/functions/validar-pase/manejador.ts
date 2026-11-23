@@ -1,15 +1,19 @@
 /**
- * Lógica de la función `validar-pase` (RF18): decide si la visita del QR escaneado puede ingresar.
+ * Lógica de la función `validar-pase` (RF18, RF19): decide si la visita del QR escaneado puede ingresar
+ * y, si puede, marca el pase como usado.
  *
- * Qué hace: comprueba que quien llama sea un guardia activo, busca el pase por su código y responde
- * "Pase válido" con el visitante, la unidad y el residente que lo autorizó; si no, el motivo:
+ * Qué hace: comprueba que quien llama sea un guardia activo, busca el pase por su código y, si es válido,
+ * lo pasa a `usado` con la hora de ingreso y el guardia (RF19; la base exige los dos para un pase usado).
+ * Responde "Pase válido" con el visitante, la unidad y el residente que lo autorizó; si no, el motivo:
  * - el código no existe, o el pase vigente no es de hoy → "Pase no válido o vencido" (RF18);
  * - el pase ya se usó → "Pase ya usado" (RF19);
  * - el residente lo anuló → "Pase anulado" (RF22).
  * Reglas: el estado "vencido" no se guarda, se calcula aquí: un pase vale solo el día de la visita en
  * `America/Lima` (regla 3 de CLAUDE.md, RNF3). Quien decide qué día es hoy es el servidor (`hoyLima`).
- * Se lee con el cliente administrador porque RLS solo deja al guardia ver los pases de hoy: sin él, un
- * pase de ayer o anulado se vería igual que un código inexistente y no se podría dar el motivo.
+ * Se lee y se escribe con el cliente administrador: RLS solo deja al guardia ver los pases de hoy (sin él,
+ * un pase de ayer o anulado se vería igual que un código inexistente) y la app no puede cambiar el estado.
+ * La escritura lleva `estado = 'vigente'` en el `where`: si dos guardias escanean el mismo QR a la vez,
+ * solo el primero lo marca y el segundo recibe "Pase ya usado".
  * Se usa con: `index.ts` (la conecta a `withSupabase`) y `manejador_test.ts`. Depende de
  * `_compartido/perfil.ts` (`exigirPerfil`), `_compartido/fechas.ts` y `_compartido/respuestas.ts`.
  */
@@ -43,6 +47,8 @@ export type PaseValidado = {
   autorizo: string
   fecha_visita: string
   hora_estimada: string | null
+  /** Hora exacta en que quedó registrado el ingreso (ISO 8601). */
+  ingreso_en: string
 }
 
 // Un código de QR válido es un UUID (lo genera Postgres con gen_random_uuid()); cualquier otro texto ni
@@ -91,8 +97,13 @@ function textoUnidad(pase: PaseLeido): string {
   return sector ? `${sector} · ${pase.unidades.codigo}` : pase.unidades.codigo
 }
 
-/** Convierte el pase leído en lo que ve el guardia. */
-export function resumir(pase: PaseLeido): PaseValidado {
+/**
+ * Convierte el pase leído en lo que ve el guardia.
+ *
+ * @param pase el pase leído de la base.
+ * @param ingresoEn hora del ingreso que se acaba de registrar.
+ */
+export function resumir(pase: PaseLeido, ingresoEn: string): PaseValidado {
   return {
     id: pase.id,
     nombre_visitante: pase.nombre_visitante,
@@ -100,6 +111,7 @@ export function resumir(pase: PaseLeido): PaseValidado {
     autorizo: pase.residente ? `${pase.residente.nombre} ${pase.residente.apellido}`.trim() : '',
     fecha_visita: pase.fecha_visita,
     hora_estimada: pase.hora_estimada,
+    ingreso_en: ingresoEn,
   }
 }
 
@@ -108,8 +120,8 @@ export function resumir(pase: PaseLeido): PaseValidado {
  *
  * @param req petición HTTP con el cuerpo JSON `{ codigo }`: el texto que leyó la cámara.
  * @param ctx contexto de la función con el cliente del llamador, su identidad y el cliente administrador.
- * @param ahora momento de referencia para saber qué día es hoy en Lima; se pasa en las pruebas.
- * @returns 200 con `{ resultado: 'valido', pase }`, o un error `{ codigo, mensaje }`: 401, 403 (no es
+ * @param ahora momento de referencia: qué día es hoy en Lima y la hora del ingreso; se pasa en las pruebas.
+ * @returns 200 con `{ resultado: 'ingreso_registrado', pase }`, o un error `{ codigo, mensaje }`: 401, 403 (no es
  * guardia), 404 (no válido o vencido), 409 (usado o anulado) o 500.
  */
 export async function manejar(
@@ -144,5 +156,22 @@ export async function manejar(
   // 4. Decidir. `decision.ok` garantiza que el pase existe.
   const decision = decidirIngreso(pase, hoyLima(ahora))
   if (!decision.ok) return respuestaError(decision.estado, decision.codigo, decision.mensaje)
-  return Response.json({ resultado: 'valido', pase: resumir(pase as PaseLeido) })
+  const paseValido = pase as PaseLeido
+
+  // 5. Marcar el pase como usado (RF19). El trigger `proteger_pase` impide que vuelva a cambiar de estado.
+  const ingresoEn = ahora.toISOString()
+  const { data: filas, error: errorIngreso } = await ctx.supabaseAdmin
+    .from('pases_visita')
+    .update({ estado: 'usado', ingreso_en: ingresoEn, guardia_id: resultado.perfil.id })
+    .eq('id', paseValido.id)
+    .eq('estado', 'vigente')
+    .select('id')
+  if (errorIngreso) {
+    console.error('No se pudo registrar el ingreso', errorIngreso.message)
+    return respuestaError(500, 'error_interno', 'No pudimos registrar el ingreso. Inténtalo de nuevo.')
+  }
+  // Ninguna fila: otro escaneo lo marcó entre la lectura y esta escritura (o el residente lo anuló).
+  if (!filas || filas.length === 0) return respuestaError(409, 'pase_usado', 'Pase ya usado')
+
+  return Response.json({ resultado: 'ingreso_registrado', pase: resumir(paseValido, ingresoEn) })
 }

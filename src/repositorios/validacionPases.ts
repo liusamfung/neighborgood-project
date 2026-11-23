@@ -1,9 +1,10 @@
 /**
- * Repositorio de la garita: el guardia valida el pase que escaneó (RF18).
+ * Repositorio de la garita: el guardia valida el pase que escaneó y queda registrado el ingreso
+ * (RF18, RF19).
  *
- * Qué hace: manda el código leído del QR a la Edge Function `validar-pase` y devuelve el pase válido. Si
- * la función lo rechaza ("Pase no válido o vencido", "Pase ya usado", "Pase anulado"), lanza un
- * `ErrorFuncion` cuyo `message` es ese motivo, listo para mostrarse. Las pantallas no hablan con Supabase
+ * Qué hace: manda el código leído del QR a la Edge Function `validar-pase`, que marca el pase como usado, y
+ * devuelve el pase con la hora del ingreso. Si la función lo rechaza ("Pase no válido o vencido", "Pase ya
+ * usado", "Pase anulado"), lanza un `ErrorFuncion` cuyo `message` es ese motivo, listo para mostrarse. Las pantallas no hablan con Supabase
  * directamente (RNF7).
  * Cómo funciona: la app solo manda el texto del QR con el JWT del guardia; la función comprueba su rol y
  * decide con la hora de Lima del servidor (el teléfono no decide si un pase está vencido, regla 3).
@@ -17,7 +18,7 @@ import type { PaseValidado, RespuestaValidacion } from '@/tipos/validacionPase';
  * Valida el código de un pase en la garita.
  *
  * @param codigo el texto que leyó la cámara o que escribió el guardia.
- * @returns el pase válido con el visitante, la unidad y quién lo autorizó.
+ * @returns el pase válido con el visitante, la unidad, quién lo autorizó y la hora del ingreso.
  * @throws ErrorFuncion con el motivo del rechazo, o con un mensaje de conexión.
  */
 export async function validarPase(codigo: string): Promise<PaseValidado> {

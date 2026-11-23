@@ -1,8 +1,8 @@
 /**
- * Hook para validar un pase en la garita: la mutación de TanStack Query sobre `validarPase` (RF18).
+ * Hook para validar un pase en la garita: la mutación de TanStack Query sobre `validarPase` (RF18, RF19).
  *
  * Qué hace: expone `mutate` con los estados de envío (`isPending`, `error`). Es una mutación y no una
- * consulta porque cada escaneo es una acción del guardia que no se debe repetir ni guardar en caché.
+ * consulta porque cada escaneo válido cambia el pase a `usado`: no se debe repetir ni guardar en caché.
  * Se usa con: `src/app/guardia/(tabs)/escaner.tsx`.
  * Depende de: `src/repositorios/validacionPases.ts` y de `QueryClientProvider` (`src/app/_layout.tsx`).
  */
