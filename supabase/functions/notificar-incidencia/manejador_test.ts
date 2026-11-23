@@ -85,6 +85,7 @@ async function conExpo(probar: (llamadas: Fila[]) => Promise<void>, fallo = fals
   const original = globalThis.fetch
   const llamadas: Fila[] = []
   globalThis.fetch = async (url, opciones) => {
+    await Promise.resolve() // Conserva un turno asíncrono como la frontera HTTP real.
     if (!String(url).startsWith('https://exp.host/--/api/v2/push/')) throw new Error('Red externa prohibida')
     const cuerpo = JSON.parse(String(opciones?.body))
     llamadas.push({ url: String(url), cuerpo })
