@@ -14,8 +14,8 @@
  * Ningún error de este módulo debe impedir que la alerta se envíe: por eso todo va en try/catch.
  * Es la capa "servicios del dispositivo" de la arquitectura (RNF7): las pantallas lo llaman, pero no
  * habla con Supabase.
- * Se usa con: `src/app/residente/alerta/enviada.tsx` (emisor, P3b). El receptor
- * (`avisarAlertaRecibida`) lo llamará la suscripción de Realtime a `alertas` cuando exista (RF25).
+ * Se usa con: `src/app/residente/alerta/enviada.tsx` (emisor, P3b) y `src/hooks/useAvisoDeAlertas.ts`
+ * (receptor: la suscripción de Realtime a `alertas`, RF25).
  * Depende de: `expo-haptics`, `expo-notifications` y el tipo `tipo_alerta` de la base.
  */
 import * as Haptics from 'expo-haptics';
