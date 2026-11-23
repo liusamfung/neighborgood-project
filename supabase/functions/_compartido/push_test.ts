@@ -53,3 +53,11 @@ Deno.test('si Expo falla o no hay red, devuelve false sin lanzar error', async (
   assertEquals(await enviarPush(['ExponentPushToken[a]'], mensaje, fetchFalso([], 500)), false)
   assertEquals(await enviarPush(['ExponentPushToken[a]'], mensaje, fetchFalso([], 'sin_red')), false)
 })
+
+Deno.test('con canal, va por ese canal de Android y con prioridad alta (RF25)', async () => {
+  const llamadas: Llamada[] = []
+  await enviarPush(['ExponentPushToken[a]'], { ...mensaje, canal: 'alertas' }, fetchFalso(llamadas))
+  const [enviado] = llamadas[0].cuerpo as Record<string, unknown>[]
+  assertEquals(enviado.channelId, 'alertas')
+  assertEquals(enviado.priority, 'high')
+})

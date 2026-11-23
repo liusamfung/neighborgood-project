@@ -6,7 +6,7 @@
  * Cómo funciona: es de "mejor esfuerzo": si no hay tokens o Expo falla, lo registra y devuelve `false`, pero
  * nunca lanza un error, para que una notificación fallida no deshaga la operación principal (por ejemplo,
  * el ingreso de una visita que ya quedó registrado).
- * Se usa con: `validar-pase/manejador.ts` (RF21) y `push_test.ts`. Lo podrán usar las alertas (RF25).
+ * Se usa con: `validar-pase/manejador.ts` (RF21), `notificar-alerta/manejador.ts` (RF25) y `push_test.ts`.
  * Depende de: el secreto opcional `EXPO_ACCESS_TOKEN` (`supabase secrets set EXPO_ACCESS_TOKEN=...`), que
  * solo hace falta si el proyecto de Expo tiene activada la "push security". Nunca se escribe en el repo.
  */
@@ -20,6 +20,12 @@ export type MensajePush = {
   cuerpo: string
   /** Datos extra que recibe la app al tocar la notificación (por ejemplo, el id del pase). */
   datos?: Record<string, unknown>
+  /**
+   * Canal de Android por el que llega (por ejemplo `alertas`, que crea la app con importancia máxima en
+   * `src/servicios/avisoDeAlerta.ts`). Si se indica, el mensaje también va con prioridad alta, para que
+   * Android lo entregue al instante aunque el teléfono esté en reposo (RF25).
+   */
+  canal?: string
 }
 
 /**
@@ -52,6 +58,7 @@ export async function enviarPush(
           body: mensaje.cuerpo,
           data: mensaje.datos ?? {},
           sound: 'default',
+          ...(mensaje.canal ? { channelId: mensaje.canal, priority: 'high' } : {}),
         })),
       ),
     })

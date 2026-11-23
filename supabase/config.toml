@@ -432,6 +432,14 @@ verify_jwt = true
 import_map = "./functions/validar-pase/deno.json"
 entrypoint = "./functions/validar-pase/index.ts"
 
+# RF25: difunde por push la alerta de pánico recién creada a los vecinos del sector, la directiva y los
+# guardias. Lee perfiles y tokens con la service_role (la inyecta Supabase).
+[functions.notificar-alerta]
+enabled = true
+verify_jwt = true
+import_map = "./functions/notificar-alerta/deno.json"
+entrypoint = "./functions/notificar-alerta/index.ts"
+
 # RF15: el residente crea su pase de visita. Inserta con la service_role (la inyecta Supabase).
 [functions.crear-pase]
 enabled = true
