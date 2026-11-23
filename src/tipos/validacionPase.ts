@@ -1,5 +1,6 @@
 /**
- * Tipos de la validación de un pase en la garita (RF18): lo que responde la Edge Function `validar-pase`.
+ * Tipos de la validación de un pase en la garita (RF18, RF19): lo que responde la Edge Function
+ * `validar-pase`.
  *
  * Qué hace: describe el pase válido tal como lo ve el guardia (sin ids internos del residente). No contiene
  * lógica. La forma debe coincidir con `PaseValidado` de `supabase/functions/validar-pase/manejador.ts`.
@@ -20,10 +21,15 @@ export type PaseValidado = {
   fecha_visita: string;
   /** Hora estimada de llegada, `HH:MM:SS`, o `null` si no se indicó. */
   hora_estimada: string | null;
+  /** Hora exacta en que quedó registrado el ingreso (ISO 8601): desde ahí el pase está `usado` (RF19). */
+  ingreso_en: string;
 };
 
-/** Respuesta de `validar-pase` cuando el pase es válido. Los rechazos llegan como `ErrorFuncion`. */
+/**
+ * Respuesta de `validar-pase` cuando el pase es válido: el ingreso ya quedó registrado. Los rechazos
+ * llegan como `ErrorFuncion`.
+ */
 export type RespuestaValidacion = {
-  resultado: 'valido';
+  resultado: 'ingreso_registrado';
   pase: PaseValidado;
 };

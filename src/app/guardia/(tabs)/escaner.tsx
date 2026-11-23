@@ -1,9 +1,10 @@
 /**
- * Ruta `/guardia/escaner` (rol Guardia): pantalla P11 · Escáner QR del mockup (RF18).
+ * Ruta `/guardia/escaner` (rol Guardia): pantalla P11 · Escáner QR del mockup (RF18, RF19).
  *
  * Qué hace: el guardia apunta la cámara al QR del pase que muestra la visita. Si el pase está vigente y es
- * de hoy, ve "Pase válido" con el visitante, la unidad y quién autorizó; si no, el motivo: "Pase no válido
- * o vencido", "Pase ya usado" o "Pase anulado" (RF22). Si el QR no se lee, puede escribir el código a mano.
+ * de hoy, ve "Pase válido" con el visitante, la unidad y quién autorizó, y el pase queda usado con la
+ * hora del ingreso (RF19, diagrama 3.3), por eso no hace falta el botón "Marcar pase como usado" del
+ * mockup. Si no, ve el motivo: "Pase no válido o vencido", "Pase ya usado" o "Pase anulado" (RF22). Si el QR no se lee, puede escribir el código a mano.
  * Cómo funciona: la decisión la toma la Edge Function `validar-pase` (con la hora de Lima del servidor);
  * la pantalla solo manda el texto leído. La cámara lee el mismo QR muchas veces por segundo: un candado
  * (`ocupado`) deja pasar solo la primera lectura hasta que el guardia toca "Escanear otro pase". Al llegar
