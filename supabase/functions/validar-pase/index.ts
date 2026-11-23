@@ -1,7 +1,7 @@
 /**
  * Edge Function `validar-pase`: el guardia escanea el QR de un pase y la función responde si la visita
- * puede ingresar y, si puede, marca el pase como usado (RF18, RF19). También registra la salida de la
- * visita (RF20).
+ * puede ingresar y, si puede, marca el pase como usado y avisa por push al residente (RF18, RF19, RF21).
+ * También registra la salida de la visita (RF20).
  *
  * Qué hace: recibe el código leído del QR (el `id` del pase), registra el ingreso y contesta "Pase
  * válido" con el visitante y la unidad, o el motivo del rechazo ("Pase no válido o vencido", "Pase ya
