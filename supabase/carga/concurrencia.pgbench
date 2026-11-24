@@ -1,0 +1,60 @@
+-- =====================================================================
+-- NeighborGood · RNF5 (escalabilidad) · carga concurrente con pgbench
+--
+-- Qué hace: cada "cliente" de pgbench es un usuario de la app que hace una acción completa. Con muchos
+--   clientes a la vez se ve si las consultas aguantan a mucha gente conectada (el RNF5 pide soportar
+--   unidades concurrentes "sin degradación perceptible"). Es la misma carga que mide `medir.sql`, pero en
+--   paralelo.
+-- Cómo funciona: cada transacción tira un dado (1 a 100) y elige un rol, con esta mezcla:
+--     70 %  residente   abre sus alertas del sector, sus pases y los avisos
+--     20 %  guardia     abre las visitas de hoy y las alertas
+--      8 %  directiva   abre el reporte mensual y el historial de alertas
+--      2 %  residente   emite una alerta (INSERT; se deshace con ROLLBACK para no llenar la base)
+--   El usuario se elige al azar entre los 1 000 residentes de carga (los ids salen de md5, igual que en
+--   `generar_datos.sql`). Como PostgREST, cada transacción cambia al rol `authenticated` y fija el JWT, así que
+--   las políticas RLS cuentan en el tiempo. `quote_literal` + `\gset` dejan el valor ya entre comillas
+--   para que pgbench lo pueda pegar en las consultas (pgbench no entiende `:'variable'`).
+-- Se relaciona con: `concurrencia.sh` (lo ejecuta con N clientes durante T segundos), `generar_datos.sql`
+--   (los datos) y `docs/pruebas/RNF.md` (donde se anotan los resultados).
+-- =====================================================================
+\set s random(1, 10)
+\set n random(1, 50)
+\set k random(1, 2)
+\set dado random(1, 100)
+select quote_literal(md5('carga-res-' || :s || '-' || :n || '-' || :k)::text) as uid,
+       quote_literal(md5('carga-unidad-' || :s || '-' || :n)::text) as unidad,
+       quote_literal(md5('carga-sector-' || :s)::text) as sector \gset
+
+\if :dado <= 70
+-- Residente: sus pantallas de inicio.
+BEGIN;
+SELECT set_config('request.jwt.claims', json_build_object('sub', :uid::text, 'role', 'authenticated')::text, true);
+SET LOCAL ROLE authenticated;
+SELECT a.id, a.tipo, a.estado, a.creada_en, u.codigo, s.nombre FROM public.alertas a JOIN public.unidades u ON u.id = a.unidad_id JOIN public.sectores s ON s.id = a.sector_id ORDER BY a.creada_en DESC, a.id LIMIT 20;
+SELECT p.id, p.nombre_visitante, p.fecha_visita, p.hora_estimada, p.estado FROM public.pases_visita p ORDER BY p.fecha_visita DESC, p.creado_en DESC LIMIT 30;
+SELECT a.id, a.titulo, a.descripcion, a.vigente_desde, c.nombre FROM public.avisos a JOIN public.categorias_aviso c ON c.id = a.categoria_id ORDER BY a.vigente_desde DESC;
+COMMIT;
+\elif :dado <= 90
+-- Guardia: visitas de hoy y alertas.
+BEGIN;
+SELECT set_config('request.jwt.claims', '{"sub":"90000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
+SET LOCAL ROLE authenticated;
+SELECT p.id, p.nombre_visitante, p.hora_estimada, p.estado, p.ingreso_en, u.codigo FROM public.pases_visita p JOIN public.unidades u ON u.id = p.unidad_id WHERE p.estado <> 'anulado' ORDER BY p.ingreso_en DESC NULLS FIRST, p.hora_estimada;
+SELECT a.id, a.tipo, a.estado, a.creada_en FROM public.alertas a ORDER BY a.creada_en DESC, a.id LIMIT 20;
+COMMIT;
+\elif :dado <= 98
+-- Directiva: reporte mensual e historial de alertas.
+BEGIN;
+SELECT set_config('request.jwt.claims', '{"sub":"90000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
+SET LOCAL ROLE authenticated;
+SELECT mes, total, pendientes, en_atencion, resueltas FROM public.reporte_incidencias_mensual WHERE mes >= date_trunc('month', now() AT TIME ZONE 'America/Lima')::date - interval '11 months' ORDER BY mes;
+SELECT a.id, a.tipo, a.estado, a.creada_en, (SELECT jsonb_agg(jsonb_build_object('estado', t.estado, 'creado_en', t.creado_en)) FROM public.alerta_atenciones t WHERE t.alerta_id = a.id) FROM public.alertas a ORDER BY a.creada_en DESC, a.id LIMIT 20;
+COMMIT;
+\else
+-- Residente emite una alerta: se mide con sus triggers y políticas y se deshace.
+BEGIN;
+SELECT set_config('request.jwt.claims', json_build_object('sub', :uid::text, 'role', 'authenticated')::text, true);
+SET LOCAL ROLE authenticated;
+INSERT INTO public.alertas (emisor_id, unidad_id, tipo) VALUES (:uid, :unidad, 'medica');
+ROLLBACK;
+\endif
