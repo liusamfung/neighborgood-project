@@ -3,9 +3,11 @@
  *
  * Qué hace: carga las fuentes Inter, mantiene el splash hasta saber si hay sesión y monta los proveedores
  * (TanStack Query y sesión). `Navegacion` usa `Stack.Protected` para que cada rol vea solo su carpeta de
- * rutas (`residente`, `guardia` o `directiva`) y quien no tiene sesión vea solo `(auth)`.
- * Se usa con: `src/contexto/SesionContext.tsx` (rol y estado de carga), `src/lib/queryClient.ts` y los
- * `_layout.tsx` de cada carpeta de rol. Es una barrera de la app; los permisos reales los impone RLS.
+ * rutas (`residente`, `guardia` o `directiva`) y quien no tiene sesión vea solo `(auth)`. También activa
+ * `useRegistroDeDispositivo`, que registra el teléfono para recibir push mientras haya un usuario activo.
+ * Se usa con: `src/contexto/SesionContext.tsx` (rol y estado de carga), `src/lib/queryClient.ts`,
+ * `src/hooks/useRegistroDeDispositivo.ts` y los `_layout.tsx` de cada carpeta de rol. Es una barrera de la
+ * app; los permisos reales los impone RLS.
  */
 import {
   Inter_400Regular,
@@ -19,6 +21,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { SesionProvider, useSesion } from '@/contexto/SesionContext';
+import { useRegistroDeDispositivo } from '@/hooks/useRegistroDeDispositivo';
 import { queryClient } from '@/lib/queryClient';
 
 // Mantiene visible el splash hasta que `Navegacion` lo oculte, cuando ya se sabe si hay sesión.
@@ -30,6 +33,9 @@ SplashScreen.preventAutoHideAsync();
  */
 function Navegacion() {
   const { rol, cargando } = useSesion();
+  // Registra el teléfono para push mientras haya un usuario activo; va antes del `return` temprano de abajo
+  // porque los hooks no pueden llamarse de forma condicional.
+  useRegistroDeDispositivo();
 
   useEffect(() => {
     if (!cargando) SplashScreen.hideAsync();

@@ -37,6 +37,13 @@
       ],
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#0F766E"
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "NeighborGood usa la cámara para escanear el código QR del pase de visita y para fotografiar incidencias.",

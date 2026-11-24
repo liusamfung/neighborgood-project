@@ -46,3 +46,9 @@ example
 .env
 .env.*
 !.env.example
+
+# Firebase (push en Android, issue #7). `google-services.json` solo lleva identificadores del proyecto,
+# pero se mantiene fuera de git: en EAS viaja como variable de archivo secreta `GOOGLE_SERVICES_JSON`.
+# La clave de cuenta de servicio (`*firebase-adminsdk*.json`) SÍ es un secreto: se sube a EAS, nunca al repo.
+google-services.json
+*firebase-adminsdk*.json

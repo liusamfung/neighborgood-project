@@ -6,12 +6,16 @@
  * la sesión y deja el motivo en `rechazo` para que el login lo muestre (RF1, RF3).
  * Se usa con: `src/app/_layout.tsx` (monta el proveedor y decide la navegación por rol),
  * `src/app/index.tsx`, `src/app/(auth)/login.tsx` y `src/componentes/PantallaMarcador.tsx` (`useSesion`).
- * Depende de: `src/repositorios/sesion.ts`, `src/repositorios/perfiles.ts` y TanStack Query.
+ * Al cerrar sesión también quita de la base el token de push de este teléfono (issue #7), para que el
+ * teléfono deje de recibir las notificaciones de esa cuenta.
+ * Depende de: `src/repositorios/sesion.ts`, `src/repositorios/perfiles.ts`, `src/repositorios/dispositivos.ts`
+ * y TanStack Query.
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import { quitarDispositivoDeEsteTelefono } from '@/repositorios/dispositivos';
 import { obtenerPerfil } from '@/repositorios/perfiles';
 import { cerrarSesion, escucharSesion, obtenerSesion } from '@/repositorios/sesion';
 import type { Perfil, Rol } from '@/tipos/perfil';
@@ -81,7 +85,10 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const cargando = recuperando || (Boolean(usuarioId) && consulta.isPending);
 
   // Cierra la sesión y borra el perfil de la caché para que el siguiente usuario no vea el anterior.
+  // Antes quita el token de push de este teléfono: mientras la sesión siga abierta, RLS deja borrarlo. Es de
+  // mejor esfuerzo (no lanza error ni espera más de unos segundos), así que no puede impedir cerrar sesión.
   const cerrar = async () => {
+    await quitarDispositivoDeEsteTelefono();
     await cerrarSesion();
     queryClient.removeQueries({ queryKey: ['perfil'] });
   };
