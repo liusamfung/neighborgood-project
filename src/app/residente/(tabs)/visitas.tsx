@@ -7,6 +7,8 @@
  * Cómo funciona: el borrador vive en el estado de la pantalla. Al generar, se valida con
  * `validarBorrador` (errores en español junto al campo) y se envía con `useCrearPase`, que llama a la Edge
  * Function `crear-pase`: ella guarda el pase `vigente` en la unidad del residente y la lista se actualiza.
+ * Las pestañas no tienen cabecera (`headerShown: false`), así que el contenido deja el alto de la barra de
+ * estado (hora, batería, isla dinámica) arriba del título "Nuevo pase", donde antes quedaba debajo de ella.
  * Se usa con: la barra inferior definida en `(tabs)/_layout.tsx`, que la registra como pestaña, y los
  * componentes `CampoTexto`, `CampoFecha`, `Boton` y `TarjetaPase`.
  * Depende de: `src/hooks/useCrearPase.ts`, `src/hooks/useMisPases.ts` y `src/utilidades/borradorPase.ts`.
@@ -22,6 +24,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TarjetaPase } from '@/componentes/visitas/TarjetaPase';
 import { Boton } from '@/componentes/formulario/Boton';
@@ -37,6 +40,7 @@ import { nuevoBorrador, validarBorrador } from '@/utilidades/borradorPase';
 export default function Visitas() {
   const crear = useCrearPase();
   const pases = useMisPases();
+  const { top } = useSafeAreaInsets();
 
   // El borrador se crea una sola vez: la función inicial de useState no se vuelve a ejecutar.
   const [borrador, setBorrador] = useState<BorradorPase>(() => nuevoBorrador());
@@ -72,7 +76,7 @@ export default function Visitas() {
       style={estilos.pantalla}
     >
       <ScrollView
-        contentContainerStyle={estilos.contenido}
+        contentContainerStyle={[estilos.contenido, { paddingTop: top + espacios.margenLateral }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
