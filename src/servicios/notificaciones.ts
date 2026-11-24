@@ -68,10 +68,12 @@ export async function configurarNotificaciones(): Promise<void> {
     },
   });
   if (Platform.OS === 'android') {
+    // Los canales no llevan `sound`: en Android ese campo es el nombre de un archivo de sonido incluido en la
+    // app (no existe el valor 'default'); si se omite, el canal usa el sonido de notificación del teléfono.
+    // Poner `sound: 'default'` registra un error y deja al canal apuntando a un archivo que no existe.
     await Notifications.setNotificationChannelAsync(CANAL_ALERTAS, {
       name: 'Alertas de emergencia',
       importance: AndroidImportance.MAX,
-      sound: 'default',
       vibrationPattern: PATRON_VIBRACION,
       enableVibrate: true,
       lockscreenVisibility: AndroidNotificationVisibility.PUBLIC,
@@ -79,7 +81,6 @@ export async function configurarNotificaciones(): Promise<void> {
     await Notifications.setNotificationChannelAsync(CANAL_GENERAL, {
       name: 'Avisos',
       importance: AndroidImportance.HIGH,
-      sound: 'default',
     });
   }
   configurado = true;
