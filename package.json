@@ -64,6 +64,9 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:tipos": "supabase gen types typescript --local > src/tipos/base_de_datos.ts && prettier --write src/tipos/base_de_datos.ts",
+    "carga:preparar": "docker exec -i supabase_db_neighborgood-project psql -U postgres -d postgres -v ON_ERROR_STOP=1 -1 -f - < supabase/carga/generar_datos.sql",
+    "carga:medir": "docker exec -i supabase_db_neighborgood-project psql -U postgres -d postgres -f - < supabase/carga/medir.sql",
+    "carga:concurrencia": "sh supabase/carga/concurrencia.sh",
     "fn:probar": "deno test --allow-env --config supabase/functions/deno.json \"supabase/functions/**/*_test.ts\"",
     "fn:formato": "deno fmt --no-semicolons --single-quote --line-width 110 supabase/functions",
     "fn:desplegar": "supabase functions deploy --use-api"
