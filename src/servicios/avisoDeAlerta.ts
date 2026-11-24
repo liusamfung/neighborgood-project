@@ -16,26 +16,25 @@
  * habla con Supabase.
  * Se usa con: `src/app/residente/alerta/enviada.tsx` (emisor, P3b) y `src/hooks/useAvisoDeAlertas.ts`
  * (receptor: la suscripción de Realtime a `alertas`, RF25).
- * Depende de: `expo-haptics`, `expo-notifications` y el tipo `tipo_alerta` de la base.
+ * La configuración de las notificaciones (manejador, canales de Android y permiso) vive en
+ * `src/servicios/notificaciones.ts`, que también obtiene el token de las push remotas (issue #7).
+ * Depende de: `expo-haptics`, `expo-notifications`, `src/servicios/notificaciones.ts` y el tipo
+ * `tipo_alerta` de la base.
  */
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance, AndroidNotificationVisibility } from 'expo-notifications';
 import { Platform, Vibration } from 'react-native';
 
+import {
+  CANAL_ALERTAS,
+  PATRON_VIBRACION,
+  configurarNotificaciones,
+  pedirPermisoNotificaciones,
+} from '@/servicios/notificaciones';
 import type { Database } from '@/tipos/base_de_datos';
 
 /** Tipo de alerta: viene del enumerado `tipo_alerta` (`medica`, `incendio` o `seguridad`). */
 export type TipoAlerta = Database['public']['Enums']['tipo_alerta'];
-
-/** Canal de Android para las alertas; importancia máxima para que suene y se vea encima de todo. */
-export const CANAL_ALERTAS = 'alertas';
-
-/**
- * Patrón de vibración en milisegundos: [espera, vibra, pausa, vibra, ...].
- * Tres pulsos largos: se distingue de un mensaje común, que vibra una sola vez.
- */
-export const PATRON_VIBRACION = [0, 600, 250, 600, 250, 600];
 
 /** Texto que ve el usuario para cada tipo de alerta. */
 export const NOMBRE_ALERTA: Record<TipoAlerta, string> = {
@@ -44,44 +43,16 @@ export const NOMBRE_ALERTA: Record<TipoAlerta, string> = {
   seguridad: 'de seguridad',
 };
 
-// Se configura una sola vez por sesión de la app (canal, manejador y permiso).
-let configurado = false;
-
 /**
  * Prepara las notificaciones la primera vez que se necesitan: el manejador (para que suenen con la
- * app abierta), el canal de Android y el permiso.
+ * app abierta), el canal de Android y el permiso. La configuración es la compartida del servicio de
+ * notificaciones; aquí solo se junta con el permiso.
  *
  * @returns true si hay permiso para notificar (y por lo tanto para sonar).
  */
 async function prepararNotificaciones(): Promise<boolean> {
-  if (!configurado) {
-    // Sin este manejador, con la app abierta la notificación llega en silencio.
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldPlaySound: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldSetBadge: false,
-      }),
-    });
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync(CANAL_ALERTAS, {
-        name: 'Alertas de emergencia',
-        importance: AndroidImportance.MAX,
-        sound: 'default',
-        vibrationPattern: PATRON_VIBRACION,
-        enableVibrate: true,
-        lockscreenVisibility: AndroidNotificationVisibility.PUBLIC,
-      });
-    }
-    configurado = true;
-  }
-  const actual = await Notifications.getPermissionsAsync();
-  if (actual.granted) return true;
-  // Solo se pide si todavía se puede preguntar; si el usuario ya lo negó, no se insiste.
-  if (!actual.canAskAgain) return false;
-  const pedido = await Notifications.requestPermissionsAsync();
-  return pedido.granted;
+  await configurarNotificaciones();
+  return pedirPermisoNotificaciones();
 }
 
 /**
