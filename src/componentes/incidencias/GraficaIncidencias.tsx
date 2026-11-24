@@ -1,5 +1,10 @@
 /** RF31/P12: barras accesibles de conteos mensuales, usando hook y tema existentes.
  * Las cantidades/textos provienen de la vista SQL; no necesita librería gráfica nueva.
+ * Muestra primero el mes actual y debajo los anteriores, para que la directiva vea lo más reciente sin
+ * desplazarse. El hook entrega los meses del más antiguo al más nuevo (la consulta usa ese rango), así que
+ * aquí solo se invierte el orden para mostrarlos.
+ * Se usa con: el Panel de la directiva (`src/app/directiva/(tabs)/index.tsx`).
+ * Depende de: `src/hooks/useReporteMensual.ts` y `src/utilidades/reporteMensual.ts`.
  */
 import { useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
@@ -13,7 +18,8 @@ import { colores, tipografia } from '@/tema';
 export function GraficaIncidencias() {
   const [rango, setRango] = useState<6 | 12>(6);
   const consulta = useReporteMensual(rango);
-  const datos = consulta.data ?? [];
+  // Copia invertida: `reverse()` cambia el arreglo original, que es la caché de TanStack Query.
+  const datos = [...(consulta.data ?? [])].reverse();
   const maximo = Math.max(1, ...datos.map((d) => d.total));
   const total = datos.reduce((s, d) => s + d.total, 0);
   return (
