@@ -49,7 +49,7 @@ Los requisitos completos están en `docs/requisitos/REQUISITOS.md`.
 | Decisión | Razón |
 |---|---|
 | **React Native + Expo SDK 58**, *development build* con EAS Build | Con Expo Go, las notificaciones push remotas dejaron de funcionar desde el SDK 53. El development build no depende de la versión de Expo Go. |
-| **Supabase** (Postgres + RLS, Auth, Realtime, Storage, Edge Functions) | Cubre base de datos relacional, autenticación sin SMS (correo y Google), tiempo real y almacenamiento de fotos, con plan gratuito. |
+| **Supabase** (Postgres + RLS, Auth, Realtime, Storage, Edge Functions) | Cubre base de datos relacional, autenticación sin SMS (correo y contraseña; Google quedó fuera de alcance), tiempo real y almacenamiento de fotos, con plan gratuito. |
 | **Sin NestJS** | Las Edge Functions bastan para la lógica de servidor de este alcance. |
 | **Supabase sobre Firebase** | En Firebase, Storage y las Cloud Functions con HTTP saliente exigen plan pago. |
 | **SQL a mano con RLS, sin Prisma** | Las políticas RLS son parte central del diseño y se controlan mejor escritas directamente. |
@@ -103,9 +103,9 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - Los diagramas usan la **numeración RF corregida** (RF1 a RF31, sin huecos). La tabla de equivalencias con el Google Doc original está en `REQUISITOS.md`.
 
 ## 9. Pendientes conocidos (antes de programar)
-1. **Inicio de sesión con Google** (issue #4): configurar OAuth en Google Cloud y en Supabase, y las URL de redirección `neighborgood://`. El inicio de sesión con correo y contraseña ya funciona (RF2): la migración está ejecutada y verificada en el proyecto real, las cuentas de directiva, guardia y residente existen, y la app lee el rol real desde `perfiles`. El rol de desarrollo `EXPO_PUBLIC_ROL_DEV` se eliminó.
+1. **Inicio de sesión con Google: fuera de alcance** (issue #4, cerrado como "no planificado" el 24/11/2026). Decisión de Liu: no hubo tiempo para configurar OAuth en Google Cloud y en Supabase, y se le avisará al profesor. El inicio de sesión con correo y contraseña ya funciona (RF2): la migración está ejecutada y verificada en el proyecto real, las cuentas de directiva, guardia y residente existen, y la app lee el rol real desde `perfiles`. El rol de desarrollo `EXPO_PUBLIC_ROL_DEV` se eliminó.
 2. **Corregir los mockups** donde contradicen el modelo (lista en `DISENO.md`).
-3. **Notificaciones push de Android:** configurar FCM (`google-services.json`) y las credenciales de EAS en el Sprint 5, y decidir qué hacer con el plugin `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE` cuando haya cuenta de pago.
+3. **Notificaciones push de Android:** FCM y las credenciales de EAS ya están configurados y probados en un Android real (issue #7, PR #93). Falta decidir qué hacer con el plugin `NEIGHBORGOOD_SIN_PUSH_ONLY_IPHONE` cuando haya cuenta de pago.
 4. **Decisiones técnicas por cerrar:** navegación (Expo Router, ya instalado, con rutas en `src/app/`), librería de componentes (React Native Paper, por confirmar con SDK 58), librería de gráficos para el reporte mensual (RF31).
 5. **Pantallas sin mockup** pero necesarias (lista en `DISENO.md`).
 

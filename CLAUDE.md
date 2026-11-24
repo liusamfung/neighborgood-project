@@ -12,7 +12,7 @@ Hay documentación en `docs/` y el **proyecto Expo base** (SDK 58, TypeScript, E
 ## Stack (decidido)
 - **App:** React Native + Expo **SDK 58** (`expo ~58.0`, React Native 0.88, React 19.3, Expo Router ~58), con *development build* (`expo-dev-client` + EAS Build). **No usar Expo Go**: no soporta push remotas desde el SDK 53.
 - **Por qué SDK 58 y no 57:** iOS 27 cierra las apps que no adoptan el ciclo de vida `UIScene`. El SDK 57 no lo adopta; el SDK 58 sí (probado en un iPhone real). No volver al SDK 57.
-- **Backend:** Supabase (Auth con correo y Google, Postgres con RLS, Realtime, Storage, Edge Functions en Deno/TypeScript). **Sin NestJS.**
+- **Backend:** Supabase (Auth con correo y contraseña; el inicio con Google quedó **fuera de alcance**, issue #4; Postgres con RLS, Realtime, Storage, Edge Functions en Deno/TypeScript). **Sin NestJS.**
 - **Estado en la app:** React Context (sesión y rol) + TanStack Query (consultas a Supabase).
 - **Notificaciones:** Expo Push Service (→ FCM/APNs). Realtime para la app abierta; push para la app cerrada.
 - **Dispositivo:** `expo-camera` (escáner QR), `react-native-qrcode-svg` (dibujar el QR), `expo-notifications`, `expo-image-picker`, `expo-haptics`/`Vibration`.
