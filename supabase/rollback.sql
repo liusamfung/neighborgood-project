@@ -39,6 +39,7 @@ drop function if exists public.resultados_encuesta(uuid);
 drop function if exists public.crear_encuesta(text, text, uuid, public.prioridad_encuesta, boolean, timestamptz, timestamptz, uuid[], jsonb);
 drop function if exists public.crear_aviso(text, text, uuid, timestamptz, timestamptz, uuid[], text);
 drop function if exists public.crear_incidencia(uuid, text, text, text[]);
+drop function if exists public.registrar_dispositivo(text, public.plataforma_dispositivo);
 
 drop table if exists
   public.incidencia_fotos, public.incidencias,

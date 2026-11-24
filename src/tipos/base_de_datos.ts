@@ -947,6 +947,13 @@ export type Database = {
       };
       emitir_voto: { Args: { p_encuesta_id: string; p_opciones: Json }; Returns: string };
       latido: { Args: Record<PropertyKey, never>; Returns: number };
+      registrar_dispositivo: {
+        Args: {
+          p_plataforma: Database['public']['Enums']['plataforma_dispositivo'];
+          p_token: string;
+        };
+        Returns: undefined;
+      };
       resultados_encuesta: {
         Args: { p_encuesta_id: string };
         Returns: {
