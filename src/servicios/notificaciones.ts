@@ -114,7 +114,9 @@ export async function obtenerTokenPush(): Promise<string | null> {
     // El `projectId` de EAS está en `app.json` (`extra.eas.projectId`); Expo lo exige para emitir el token.
     const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
     if (!projectId) {
-      console.warn('No se encontró el projectId de EAS: no se puede pedir el token de notificaciones');
+      console.warn(
+        'No se encontró el projectId de EAS: no se puede pedir el token de notificaciones',
+      );
       return null;
     }
     const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
