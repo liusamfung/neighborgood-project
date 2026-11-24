@@ -1,9 +1,13 @@
 /** RF30/P15: gestión de estados para directiva y seguimiento de solo lectura para residente.
  * Consulta useIncidencias, confirma cada cambio y conserva filtros y recuperación de errores.
+ * Es el contenido de la pestaña Incidencias del residente y de la directiva. Las pestañas no tienen
+ * cabecera (`headerShown: false`), así que deja el alto de la barra de estado (hora, batería, isla
+ * dinámica) arriba del título, donde antes el título quedaba debajo de ella.
  */
 import { useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { Link } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
 import { useSesion } from '@/contexto/SesionContext';
@@ -14,6 +18,7 @@ import { colores, tipografia } from '@/tema';
 /** No presenta el guardado como entrega de push: la notificación se procesa por separado en el servidor. */
 export function ListaIncidencias() {
   const { perfil } = useSesion();
+  const { top } = useSafeAreaInsets();
   const [filtro, setFiltro] = useState<EstadoIncidencia>();
   const { consulta, cambiar } = useIncidencias(filtro);
   const [confirmacion, setConfirmacion] = useState<{
@@ -41,7 +46,15 @@ export function ListaIncidencias() {
     }
   }
   return (
-    <View style={{ flex: 1, padding: 24, gap: 12, backgroundColor: colores.fondo }}>
+    <View
+      style={{
+        flex: 1,
+        padding: 24,
+        paddingTop: top + 24,
+        gap: 12,
+        backgroundColor: colores.fondo,
+      }}
+    >
       <Text style={tipografia.titulo}>
         {perfil?.rol === 'directiva' ? 'Gestión de incidencias' : 'Mis incidencias'}
       </Text>
