@@ -1,0 +1,71 @@
+{
+  "fecha": "2026-11-24/2026-11-25",
+  "zona": "America/Lima",
+  "base_main": "503bcf4148e63a668fd935a17ca70dbf5f3929f1",
+  "honor": "CRT-LX3, Android 14",
+  "emulador": "Android 16, x86_64, development build",
+  "apk_base_probada_sha256": "63e8819370cb4ac270e585c6e718f9a08ea0f156465dc911ea5f0546d58d234b",
+  "apk_con_cierre_de_sesion_instalada_sha256": "3fd980786aa5034d9d7d93e5c6c5ea57704329231efa0b8532934e1877030c81",
+  "configuracion_firebase": "Incluida localmente; archivo del equipo ignorado por Git",
+  "RF4": {
+    "honor": ["campos obligatorios", "crear sin correo", "limite de tres", "correo invalido rechazado", "correo valido persistido", "marcador sin llamar", "cancelar y confirmar eliminacion", "reutilizar posicion 3", "persistencia tras reiniciar proceso"],
+    "contactos_originales_al_inicio": 1,
+    "contactos_originales_al_final": 1,
+    "contactos_sinteticos_al_final": 0,
+    "pendiente": ["corte y recuperacion de red", "dos residentes distintos", "iOS"]
+  },
+  "RF9": {
+    "honor": ["rechazo de respuesta incompleta", "opcion unica y multiple", "revisar y cancelar confirmacion", "confirmar voto"],
+    "votos_unidad_en_encuesta_sintetica": 1,
+    "opciones_seleccionadas": 3,
+    "segundo_intento_por_api": "rechazado 23505; conteo permanece en uno",
+    "pendiente": ["dos residentes de la misma unidad", "concurrencia", "doble toque", "perdida de conexion"]
+  },
+  "RF11": {
+    "honor": ["avisos y encuestas", "categoria Mantenimiento", "Anteriores muestra encuesta finalizada", "Vigentes muestra las abiertas", "accesos a voto y resultados"],
+    "pendiente": ["mas de 20 filas", "cambio de cuenta", "desconexion", "letra ampliada"]
+  },
+  "RF12": {
+    "conteos_por_texto_en_honor": {"A": 1, "B": 0, "Lunes": 1, "Martes": 1, "Miercoles": 0},
+    "reserva_antes_del_cierre": "aviso en HONOR y RPC 42501 sin conteos",
+    "despues_del_cierre_por_api_directiva": "RPC permitida; HONOR muestra ceros automaticamente sin pulsar Actualizar",
+    "pendiente": ["otra unidad vota mientras la pantalla sigue abierta", "sector ajeno", "red y canales al salir"]
+  },
+  "RF13": {
+    "emulador": ["P13 y P14 conservan modo sectores al quitar el ultimo", "P13 y P14 rechazan publicar sin destinatarios", "publicacion P14 a un sector"],
+    "servidor_publicacion_P14": {"para_todos": false, "sectores": 1},
+    "honor": "residente destinatario ve la encuesta publicada desde P14",
+    "pendiente": ["residente de sector ajeno", "publicacion P13 positiva", "sector desaparece con formulario abierto"]
+  },
+  "RF27": {
+    "honor": "historial propio y detalle sin controles de gestion",
+    "emulador": "acceso de directiva a Atencion de alertas",
+    "punta_a_punta_aprobada": false,
+    "pendiente": "Coordinar alerta nueva que avisa a otras cuentas y completar activa -> en_camino -> atendida con dos roles"
+  },
+  "RF30": {
+    "reporte": "creado en HONOR con foto sintetica; gestionado en emulador",
+    "app_abierta": "aviso de En atencion y acceso a Mis incidencias",
+    "app_minimizada": "notificacion Android propia recibida: Tu incidencia fue marcada como resuelta",
+    "app_quitada_de_recientes": "sin proceso antes del cambio; notificacion Android propia recibida",
+    "navegacion_push": "abre Mis incidencias con la sesion y el reporte propio Resuelto",
+    "repeticion_en_apk_con_cierre_de_sesion": false,
+    "motivo_no_repeticion": "USB desaparecio despues de instalar la APK nueva",
+    "nuevo_boton": "validado en emulador: abre confirmacion, cancelar conserva sesion",
+    "pendiente": ["dos directivas concurrentes", "tokens y cuentas distintos", "recibos privados y eventos inciertos"]
+  },
+  "RF31": {
+    "emulador": ["6 y 12 meses", "actual primero", "meses vacios en cero", "desplazamiento hasta diciembre de 2025"],
+    "contraste_servidor_noviembre": {"total": 4, "pendientes": 2, "en_atencion": 0, "resueltas": 2},
+    "visual_honor_directiva": false,
+    "pendiente": ["HONOR con rol directiva", "letra ampliada", "cambio de mes", "recuperacion de red"]
+  },
+  "limpieza": {
+    "contactos_sinteticos": "retirados, contacto original conservado",
+    "encuestas_sin_votos": "las dos de esta sesion fueron retiradas",
+    "encuesta_con_voto": "cerrada; su FK de votos impide borrarla con la cuenta normal",
+    "incidencia": "resuelta e identificada como prueba; sin permiso ordinario de borrado",
+    "requiere_limpieza_administrativa": ["encuesta sintetica con un voto", "incidencia sintetica y su foto"]
+  },
+  "limites": "Resumen de observaciones y consultas con cuentas normales. No contiene credenciales, tokens, capturas privadas ni identidades de residentes. No acredita todos los casos de aceptacion."
+}
