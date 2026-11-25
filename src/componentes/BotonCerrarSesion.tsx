@@ -9,7 +9,8 @@
  * así que una pantalla que reemplace a un marcador debe incluir este componente para no perderlo.
  * Se usa con: `src/componentes/alertas/ListaAtencion.tsx` (pestaña Alertas del guardia),
  * `src/app/guardia/(tabs)/escaner.tsx` y `src/componentes/publicaciones/HistorialPublicaciones.tsx`
- * (pestañas Avisos y Encuestas de la directiva).
+ * (pestañas Avisos y Encuestas de la directiva), el Panel de directiva y
+ * `src/componentes/incidencias/ListaIncidencias.tsx` (salida en Incidencias para directiva).
  * Depende de: `src/contexto/SesionContext.tsx` y `src/tema`.
  * Accesibilidad: el área táctil mide al menos 44 px de alto (RNF8).
  */

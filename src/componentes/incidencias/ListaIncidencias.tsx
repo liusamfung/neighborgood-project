@@ -3,11 +3,13 @@
  * Es el contenido de la pestaña Incidencias del residente y de la directiva. Las pestañas no tienen
  * cabecera (`headerShown: false`), así que deja el alto de la barra de estado (hora, batería, isla
  * dinámica) arriba del título, donde antes el título quedaba debajo de ella.
+ * Conserva BotonCerrarSesion para la directiva, igual que sus demás pestañas reales.
  */
 import { useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BotonCerrarSesion } from '@/componentes/BotonCerrarSesion';
 import { Boton } from '@/componentes/formulario/Boton';
 import { ChipsSeleccion } from '@/componentes/formulario/ChipsSeleccion';
 import { useSesion } from '@/contexto/SesionContext';
@@ -55,9 +57,13 @@ export function ListaIncidencias() {
         backgroundColor: colores.fondo,
       }}
     >
-      <Text style={tipografia.titulo}>
-        {perfil?.rol === 'directiva' ? 'Gestión de incidencias' : 'Mis incidencias'}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Text style={[tipografia.titulo, { flex: 1 }]}>
+          {perfil?.rol === 'directiva' ? 'Gestión de incidencias' : 'Mis incidencias'}
+        </Text>
+        {/* La pestaña real conserva la salida de directiva; el residente la mantiene en Perfil. */}
+        {perfil?.rol === 'directiva' ? <BotonCerrarSesion /> : null}
+      </View>
       {perfil?.rol === 'residente' ? (
         <Link href="/residente/incidencias/nueva">Reportar incidencia</Link>
       ) : null}
