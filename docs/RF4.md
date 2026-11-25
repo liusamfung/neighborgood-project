@@ -4,6 +4,28 @@ Historia: [issue #14](https://github.com/liusamfung/neighborgood-project/issues/
 Esta revisión parte de `main` en `c64a25c` y sustituye la propuesta cerrada del PR #65.
 No modifica el esquema de Supabase ni añade dependencias.
 
+## Estado al 25/11/2026
+
+Integrado por Liu en PR #73; issue #14 cerrado. El 24–25/11 se comprobó también
+en HONOR CRT-LX3, Android 14, con la APK local de main `503bcf4` y Firebase incluido.
+La aceptación del código y la cobertura de cada prueba se distinguen a continuación;
+el apartado del 21–22/11 conserva la evidencia histórica del emulador.
+
+Resultados físicos: rechazo de los tres campos vacíos; creación sin correo; límite de
+tres contactos; rechazo de correo inválido y edición con `prueba@example.com`;
+apertura del marcador con `+12025550102`, sin llamar; cancelar y confirmar una
+eliminación; reutilizar la posición 3 liberada; y recuperar sesión y contador 3 de 3
+después de reiniciar el proceso. La API confirmó posiciones 2 y 3 para los contactos
+sintéticos. El borrado de prueba desde la app se comprobó también en el servidor.
+Al terminar se retiraron únicamente los contactos creados en esta sesión y quedó el
+contacto anterior, sin modificarlo.
+
+Hubo esperas prolongadas de actualización en el HONOR. Se verificó la persistencia
+antes de repetir una escritura y la interfaz se recuperó al volver a primer plano;
+esta observación no identifica ni da por corregida su causa. Permanecen sin medir
+el corte/restablecimiento de red, el aislamiento entre dos residentes diferentes e
+iOS. No se presentan como aprobados por estas pruebas físicas.
+
 ## Alcance y criterios
 
 El residente administra hasta tres contactos propios en **Perfil**. Nombre, teléfono y

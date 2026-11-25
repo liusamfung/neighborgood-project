@@ -2,10 +2,48 @@
 
 Resumen para entender el proyecto de una sola lectura. Los detalles viven en los demás documentos de `docs/`; las reglas rápidas, en `CLAUDE.md`.
 
+## Integración y comprobaciones de Eduardo · 25/11/2026
+
+Liu integró los PR #73–#80 y cerró los issues #14, #19, #21, #22, #23, #36, #39
+y #40. La base de la comprobación es main `503bcf4` (v1.0.0). No debe confundirse
+el merge con haber ejecutado todos los casos de aceptación en todos los dispositivos.
+
+| Requisito | Evidencia de esta sesión | Casos aún pendientes |
+|---|---|---|
+| RF4 | CRUD de contactos sintéticos, validación, límite, marcador sin llamar y persistencia en HONOR Android 14. | Corte de red, dos residentes distintos e iOS. |
+| RF9 | Voto simple/múltiple desde HONOR; revisión/cancelación; un voto persistido y duplicado rechazado por API. | Dos residentes de la misma unidad y concurrencia entre dispositivos. |
+| RF11 | Historial del HONOR: tipos, categoría y encuestas vigentes/finalizadas; accesos de creación conservados en directiva. | Más de 20 filas, cambio de cuenta y desconexión. |
+| RF12 | Conteos en HONOR coincidentes con RPC; reserva antes del cierre y habilitación automática después. | Otro votante con pantalla abierta, sector ajeno y desconexión. |
+| RF13 | Selector de P13/P14 en emulador; publicación P14 a un sector y lectura desde HONOR del sector. | Residente de sector ajeno y publicación P13 positiva. |
+| RF27 | Historial/detalle de solo lectura del residente en HONOR y acceso a atención en directiva/emulador. | Emisión coordinada y recorrido completo de atención con dos roles. |
+| RF30 | Reporte y foto sintéticos desde HONOR; gestión en emulador; aviso abierto y push recibido minimizado/cerrado. | Carreras, cuenta/token distintos y recuperación privada de eventos inciertos. |
+| RF31 | Emulador: seis/doce meses, orden y ceros; agregado del servidor coincidente. | Visual de directiva en HONOR, letra ampliada y cambio de mes. |
+
+Los documentos RF4/RF9/RF11/RF12/RF13/RF27/RF30/RF31 separan preparación histórica,
+integración y evidencia actual. Las capturas privadas y las cuentas del equipo quedan
+fuera de Git. El HONOR usa una APK local con JavaScript y Firebase incluidos; el
+emulador usa development build. Liu informó la activación del servidor el 23/11;
+esta sesión no ejecutó migraciones ni cambió secretos o permisos de Supabase.
+
+La revisión también conserva Cerrar sesión en Incidencias de directiva mediante el
+componente compartido, siguiendo la regla de no perder la salida al sustituir un
+marcador. No se modifica la arquitectura ni se agregan dependencias.
+
+Resumen transportable: [validacion-eduardo-20261125.json](pruebas/validacion-eduardo-20261125.json).
+Se retiraron los contactos y las dos encuestas sin votos creados para la prueba. La
+encuesta sintética con un voto quedó cerrada (la FK impide borrarla con una cuenta
+normal) y el reporte sintético quedó Resuelto; su limpieza administrativa queda
+identificada para Liu. No se intentó ampliar permisos para retirarlos.
+
 ## 1. Qué es
 **NeighborGood** es una app móvil para condominios y urbanizaciones cerradas. Reemplaza los grupos de WhatsApp con un solo lugar para avisos, encuestas, visitas, alertas de emergencia e incidencias. Es el proyecto del curso **Desarrollo Móvil** (UTP, 2026-II, "Caso 4: Gestión de Condominios y Alerta Comunitaria").
 
-Está en la etapa de **Avance 2 (semana 10)**: se entrega documentación (caso, objetivos, requisitos, flujos y mockups, arquitectura, base de datos, planificación). Desde el Sprint 3 existen el **proyecto Expo base**, la **migración SQL** (ejecutada en el proyecto real), el **inicio de sesión con correo y contraseña** y la **estructura de Edge Functions** con una función de ejemplo (`quien-soy`, issue #6) las pantallas **Crear encuesta** (RF8, RF13, RF14, issue #18) y **Crear aviso** (RF7, RF13, issue #17) de la directiva, y la pantalla **Visitas** del residente con la Edge Function `crear-pase` (RF15, issue #25); el resto de las funcionalidades sigue pendiente.
+La documentación original corresponde al **Avance 2 (semana 10)**: caso, objetivos,
+requisitos, flujos, mockups, arquitectura, base de datos y planificación. Desde entonces
+main incorporó los recorridos de los tres roles, publicaciones, votos, visitas,
+alertas, incidencias y push de Android. El estado de validación de los requisitos de
+Eduardo se detalla en la tabla anterior y en cada documento RF, sin dar por terminadas
+las pruebas que allí figuran pendientes.
 
 RF4 incorpora la administración de hasta tres contactos propios en Perfil, con formulario,
 confirmación de eliminación y apertura del marcador del dispositivo. Sigue la separación
@@ -20,7 +58,8 @@ RF23 incorpora el botón de pánico: la pantalla Inicio (P2) con la tarjeta roja
 el tipo de alerta y confirmar (P3, con Médica marcada como en el mockup) y la pantalla Alerta enviada
 (P3b, con la vibración y el sonido de RF24). La alerta se crea con un insert directo que permite RLS (sin
 Edge Function): la app solo envía emisor, unidad y tipo, y los triggers de la base fijan sector, estado
-`activa` y hora. Avisar a la guardia y a los vecinos es RF25 (issue #35), que sigue pendiente.
+`activa` y hora. Avisar a la guardia y a los vecinos es RF25 (issue #35), integrado en
+main con Realtime y Expo Push; la configuración de Android se explica en PUSH_ANDROID.md.
 
 Cerrar sesión: el componente `BotonCerrarSesion` (con confirmación) está en las pestañas reales del guardia
 (Alertas y Escáner) y de la directiva (Avisos y Encuestas); el residente la cierra desde Perfil. El marcador
@@ -119,10 +158,18 @@ Identidad **"Vecindario cálido"**: teal `#0F766E`, ámbar `#F59E0B`, tipografí
 - Inicio de sesión por celular/SMS.
 - Mapas: la ubicación de la alerta es la unidad.
 
-## Preparación RF30 — 22/11/2026 (pendiente de integración)
+## Preparación RF30 — 22/11/2026 (histórica, integrada en PR #79)
 
-El PR de RF30 propone una cola técnica `incidencia_notificaciones`, privada y con RLS sin acceso del cliente. El trigger de cambio de estado inserta el evento en la misma transacción. Un Database Webhook de INSERT en esa cola llama a la Edge Function `notificar-incidencia`, autenticada con un secreto de servidor. La reserva del evento impide reenviar push por duplicar el webhook. La app abierta usa Realtime y la cerrada depende de Expo Push/FCM/APNs (B5/#7). Se mantiene el mismo backend y separación de capas. No se ha aplicado esta migración ni desplegado la función: requiere revisión de Liu y aceptación conjunta. Ver `docs/RF30.md` para despliegue, recibos y recuperación de resultados inciertos. Los tipos generados y el diccionario XLSX se deben regenerar/reconciliar después de aprobar y aplicar el esquema, sin editarlos a mano.
+RF30 integra la cola técnica `incidencia_notificaciones`, privada y con RLS sin acceso
+del cliente. El trigger inserta el evento en la misma transacción; el webhook de INSERT
+llama a `notificar-incidencia` con un secreto de servidor. La reserva evita reenviar al
+duplicar el webhook. Liu confirmó su activación el 23/11; la recepción real del HONOR
+se comprobó el 24–25/11. Ver `docs/RF30.md` para alcance, recibos y recuperación de
+resultados inciertos. No se deben editar a mano los tipos generados.
 
-## Preparación RF31 — 22/11/2026 (pendiente de integración)
+## Preparación RF31 — 22/11/2026 (histórica, integrada en PR #80)
 
-El PR RF31 usa barras con componentes nativos View/Text y texto accesible para la gráfica mensual, sin librería adicional. Consulta la vista existente que agrupa por mes de Lima y respeta RLS. La elección resuelve la librería gráfica pendiente de RF31 sin modificar dependencias. Falta aceptación conjunta; ver `docs/RF31.md`. Conservar el enlace de atención de alertas de RF27 al resolver los cambios coincidentes del Panel.
+RF31 usa barras nativas View/Text y texto accesible sin librería adicional. Consulta
+la vista existente por mes de Lima con RLS. PR #92 añadió el mes actual primero; el
+contraste con la vista real y sus límites se registran en `docs/RF31.md`. Se conserva
+el enlace de atención de alertas de RF27 junto a la gráfica.
